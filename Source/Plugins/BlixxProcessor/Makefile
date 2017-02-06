@@ -29,23 +29,23 @@ VPATH = $(SRC_DIR)
 .PHONY: objdir
 
 $(OUTDIR)/$(TARGET): objdir $(OBJ)
-    -@mkdir -p $(BINDIR)
-    -@mkdir -p $(LIBDIR)
-    -@mkdir -p $(OUTDIR)
-    @echo "Building $(TARGET)"
-    @$(BLDCMD)
+	-@mkdir -p $(BINDIR)
+	-@mkdir -p $(LIBDIR)
+	-@mkdir -p $(OUTDIR)
+	@echo "Building $(TARGET)"
+	@$(BLDCMD)
 
 $(OBJDIR)/%.o : %.cpp
-    @echo "Compiling $<"
-    @$(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+	@echo "Compiling $<"
+	@$(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 
 
 objdir:
-    -@mkdir -p $(OBJDIR)
+	-@mkdir -p $(OBJDIR)
 
 clean:
-    @echo "Cleaning $(LIBNAME)"
-    -@rm -rf $(OBJDIR)
-    -@rm -f $(OUTDIR)/$(TARGET)
+	@echo "Cleaning $(LIBNAME)"
+	-@rm -rf $(OBJDIR)
+	-@rm -f $(OUTDIR)/$(TARGET)
 
 -include $(OBJ:%.o=%.d)
