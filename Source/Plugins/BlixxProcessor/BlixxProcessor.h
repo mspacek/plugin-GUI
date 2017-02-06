@@ -71,7 +71,7 @@ public:
     //}
 
     /** If the processor has a custom editor, this method must be defined to instantiate it. */
-    //AudioProcessorEditor* createEditor();
+    AudioProcessorEditor* createEditor();
 
     /** Optional method that informs the GUI if the processor is ready to function. If false acquisition cannot start. Defaults to true */
     //bool isReady();
