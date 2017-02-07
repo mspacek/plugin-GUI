@@ -88,6 +88,8 @@ public:
          */
     void process(AudioSampleBuffer& buffer, MidiBuffer& events);
 
+    int checkForEvents(MidiBuffer& events);
+
     /** The method that standard controls on the editor will call.
         It is recommended that any variables used by the "process" function
         are modified only through this method while data acquisition is active. */
@@ -112,6 +114,7 @@ private:
     // bool state;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BlixxProcessor);
+    enum Edges { RISING = 0, FALLING = 1 };
 
 };
 

@@ -74,54 +74,55 @@ void BlixxProcessor::process(AudioSampleBuffer& buffer,
     /**
     Generic structure for processing buffer data
     */
-    int nChannels = buffer.getNumChannels();
-    for (int chan = 0; chan < nChannels; chan++)
+
+    checkForEvents(events);
+
+}
+
+int BlixxProcessor::checkForEvents(MidiBuffer& events)
+{
+
+    if (events.getNumEvents() > 0)
     {
-        int nSamples = getNumSamples(chan);
-        /**
-        Do something here.
 
-        To obtain a read-only pointer to the n sample of a channel:
-        float* samplePtr = buffer.getReadPointer(chan,n);
+        // int m = events.getNumEvents();
+        //std::cout << m << " events received by node " << getNodeId() << std::endl;
 
-        To obtain a read-write pointer to the n sample of a channel:
-        float* samplePtr = buffer.getWritePointer(chan,n);
+        MidiBuffer::Iterator i(events);
+        MidiMessage message(0xf4); // allocate memory for a MidiMessage for iteration
 
-        All the samples in a channel are consecutive, so this example is valid:
-        float* samplePtr = buffer.getWritePointer(chan,0);
-        for (i=0; i < nSamples; i++)
+        String blixxstr = "BLIXXFRAME";
+        CharPointer_UTF8 blixxcharp = blixxstr.toUTF8(); // maybe this should have a \n at the end for parsing?
+
+        int vsyncChannel = 1;
+
+        int samplePosition = 0;
+        i.setNextSamplePosition(samplePosition);
+
+        while (i.getNextEvent(message, samplePosition))
         {
-            *(samplePtr+i) = (*samplePtr+i)+offset;
+            const uint8* dataptr = message.getRawData();
+            int eventType = *(dataptr+0);
+            int sampleNum = *(dataptr+1);
+            int eventId = *(dataptr+2);
+            int eventChannel = *(dataptr+3);
+
+            if (eventType == TTL && eventChannel == vsyncChannel && eventId == RISING)
+                //&& all the other relevant pins are already high
+            {
+                addEvent(events,    // MidiBuffer
+                         MESSAGE,   // eventType
+                         sampleNum, // sampleNum
+                         nodeId,         // eventID
+                         0,              // eventChannel
+                         blixxcharp.sizeInBytes(),      // numBytes
+                         (uint8*)blixxcharp.getAddress()); // data
+            }
+
         }
 
-        See also documentation and examples for buffer.copyFrom and buffer.addFrom to operate on entire channels at once.
-
-        To add a TTL event generated on the n-th sample:
-        addEvents(events, TTL, n);
-
-
-        */
     }
 
-    /** Simple example that creates an event when the first channel goes under a negative threshold
-
-    for (int i = 0; i < getNumSamples(channels[0]->sourceNodeId); i++)
-    {
-        if ((*buffer.getReadPointer(0, i) < -threshold) && !state)
-        {
-
-            // generate midi event
-            addEvent(events, TTL, i);
-
-            state = true;
-
-        } else if ((*buffer.getReadPointer(0, i) > -threshold + bufferZone)  && state)
-        {
-            state = false;
-        }
-
-    }
-    */
-
+    return -1;
 
 }
