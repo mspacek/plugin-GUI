@@ -35,6 +35,7 @@ BlixxProcessor::BlixxProcessor()
 {
     //Without a custom editor, generic parameter controls can be added
     //parameters.add(Parameter("thresh", 0.0, 500.0, 200.0, 0));
+    setProcessorType (PROCESSOR_TYPE_FILTER);
 
 }
 
