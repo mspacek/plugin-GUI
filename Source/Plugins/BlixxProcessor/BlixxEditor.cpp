@@ -28,12 +28,12 @@ BlixxEditor::BlixxEditor(GenericProcessor* parentNode, bool useDefaultParameterE
     : GenericEditor(parentNode, useDefaultParameterEditors)
 {
     //Most used buttons are UtilityButton, which shows a simple button with text and ElectrodeButton, which is an on-off button which displays a channel.
-    exampleButton = new UtilityButton("Button text", Font("Default", 15, Font::plain));
-    exampleButton->setBounds(10, 10, 100, 100); //Set position and size (X, Y, XSize, YSize)
-    exampleButton->addListener(this); //Specify which class will implement the listener methods, in the case of editors, always make the editor the listener
-    exampleButton->setClickingTogglesState(true); //True for a on-off toggleable button, false for a single-click monostable button
-    exampleButton->setTooltip("Mouseover tooltip text");
-    addAndMakeVisible(exampleButton);
+    //exampleButton = new UtilityButton("Button text", Font("Default", 15, Font::plain));
+    //exampleButton->setBounds(10, 10, 100, 100); //Set position and size (X, Y, XSize, YSize)
+    //exampleButton->addListener(this); //Specify which class will implement the listener methods, in the case of editors, always make the editor the listener
+    //exampleButton->setClickingTogglesState(true); //True for a on-off toggleable button, false for a single-click monostable button
+    //exampleButton->setTooltip("Mouseover tooltip text");
+    //addAndMakeVisible(exampleButton);
 }
 
 BlixxEditor::~BlixxEditor()
