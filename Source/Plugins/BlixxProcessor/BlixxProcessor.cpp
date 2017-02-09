@@ -85,8 +85,7 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
     if (events.getNumEvents() > 0)
     {
 
-        int m = events.getNumEvents();
-        std::cout << m << " events received by Blixx node " << getNodeId() << std::endl;
+        std::cout << "*** " << numEvents << " events received by Blixx node " << getNodeId() << std::endl;
         //std::cout << "Blixx events: " << &events << std::endl;
         MidiBuffer::Iterator i(events);
         MidiMessage message (0xf4); // allocate memory for a MidiMessage for iteration
@@ -105,10 +104,10 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
             //uint8 sourceNodeId = message.getNoteNumber();
             int eventId = *(dataptr+2);
             int eventChannel = *(dataptr+3);
+            int save = *(dataptr+4);
 
-
-            printf("eventType, sourceNodeId, eventId, eventChannel, samplePosition: %d, %d, %d, %d, %d\n",
-                    eventType, sourceNodeId, eventId, eventChannel, samplePosition);
+            printf("eventType, sourceNodeId, eventId, eventChannel, save, samplePosition: %d, %d, %d, %d, %d, %d\n",
+                    eventType, sourceNodeId, eventId, eventChannel, save, samplePosition);
 
             if (eventType == TTL && eventChannel == vsyncChannel && eventId == RISING && sourceNodeId != getNodeId())
                 //&& all the other relevant pins are already high
