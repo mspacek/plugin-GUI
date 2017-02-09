@@ -85,16 +85,14 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
     if (events.getNumEvents() > 0)
     {
 
-        // int m = events.getNumEvents();
-        //std::cout << m << " events received by node " << getNodeId() << std::endl;
-
+        int m = events.getNumEvents();
+        std::cout << m << " events received by Blixx node " << getNodeId() << std::endl;
+        //std::cout << "Blixx events: " << &events << std::endl;
         MidiBuffer::Iterator i(events);
-        MidiMessage message(0xf4); // allocate memory for a MidiMessage for iteration
+        MidiMessage message (0xf4); // allocate memory for a MidiMessage for iteration
 
-        String blixxstr = "BLIXXFRAME";
-        CharPointer_UTF8 blixxcharp = blixxstr.toUTF8(); // maybe this should have a \n at the end for parsing?
 
-        int vsyncChannel = 1;
+        int vsyncChannel = 0; // digital input line, 0-based, 0--15 are possible I think
 
         int samplePosition = 0;
         i.setNextSamplePosition(samplePosition);
@@ -103,20 +101,32 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
         {
             const uint8* dataptr = message.getRawData();
             int eventType = *(dataptr+0);
-            int sampleNum = *(dataptr+1);
+            int sourceNodeId = *(dataptr+1);
+            //uint8 sourceNodeId = message.getNoteNumber();
             int eventId = *(dataptr+2);
             int eventChannel = *(dataptr+3);
 
-            if (eventType == TTL && eventChannel == vsyncChannel && eventId == RISING)
+
+            printf("eventType, sourceNodeId, eventId, eventChannel, samplePosition: %d, %d, %d, %d, %d\n",
+                    eventType, sourceNodeId, eventId, eventChannel, samplePosition);
+
+            if (eventType == TTL && eventChannel == vsyncChannel && eventId == RISING && sourceNodeId != getNodeId())
                 //&& all the other relevant pins are already high
+
             {
-                addEvent(events,    // MidiBuffer
-                         MESSAGE,   // eventType
-                         sampleNum, // sampleNum
-                         nodeId,         // eventID
-                         0,              // eventChannel
-                         blixxcharp.sizeInBytes(),      // numBytes
-                         (uint8*)blixxcharp.getAddress()); // data
+                String blixxstr = "BLIXXFRAME";
+                CharPointer_UTF8 blixxstrdata = blixxstr.toUTF8();
+                //printf("size, length: %zu, %zu\n", blixxstrdata.sizeInBytes(), blixxstrdata.length());
+                //std::cout << "* adding event" << std::endl;
+                addEvent(events, // MidiBuffer
+                         MESSAGE, // eventType
+                         samplePosition, // sampleNum
+                         eventId, // eventID
+                         0, // eventChannel
+                         blixxstrdata.sizeInBytes(), // numBytes
+                         (uint8*)blixxstrdata.getAddress()); // data
+
+                std::cout << "*** added event" << std::endl;
             }
 
         }
