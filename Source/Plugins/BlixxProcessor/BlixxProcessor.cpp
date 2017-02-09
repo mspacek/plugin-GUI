@@ -83,9 +83,9 @@ void BlixxProcessor::process(AudioSampleBuffer& buffer,
 int BlixxProcessor::checkForEvents(MidiBuffer& events)
 {
 
-    {
     int numEvents = events.getNumEvents();
     if (numEvents > 0)
+    {
 
         std::cout << "*** " << numEvents << " events received by Blixx node " << getNodeId() << std::endl;
         //std::cout << "Blixx events: " << &events << std::endl;
@@ -96,7 +96,7 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
         int vsyncChannel = 0; // digital input line, 0-based, 0--15 are possible I think
 
         int samplePosition = 0;
-        i.setNextSamplePosition(samplePosition);
+        i.setNextSamplePosition(samplePosition); // is this necessary?
 
         while (i.getNextEvent(message, samplePosition))
         {
