@@ -42,7 +42,7 @@ extern "C" EXPORT void getLibInfo(Plugin::LibraryInfo* info)
      * equal to the one used in the latest codebase. The GUI refueses to load plugins with
      * mismatched API versions */
     info->apiVersion = PLUGIN_API_VER;
-    info->name = "Blixx library"; // Name of the Library, used only for information
+    info->name = "Blixx Processor"; // Name of the Library, used only for information
     info->libVersion = 1; // Version of the library, used only for information
     info->numPlugins = NUM_PLUGINS;
 }

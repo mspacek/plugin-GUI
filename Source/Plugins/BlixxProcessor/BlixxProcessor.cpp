@@ -83,8 +83,9 @@ void BlixxProcessor::process(AudioSampleBuffer& buffer,
 int BlixxProcessor::checkForEvents(MidiBuffer& events)
 {
 
-    if (events.getNumEvents() > 0)
     {
+    int numEvents = events.getNumEvents();
+    if (numEvents > 0)
 
         std::cout << "*** " << numEvents << " events received by Blixx node " << getNodeId() << std::endl;
         //std::cout << "Blixx events: " << &events << std::endl;
