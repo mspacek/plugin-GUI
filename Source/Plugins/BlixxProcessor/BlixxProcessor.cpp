@@ -39,7 +39,7 @@ BlixxProcessor::BlixxProcessor()
      * to ensure its messages are saved to disk */
     setProcessorType (PROCESSOR_TYPE_FILTER);
 
-    blixxEvents = MidiBuffer();
+    blixxEvents = MidiBuffer(); // temporary buffer to hold BLIXX frame draw events
 }
 
 BlixxProcessor::~BlixxProcessor()
@@ -144,6 +144,7 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
             // add all blixxEvents to system-wide events buffer:
             events.addEvents(blixxEvents, 0, -1, 0);
             std::cout << "*** added " << nblixx << " BLIXX events to system event buffer" << std::endl;
+            blixxEvents.clear(); // remove all events from temporary buffer
         }
     }
 
