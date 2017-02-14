@@ -35,6 +35,8 @@ BlixxProcessor::BlixxProcessor()
     //Without a custom editor, generic parameter controls can be added
     //parameters.add(Parameter("thresh", 0.0, 500.0, 200.0, 0));
 
+    /* It's critical to set processor type here as Filter, instead of the default Utility,
+     * to ensure its messages are saved to disk */
     setProcessorType (PROCESSOR_TYPE_FILTER);
 
     blixxEvents = MidiBuffer();
@@ -126,7 +128,9 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
                          samplePosition, // sampleNum
                          eventId, // eventID
                          0, // eventChannel
-                         blixxstrdata.sizeInBytes(), // numBytes
+                         // use length() instead of sizeInBytes(), to avoid saving NULL terminator
+                         // and make the string readable in a text editor:
+                         blixxstrdata.length(), // numBytes
                          (uint8*)blixxstrdata.getAddress()); // data
 
                 nblixx++;
