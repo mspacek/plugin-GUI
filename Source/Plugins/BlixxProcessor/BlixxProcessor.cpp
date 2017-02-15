@@ -85,12 +85,12 @@ void BlixxProcessor::process(AudioSampleBuffer& buffer,
 
 int BlixxProcessor::checkForEvents(MidiBuffer& events)
 
-
 {
     int numEvents = events.getNumEvents();
     if (numEvents > 0)
     {
-        std::cout << "*** " << numEvents << " events received by Blixx node " << getNodeId() << std::endl;
+        //std::cout << "*** " << numEvents << " events received by Blixx node "
+        //          << getNodeId() << std::endl;
         //std::cout << "Blixx events: " << &events << std::endl;
         MidiBuffer::Iterator i(events);
         MidiMessage message (0xf4); // allocate memory for a MidiMessage for iteration
@@ -106,48 +106,42 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
         {
             const uint8* dataptr = message.getRawData();
             int eventType = *(dataptr+0);
-            int sourceNodeId = *(dataptr+1);
-            //uint8 sourceNodeId = message.getNoteNumber();
+            //int sourceNodeId = *(dataptr+1);
             int eventId = *(dataptr+2);
             int eventChannel = *(dataptr+3);
-            int save = *(dataptr+4);
+            //int save = *(dataptr+4);
 
-            printf("eventType, sourceNodeId, eventId, eventChannel, save, samplePosition: %d, %d, %d, %d, %d, %d\n",
-                    eventType, sourceNodeId, eventId, eventChannel, save, samplePosition);
+            //printf("eventType, sourceNodeId, eventId, eventChannel, save, samplePosition: "
+            //      "%d, %d, %d, %d, %d, %d\n",
+            //      eventType, sourceNodeId, eventId, eventChannel, save, samplePosition);
 
             if (eventType == TTL && eventChannel == vsyncChannel && eventId == RISING)
                 //&& all the other relevant pins are already high
-
             {
                 String blixxstr = "BLIXXFRAME";
                 CharPointer_UTF8 blixxstrdata = blixxstr.toUTF8();
-                //printf("size, length: %zu, %zu\n", blixxstrdata.sizeInBytes(), blixxstrdata.length());
-                //std::cout << "* adding event" << std::endl;
                 addEvent(blixxEvents, // MidiBuffer to add event to
                          MESSAGE, // eventType
                          samplePosition, // sampleNum
                          eventId, // eventID
                          0, // eventChannel
-                         // use length() instead of sizeInBytes(), to avoid saving NULL terminator
-                         // and make the string readable in a text editor:
+                         // use length() instead of sizeInBytes(), to avoid saving NULL
+                         // terminator and make the string readable in a text editor:
                          blixxstrdata.length(), // numBytes
                          (uint8*)blixxstrdata.getAddress()); // data
-
-                nblixx++;
+                ++nblixx;
                 std::cout << "*** detected BLIXX event" << std::endl;
             }
-
         }
 
         if (nblixx > 0)
         {
             // add all blixxEvents to system-wide events buffer:
             events.addEvents(blixxEvents, 0, -1, 0);
-            std::cout << "*** added " << nblixx << " BLIXX events to system event buffer" << std::endl;
+            std::cout << "*** added " << nblixx << " BLIXX events to system event buffer"
+                      << std::endl;
             blixxEvents.clear(); // remove all events from temporary buffer
         }
     }
-
-    return -1;
-
+    return -1; // copied from GenericProcessor.cpp, but is unnecessary
 }
