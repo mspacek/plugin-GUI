@@ -125,9 +125,7 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
                          samplePosition, // sampleNum
                          eventId, // eventID
                          0, // eventChannel
-                         // use length() instead of sizeInBytes(), to avoid saving NULL
-                         // terminator and make the string readable in a text editor:
-                         blixxstrdata.length(), // numBytes
+                         blixxstrdata.sizeInBytes(), // numBytes
                          (uint8*)blixxstrdata.getAddress()); // data
                 ++nblixx;
                 std::cout << "*** detected BLIXX event" << std::endl;
