@@ -46,14 +46,25 @@ String BinaryRecording::getEngineID() const
 void BinaryRecording::openFiles(File rootFolder, int experimentNumber, int recordingNumber)
 {
 	String basepath = rootFolder.getFullPathName() + rootFolder.separatorString + "experiment" + String(experimentNumber);
+	String fullPath = basepath;
+	int nRecordedProcessors = getNumRecordedProcessors();
 	//Open channel files
-	int nProcessors = getNumRecordedProcessors();
-
-	for (int i = 0; i < nProcessors; i++)
+	for (int i = 0; i < nRecordedProcessors; i++)
 	{
 		const RecordProcessorInfo& pInfo = getProcessorInfo(i);
-		File datFile(basepath + "_" + String(pInfo.processorId) + "_" + String(recordingNumber) + ".dat");
-		ScopedPointer<SequentialBlockFile> bFile = new SequentialBlockFile(pInfo.recordedChannels.size(), samplesPerBlock);
+		if (nRecordedProcessors > 1) // exclude the processorId from the .dat filename
+		{
+			fullPath += "_" + String(pInfo.processorId);
+		}
+		if (recordingNumber > 0)
+		{
+			fullPath += "_" + String(recordingNumber);
+		}
+		fullPath += ".dat";
+		File datFile(fullPath);
+		ScopedPointer<SequentialBlockFile> bFile =
+			new SequentialBlockFile(pInfo.recordedChannels.size(),
+									samplesPerBlock);
 		if (bFile->openFile(datFile))
 			m_DataFiles.add(bFile.release());
 	}
@@ -143,9 +154,13 @@ void BinaryRecording::addSpikeElectrode(int index, const SpikeRecordInfo* elec)
 void BinaryRecording::openEventFile(String basepath, int recordingNumber)
 {
 	FILE* chFile;
-	String fullPath = basepath + "_all_channels_" + String(recordingNumber) + ".events";
+	String fullPath = basepath;
 
-
+	if (recordingNumber > 0)
+	{
+		fullPath +=  "_" + String(recordingNumber);
+	}
+	fullPath += ".evt";
 	
 	std::cout << "OPENING FILE: " << fullPath << std::endl;
 
@@ -211,14 +226,15 @@ void BinaryRecording::openSpikeFile(String basePath, SpikeRecordInfo* elec, int 
 
 }
 
-void BinaryRecording::openMessageFile(String basepath, int recordNumber)
+void BinaryRecording::openMessageFile(String basepath, int recordingNumber)
 {
 	FILE* mFile;
-	String fullPath = basepath + "_messages_" + String(recordNumber) + ".events";
-
-	fullPath += "messages";
-
-
+	String fullPath = basepath;
+	if (recordingNumber > 0)
+	{
+		fullPath +=  "_" + String(recordingNumber);
+	}
+	fullPath += ".msg";
 
 	std::cout << "OPENING FILE: " << fullPath << std::endl;
 
