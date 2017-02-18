@@ -79,10 +79,10 @@ public:
     */
     void setParameter(int parameterIndex, float newValue);
 
-	/** returns current experiment number */
-	int getExperimentNumber();
-	/** returns current recording number */
-	int getRecordingNumber();
+    /** returns current experiment number */
+    int getExperimentNumber();
+    /** returns current recording number */
+    int getRecordingNumber();
 
     /** Called by the processor graph for each processor that could record data
     */
@@ -166,8 +166,8 @@ public:
     /** Generate a Matlab-compatible datestring */
     String generateDateString();
 
-	/** Get the last settings.xml in string form. Since the string will be large, returns a const ref.*/
-	const String& getLastSettingsXml() const;
+    /** Get the last settings.xml in string form. Since the string will be large, returns a const ref.*/
+    const String& getLastSettingsXml() const;
 
 private:
 
@@ -202,7 +202,7 @@ private:
     /** Pointers to all event channels */
     Array<Channel*> eventChannelPointers;
 
-	Array<int> channelMap;
+    Array<int> channelMap;
 
     OwnedArray<SpikeRecordInfo> spikeElectrodePointers;
 
@@ -211,7 +211,7 @@ private:
     int experimentNumber;
     bool hasRecorded;
     bool settingsNeeded;
-	std::atomic<bool> setFirstBlock;
+    std::atomic<bool> setFirstBlock;
     /** Generates a default directory name, based on the current date and time */
     String generateDirectoryName();
 
@@ -221,14 +221,14 @@ private:
     /**RecordEngines loaded**/
     OwnedArray<RecordEngine> engineArray;
 
-	ScopedPointer<RecordThread> m_recordThread;
-	ScopedPointer<DataQueue> m_dataQueue;
-	ScopedPointer<EventMsgQueue> m_eventQueue;
-	ScopedPointer<SpikeMsgQueue> m_spikeQueue;
-	
-	Array<int> m_recordedChannelMap;
+    ScopedPointer<RecordThread> m_recordThread;
+    ScopedPointer<DataQueue> m_dataQueue;
+    ScopedPointer<EventMsgQueue> m_eventQueue;
+    ScopedPointer<SpikeMsgQueue> m_spikeQueue;
+    
+    Array<int> m_recordedChannelMap;
 
-	String m_lastSettingsText;
+    String m_lastSettingsText;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RecordNode);
 

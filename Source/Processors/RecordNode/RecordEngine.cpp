@@ -118,7 +118,7 @@ int RecordEngine::getChannelNumInProc (int channel) const
 
 const String& RecordEngine::getLatestSettingsXml() const
 {
-	return AccessClass::getProcessorGraph()->getRecordNode()->getLastSettingsXml();
+    return AccessClass::getProcessorGraph()->getRecordNode()->getLastSettingsXml();
 }
 
 void RecordEngine::startAcquisition() {}

@@ -33,9 +33,9 @@ OriginalRecording::OriginalRecording() : separateFiles(false),
     continuousDataFloatBuffer = new float[10000];
 
     recordMarker = new char[10];*/
-	continuousDataIntegerBuffer.malloc(10000);
-	continuousDataFloatBuffer.malloc(10000);
-	recordMarker.malloc(10);
+    continuousDataIntegerBuffer.malloc(10000);
+    continuousDataFloatBuffer.malloc(10000);
+    recordMarker.malloc(10);
 
     for (int i = 0; i < 9; i++)
     {
@@ -234,12 +234,12 @@ void OriginalRecording::openMessageFile(File rootFolder)
     FILE* mFile;
     String fullPath(rootFolder.getFullPathName() + rootFolder.separatorString);
 
-	fullPath += "messages";
+    fullPath += "messages";
 
-	if (experimentNumber > 1)
-	{
-		fullPath += "_" + String(experimentNumber);
-	}
+    if (experimentNumber > 1)
+    {
+        fullPath += "_" + String(experimentNumber);
+    }
 
     fullPath += ".events";
 
@@ -385,9 +385,9 @@ String OriginalRecording::generateSpikeHeader(SpikeRecordInfo* elec)
 void OriginalRecording::writeEvent(int eventType, const MidiMessage& event, int64 timestamp)
 {
     if (isWritableEvent(eventType))
-		writeTTLEvent(event, timestamp);
+        writeTTLEvent(event, timestamp);
     if (eventType == GenericProcessor::MESSAGE)
-		writeMessage(event, timestamp);
+        writeMessage(event, timestamp);
 }
 
 void OriginalRecording::writeMessage(const MidiMessage& event, int64 timestamp)
@@ -420,19 +420,19 @@ void OriginalRecording::writeTTLEvent(const MidiMessage& event, int64 timestamp)
     const uint8* dataptr = event.getRawData();
 
     //With the new external recording thread, this field has no sense.
-	int16 samplePos = 0;
+    int16 samplePos = 0;
 
     diskWriteLock.enter();
 
-    fwrite(&timestamp,					// ptr
-           8,   							// size of each element
-           1, 		  						// count
-           eventFile);   			// ptr to FILE object
+    fwrite(&timestamp,                  // ptr
+           8,                               // size of each element
+           1,                               // count
+           eventFile);              // ptr to FILE object
 
-    fwrite(&samplePos,							// ptr
-           2,   							// size of each element
-           1, 		  						// count
-           eventFile);   			// ptr to FILE object
+    fwrite(&samplePos,                          // ptr
+           2,                               // size of each element
+           1,                               // count
+           eventFile);              // ptr to FILE object
 
     // write 1st four bytes of event (type, nodeId, eventId, eventChannel)
     fwrite(dataptr, 1, 4, eventFile);
@@ -448,14 +448,14 @@ void OriginalRecording::writeTTLEvent(const MidiMessage& event, int64 timestamp)
 
 void OriginalRecording::writeData(int writeChannel, int realChannel, const float* buffer, int size)
 {
-	int samplesWritten = 0;
+    int samplesWritten = 0;
 
-	//int sourceNodeId = getChannel(realChannel)->sourceNodeId;
+    //int sourceNodeId = getChannel(realChannel)->sourceNodeId;
 
-	//TODO: optimize. Now we use realchannel, we should optimize the whole thing to only use recorded channels
-	samplesSinceLastTimestamp.set(realChannel, 0);
+    //TODO: optimize. Now we use realchannel, we should optimize the whole thing to only use recorded channels
+    samplesSinceLastTimestamp.set(realChannel, 0);
 
-	int nSamples = size;
+    int nSamples = size;
 
             while (samplesWritten < nSamples) // there are still unwritten samples in this buffer
             {
@@ -498,7 +498,7 @@ void OriginalRecording::writeData(int writeChannel, int realChannel, const float
 
 void OriginalRecording::writeContinuousBuffer(const float* data, int nSamples, int writeChannel)
 {
-	int channel = getRealChannel(writeChannel);
+    int channel = getRealChannel(writeChannel);
     // check to see if the file exists
     if (fileArray[channel] == nullptr)
         return;

@@ -40,35 +40,35 @@ class RecordEngine;
 class RecordThread : public Thread
 {
 public:
-	RecordThread(const OwnedArray<RecordEngine>& engines);
-	~RecordThread();
-	void setFileComponents(File rootFolder, int experimentNumber, int recordingNumber);
-	void setChannelMap(const Array<int>& channels);
-	void setQueuePointers(DataQueue* data, EventMsgQueue* events, SpikeMsgQueue* spikes);
+    RecordThread(const OwnedArray<RecordEngine>& engines);
+    ~RecordThread();
+    void setFileComponents(File rootFolder, int experimentNumber, int recordingNumber);
+    void setChannelMap(const Array<int>& channels);
+    void setQueuePointers(DataQueue* data, EventMsgQueue* events, SpikeMsgQueue* spikes);
 
-	void run() override;
+    void run() override;
 
-	void setFirstBlockFlag(bool state);
-	void forceCloseFiles();
+    void setFirstBlockFlag(bool state);
+    void forceCloseFiles();
 
 private:
-	void writeData(const AudioSampleBuffer& buffer, int maxSamples, int maxEvents, int maxSpikes, bool lastBlock = false);
+    void writeData(const AudioSampleBuffer& buffer, int maxSamples, int maxEvents, int maxSpikes, bool lastBlock = false);
 
-	const OwnedArray<RecordEngine>& m_engineArray;
-	Array<int> m_channelArray;
-	
-	DataQueue* m_dataQueue;
-	EventMsgQueue* m_eventQueue;
-	SpikeMsgQueue *m_spikeQueue;
+    const OwnedArray<RecordEngine>& m_engineArray;
+    Array<int> m_channelArray;
+    
+    DataQueue* m_dataQueue;
+    EventMsgQueue* m_eventQueue;
+    SpikeMsgQueue *m_spikeQueue;
 
-	std::atomic<bool> m_receivedFirstBlock;
-	std::atomic<bool> m_cleanExit;
+    std::atomic<bool> m_receivedFirstBlock;
+    std::atomic<bool> m_cleanExit;
 
-	File m_rootFolder;
-	int m_experimentNumber;
-	int m_recordingNumber;
-	int m_numChannels;
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RecordThread);
+    File m_rootFolder;
+    int m_experimentNumber;
+    int m_recordingNumber;
+    int m_numChannels;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RecordThread);
 };
 
 #endif  // RECORDTHREAD_H_INCLUDED

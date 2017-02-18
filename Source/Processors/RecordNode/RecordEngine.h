@@ -46,15 +46,15 @@ struct SpikeRecordInfo
     String name;
     int numChannels;
     int sampleRate;
-	float bitVolts;
+    float bitVolts;
 
     int recordIndex;
 };
 
 struct RecordProcessorInfo
 {
-	int processorId; 
-	Array<int> recordedChannels; //Indexes of the recorded channels. From 0-maxRecordChannels, not 0-totalChannels
+    int processorId; 
+    Array<int> recordedChannels; //Indexes of the recorded channels. From 0-maxRecordChannels, not 0-totalChannels
 };
 
 struct EngineParameter;
@@ -194,10 +194,10 @@ protected:
     */
     int getChannelNumInProc (int channel) const;
 
-	/** Gets the last created settings.xml in text form. Should be called at file opening to get the latest version.
-		Since the string will be large, returns a const reference. It should never be const_casted.
-	*/
-	const String& getLatestSettingsXml() const;
+    /** Gets the last created settings.xml in text form. Should be called at file opening to get the latest version.
+        Since the string will be large, returns a const reference. It should never be const_casted.
+    */
+    const String& getLatestSettingsXml() const;
 
 private:
     Array<int64> timestamps;

@@ -28,45 +28,45 @@
 
 struct CircularBufferIndexes
 {
-	int index1;
-	int size1;
-	int index2;
-	int size2;
+    int index1;
+    int size1;
+    int index2;
+    int size2;
 };
 
 class DataQueue
 {
 public:
-	DataQueue(int blockSize, int nBlocks);
-	~DataQueue();
-	void setChannels(int nChans);
-	void resize(int nBlocks);
-	void getTimestampsForBlock(int idx, Array<int64>& timestamps) const;
+    DataQueue(int blockSize, int nBlocks);
+    ~DataQueue();
+    void setChannels(int nChans);
+    void resize(int nBlocks);
+    void getTimestampsForBlock(int idx, Array<int64>& timestamps) const;
 
-	//Only the methods after this comment are considered thread-safe.
-	//Caution must be had to avoid calling more than one of the methods above simulatenously
-	void writeChannel(const AudioSampleBuffer& buffer, int channel, int sourceChannel, int nSamples, int64 timestamp);
-	bool startRead(Array<CircularBufferIndexes>& indexes, Array<int64>& timestamps, int nMax);
-	const AudioSampleBuffer& getAudioBufferReference() const;
-	void stopRead();
-	
+    //Only the methods after this comment are considered thread-safe.
+    //Caution must be had to avoid calling more than one of the methods above simulatenously
+    void writeChannel(const AudioSampleBuffer& buffer, int channel, int sourceChannel, int nSamples, int64 timestamp);
+    bool startRead(Array<CircularBufferIndexes>& indexes, Array<int64>& timestamps, int nMax);
+    const AudioSampleBuffer& getAudioBufferReference() const;
+    void stopRead();
+    
 
 private:
-	void fillTimestamps(int channel, int index, int size, int64 timestamp);
+    void fillTimestamps(int channel, int index, int size, int64 timestamp);
 
-	OwnedArray<AbstractFifo> m_fifos;
-	AudioSampleBuffer m_buffer;
-	Array<int> m_readSamples;
-	OwnedArray<Array<int64>> m_timestamps;
-	Array<int64> m_lastReadTimestamps;
+    OwnedArray<AbstractFifo> m_fifos;
+    AudioSampleBuffer m_buffer;
+    Array<int> m_readSamples;
+    OwnedArray<Array<int64>> m_timestamps;
+    Array<int64> m_lastReadTimestamps;
 
-	int m_numChans;
-	const int m_blockSize;
-	bool m_readInProgress;
-	int m_numBlocks;
-	int m_maxSize;
+    int m_numChans;
+    const int m_blockSize;
+    bool m_readInProgress;
+    int m_numBlocks;
+    int m_maxSize;
 
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DataQueue);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DataQueue);
 };
 
 

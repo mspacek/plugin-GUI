@@ -47,13 +47,13 @@ public:
     void setParameter(EngineParameter& parameter);
     String getEngineID() const override;
     void openFiles(File rootFolder, int experimentNumber, int recordingNumber) override;
-	void closeFiles() override;
-	void writeData(int writeChannel, int realChannel, const float* buffer, int size) override;
-	void writeEvent(int eventType, const MidiMessage& event, int64 timestamp) override;
-	void addChannel(int index, const Channel* chan) override;
-	void resetChannels() override;
-	void addSpikeElectrode(int index, const SpikeRecordInfo* elec) override;
-	void writeSpike(int electrodeIndex, const SpikeObject& spike, int64 timestamp) override;
+    void closeFiles() override;
+    void writeData(int writeChannel, int realChannel, const float* buffer, int size) override;
+    void writeEvent(int eventType, const MidiMessage& event, int64 timestamp) override;
+    void addChannel(int index, const Channel* chan) override;
+    void resetChannels() override;
+    void addSpikeElectrode(int index, const SpikeRecordInfo* elec) override;
+    void writeSpike(int electrodeIndex, const SpikeObject& spike, int64 timestamp) override;
 
     static RecordEngineManager* getEngineManager();
 
@@ -86,17 +86,17 @@ private:
     /** Holds data that has been converted from float to int16 before
         saving.
     */
-	HeapBlock<int16> continuousDataIntegerBuffer;
+    HeapBlock<int16> continuousDataIntegerBuffer;
     //int16* continuousDataIntegerBuffer;
 
     /** Holds data that has been converted from float to int16 before
         saving.
     */
-	HeapBlock<float> continuousDataFloatBuffer;
+    HeapBlock<float> continuousDataFloatBuffer;
     //float* continuousDataFloatBuffer;
 
     /** Used to indicate the end of each record */
-	HeapBlock<char> recordMarker;
+    HeapBlock<char> recordMarker;
     //char* recordMarker;
 
     AudioSampleBuffer zeroBuffer;

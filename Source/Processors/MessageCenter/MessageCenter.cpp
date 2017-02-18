@@ -30,7 +30,7 @@
 
 MessageCenter::MessageCenter() :
     GenericProcessor("Message Center"), newEventAvailable(false), isRecording(false), sourceNodeId(0), 
-	timestampSource(nullptr), lastTime(0), softTimestamp(0)
+    timestampSource(nullptr), lastTime(0), softTimestamp(0)
 {
 
     setPlayConfigDetails(0, // number of inputs
@@ -74,8 +74,8 @@ void MessageCenter::setParameter(int parameterIndex, float newValue)
 bool MessageCenter::enable()
 {
     messageCenterEditor->startAcquisition();
-	lastTime = Time::getHighResolutionTicks();
-	softTimestamp = 0;
+    lastTime = Time::getHighResolutionTicks();
+    softTimestamp = 0;
     if (sourceNodeId)
     {
         AudioProcessorGraph::Node* node = AccessClass::getProcessorGraph()->getNodeForId(sourceNodeId);
@@ -122,7 +122,7 @@ int64 MessageCenter::getTimestamp(bool softwareTime)
 
 void MessageCenter::process(AudioSampleBuffer& buffer, MidiBuffer& eventBuffer)
 {
-	softTimestamp = Time::getHighResolutionTicks() - lastTime;
+    softTimestamp = Time::getHighResolutionTicks() - lastTime;
     setTimestamp(eventBuffer,getTimestamp());
     if (needsToSendTimestampMessage)
     {
