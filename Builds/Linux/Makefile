@@ -105,7 +105,6 @@ OBJECTS := \
   $(OBJDIR)/DataQueue_d6cc297a.o \
   $(OBJDIR)/RecordThread_fb797372.o \
   $(OBJDIR)/EngineConfigWindow_4fd44ceb.o \
-  $(OBJDIR)/OriginalRecording_d6dc3293.o \
   $(OBJDIR)/RecordEngine_97ef83aa.o \
   $(OBJDIR)/RecordNode_cc21a82a.o \
   $(OBJDIR)/SourceNode_de3985ea.o \
@@ -448,11 +447,6 @@ $(OBJDIR)/RecordThread_fb797372.o: ../../Source/Processors/RecordNode/RecordThre
 $(OBJDIR)/EngineConfigWindow_4fd44ceb.o: ../../Source/Processors/RecordNode/EngineConfigWindow.cpp
 	-@mkdir -p $(OBJDIR)
 	@echo "Compiling EngineConfigWindow.cpp"
-	@$(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-
-$(OBJDIR)/OriginalRecording_d6dc3293.o: ../../Source/Processors/RecordNode/OriginalRecording.cpp
-	-@mkdir -p $(OBJDIR)
-	@echo "Compiling OriginalRecording.cpp"
 	@$(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 
 $(OBJDIR)/RecordEngine_97ef83aa.o: ../../Source/Processors/RecordNode/RecordEngine.cpp

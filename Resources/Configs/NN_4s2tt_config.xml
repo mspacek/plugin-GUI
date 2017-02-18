@@ -2530,12 +2530,6 @@
                 appendText="" recordEngine="KWIK"/>
   <AUDIOEDITOR isMuted="0" volume="100" noiseGate="0"/>
   <RECORDENGINES>
-    <ENGINE id="OPENEPHYS" name="Open Ephys">
-      <PARAMETER id="0" type="bool" value="0"/>
-      <PARAMETER id="1" type="bool" value="0"/>
-      <PARAMETER id="2" type="string" value="CH"/>
-    </ENGINE>
-    <ENGINE id="KWIK" name="Kwik"/>
   </RECORDENGINES>
   <PROCESSORLIST>
     <COLOR ID="801" R="59" G="59" B="59"/>

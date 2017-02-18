@@ -27,7 +27,7 @@
 #include "../../AccessClass.h"
 
 #include "EngineConfigWindow.h"
-#include "OriginalRecording.h"
+//#include "OriginalRecording.h"
 
 RecordEngine::RecordEngine()
     : manager (nullptr)
@@ -222,27 +222,22 @@ int RecordEngineManager::getNumOfBuiltInEngines()
     return 1;
 }
 
-RecordEngineManager* RecordEngineManager::createBuiltInEngineManager (int index)
-{
-    switch (index)
-    {
-        case 0:
-            return OriginalRecording::getEngineManager();
+//RecordEngineManager* RecordEngineManager::createBuiltInEngineManager (int index)
+//{
+    //switch (index)
+    //{
+        //case 0:
+            //return OriginalRecording::getEngineManager();
 
-        default:
-            return nullptr;
-    }
-}
+        //default:
+            //return nullptr;
+    //}
+//}
 
 RecordEngine* RecordEngineManager::instantiateEngine()
 {
     if (creator)
         return creator();
-
-    //Built-in engines
-
-    if (id == "OPENEPHYS")
-        return new OriginalRecording();
 
     return nullptr;
 }

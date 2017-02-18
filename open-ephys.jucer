@@ -478,10 +478,6 @@
                 file="Source/Processors/RecordNode/EngineConfigWindow.cpp"/>
           <FILE id="iSAT0P" name="EngineConfigWindow.h" compile="0" resource="0"
                 file="Source/Processors/RecordNode/EngineConfigWindow.h"/>
-          <FILE id="dpsAhU" name="OriginalRecording.cpp" compile="1" resource="0"
-                file="Source/Processors/RecordNode/OriginalRecording.cpp"/>
-          <FILE id="okexpc" name="OriginalRecording.h" compile="0" resource="0"
-                file="Source/Processors/RecordNode/OriginalRecording.h"/>
           <FILE id="UU77gU" name="RecordEngine.cpp" compile="1" resource="0"
                 file="Source/Processors/RecordNode/RecordEngine.cpp"/>
           <FILE id="NSKXGp" name="RecordEngine.h" compile="0" resource="0" file="Source/Processors/RecordNode/RecordEngine.h"/>
