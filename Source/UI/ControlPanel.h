@@ -368,7 +368,6 @@ private:
     ScopedPointer<CPUMeter> cpuMeter;
     ScopedPointer<DiskSpaceMeter> diskMeter;
     ScopedPointer<FilenameComponent> pathComponent;
-    ScopedPointer<UtilityButton> newDirectoryButton;
     ScopedPointer<ControlPanelButton> cpb;
 
     ScopedPointer<ComboBox> recordSelector;

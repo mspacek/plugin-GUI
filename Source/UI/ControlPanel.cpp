@@ -419,12 +419,6 @@ ControlPanel::ControlPanel(ProcessorGraph* graph_, AudioComponent* audio_)
     recordOptionsButton->setTooltip("Configure options for selected record engine");
     addChildComponent(recordOptionsButton);
 
-    newDirectoryButton = new UtilityButton("+", Font("Small Text", 15, Font::plain));
-    newDirectoryButton->setEnabledState(false);
-    newDirectoryButton->addListener(this);
-    newDirectoryButton->setTooltip("Start a new data directory");
-    addChildComponent(newDirectoryButton);
-
 
 #if defined(__APPLE__)
     const File dataDirectory = CoreServices::getDefaultUserSaveDirectory();
@@ -723,17 +717,13 @@ void ControlPanel::resized()
         pathComponent->setBounds (165, topBound, w - 500, h - 10);
         pathComponent->setVisible (true);
 
-        newDirectoryButton->setBounds (w - h + 4, topBound, h - 10, h - 10);
-        newDirectoryButton->setVisible (true);
-
-        baseNameText->setBounds (165 + w - 490, topBound, 275, h - 10);
+        baseNameText->setBounds (165 + w - 490, topBound, 315, h - 10);
         baseNameText->setVisible (true);
 
     }
     else
     {
         pathComponent->setVisible       (false);
-        newDirectoryButton->setVisible  (false);
         baseNameText->setVisible        (false);
         recordSelector->setVisible      (false);
         recordOptionsButton->setVisible (false);
@@ -754,7 +744,6 @@ void ControlPanel::openState(bool os)
 void ControlPanel::labelTextChanged(Label* label)
 {
     graph->getRecordNode()->newDirectoryNeeded = true;
-    newDirectoryButton->setEnabledState(false);
     masterClock->resetRecordTime();
 }
 
@@ -776,7 +765,6 @@ void ControlPanel::stopRecording()
     graph->setRecordState(false); // turn off recording in processor graph
 
     masterClock->stopRecording();
-    newDirectoryButton->setEnabledState(true);
     backgroundColour = Colour (51, 51, 51);
 
     pathComponent->setEnabled(true);
@@ -790,14 +778,6 @@ void ControlPanel::stopRecording()
 void ControlPanel::buttonClicked(Button* button)
 
 {
-    if (button == newDirectoryButton && newDirectoryButton->getEnabledState())
-    {
-        graph->getRecordNode()->newDirectoryNeeded = true;
-        newDirectoryButton->setEnabledState(false);
-        masterClock->resetRecordTime();
-        return;
-    }
-
     if (button == playButton)
     {
         if (playButton->getToggleState())
@@ -913,7 +893,6 @@ void ControlPanel::comboBoxChanged(ComboBox* combo)
     AccessClass::getProcessorGraph()->getRecordNode()->registerRecordEngine(re);
 
     graph->getRecordNode()->newDirectoryNeeded = true;
-    newDirectoryButton->setEnabledState(false);
     masterClock->resetRecordTime();
 
     lastEngineIndex=combo->getSelectedId()-1;
