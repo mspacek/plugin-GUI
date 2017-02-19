@@ -80,7 +80,7 @@ EditorViewport::EditorViewport()
 
 EditorViewport::~EditorViewport()
 {
-	signalChainManager = nullptr;
+    signalChainManager = nullptr;
     deleteAllChildren();
 }
 
@@ -233,8 +233,8 @@ void EditorViewport::itemDragExit(const SourceDetails& dragSourceDetails)
 void EditorViewport::itemDropped(const SourceDetails& dragSourceDetails)
 {
 
-	var descr = dragSourceDetails.description;
-	Array<var>* description = descr.getArray();
+    var descr = dragSourceDetails.description;
+    Array<var>* description = descr.getArray();
 
     if (canEdit)
     {
@@ -1195,13 +1195,13 @@ XmlElement* EditorViewport::createNodeXml(GenericEditor* editor,
 
     e->setAttribute("name", name);
     e->setAttribute("insertionPoint", insertionPt);
-	e->setAttribute("pluginName", source->getPluginName());
-	e->setAttribute("pluginType", (int)(source->getPluginType()));
-	e->setAttribute("pluginIndex", source->getIndex());
-	e->setAttribute("libraryName", source->getLibName());
-	e->setAttribute("libraryVersion", source->getLibVersion());
-	e->setAttribute("isSource", source->isSource());
-	e->setAttribute("isSink", source->isSink());
+    e->setAttribute("pluginName", source->getPluginName());
+    e->setAttribute("pluginType", (int)(source->getPluginType()));
+    e->setAttribute("pluginIndex", source->getIndex());
+    e->setAttribute("libraryName", source->getLibName());
+    e->setAttribute("libraryVersion", source->getLibVersion());
+    e->setAttribute("isSource", source->isSource());
+    e->setAttribute("isSink", source->isSink());
 
     /**Saves individual processor parameters to XML */
     std::cout << "Create subnodes with parameters" << std::endl;
@@ -1225,7 +1225,7 @@ XmlElement* EditorViewport::switchNodeXml(GenericProcessor* processor)
 
 const String EditorViewport::saveState(File fileToUse, String& xmlText)
 {
-	return saveState(fileToUse, &xmlText);
+    return saveState(fileToUse, &xmlText);
 }
 
 const String EditorViewport::saveState(File fileToUse, String* xmlText)
@@ -1266,8 +1266,8 @@ const String EditorViewport::saveState(File fileToUse, String* xmlText)
     XmlElement* version = info->createNewChildElement("VERSION");
     version->addTextElement(JUCEApplication::getInstance()->getApplicationVersion());
 
-	XmlElement* pluginAPIVersion = info->createNewChildElement("PLUGIN_API_VERSION");
-	pluginAPIVersion->addTextElement(String(PLUGIN_API_VER));
+    XmlElement* pluginAPIVersion = info->createNewChildElement("PLUGIN_API_VERSION");
+    pluginAPIVersion->addTextElement(String(PLUGIN_API_VER));
 
     Time currentTime = Time::getCurrentTime();
 
@@ -1407,12 +1407,12 @@ const String EditorViewport::saveState(File fileToUse, String* xmlText)
 
     error += currentFile.getFileName();
 
-	if (xmlText != nullptr)
-	{
-		(*xmlText) = xml->createDocument(String::empty);
-		if ((*xmlText).isEmpty())
-			(*xmlText) = "Couldn't create configuration xml";
-	}
+    if (xmlText != nullptr)
+    {
+        (*xmlText) = xml->createDocument(String::empty);
+        if ((*xmlText).isEmpty())
+            (*xmlText) = "Couldn't create configuration xml";
+    }
 
     delete xml;
 
@@ -1453,9 +1453,9 @@ const String EditorViewport::loadState(File fileToLoad)
     }
 
     bool sameVersion = false;
-	bool pluginAPI = false;
+    bool pluginAPI = false;
     String versionString;
-	
+
     forEachXmlChildElement(*xml, element)
     {
         if (element->hasTagName("INFO"))
@@ -1471,13 +1471,13 @@ const String EditorViewport::loadState(File fileToLoad)
                     if (versionString.equalsIgnoreCase(JUCEApplication::getInstance()->getApplicationVersion()))
                         sameVersion = true;
                 }
-				else if (element2->hasTagName("PLUGIN_API_VERSION"))
-				{
-					//API version should be the same between the same binary release and, in any case, do not necessarily
-					//change processor configurations. We simply check if the save file has been written from a plugin
-					//capable build, as the save format itself is different.
-					pluginAPI = true;
-				}
+                else if (element2->hasTagName("PLUGIN_API_VERSION"))
+                {
+                    //API version should be the same between the same binary release and, in any case, do not necessarily
+                    //change processor configurations. We simply check if the save file has been written from a plugin
+                    //capable build, as the save format itself is different.
+                    pluginAPI = true;
+                }
             }
             break;
         }
@@ -1507,14 +1507,14 @@ const String EditorViewport::loadState(File fileToLoad)
             return "Failed To Open " + fileToLoad.getFileName();
 
     }
-	if (!pluginAPI)
-	{
-		String responseString = "Your configuration file was saved from a non-plugin version of the GUI.\n";
-		responseString += "Save files from non-plugin versions are incompatible with the current load system.\n";
-		responseString += "The chain file will not load.";
-		AlertWindow::showMessageBox(AlertWindow::WarningIcon, "Non-plugin save file", responseString);
-		return "Failed To Open " + fileToLoad.getFileName();
-	}
+    if (!pluginAPI)
+    {
+        String responseString = "Your configuration file was saved from a non-plugin version of the GUI.\n";
+        responseString += "Save files from non-plugin versions are incompatible with the current load system.\n";
+        responseString += "The chain file will not load.";
+        AlertWindow::showMessageBox(AlertWindow::WarningIcon, "Non-plugin save file", responseString);
+        return "Failed To Open " + fileToLoad.getFileName();
+    }
     clearSignalChain();
 
     String description;// = " ";
@@ -1549,15 +1549,15 @@ const String EditorViewport::loadState(File fileToLoad)
                     }
 
                     //See ProcessorGraph::createProcessorFromDescription for description info
-					Array<var> procDesc;
-					procDesc.add(false);
-					procDesc.add(processor->getStringAttribute("pluginName"));
-					procDesc.add(processor->getIntAttribute("pluginType"));
-					procDesc.add(processor->getIntAttribute("pluginIndex"));
-					procDesc.add(processor->getStringAttribute("libraryName"));
-					procDesc.add(processor->getIntAttribute("libraryVersion"));
-					procDesc.add(processor->getBoolAttribute("isSource"));
-					procDesc.add(processor->getBoolAttribute("isSink"));
+                    Array<var> procDesc;
+                    procDesc.add(false);
+                    procDesc.add(processor->getStringAttribute("pluginName"));
+                    procDesc.add(processor->getIntAttribute("pluginType"));
+                    procDesc.add(processor->getIntAttribute("pluginIndex"));
+                    procDesc.add(processor->getStringAttribute("libraryName"));
+                    procDesc.add(processor->getIntAttribute("libraryVersion"));
+                    procDesc.add(processor->getBoolAttribute("isSource"));
+                    procDesc.add(processor->getBoolAttribute("isSink"));
                     SourceDetails sd = SourceDetails(procDesc,
                                                      0,
                                                      Point<int>(0,0));

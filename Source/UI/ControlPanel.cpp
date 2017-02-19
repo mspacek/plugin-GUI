@@ -479,7 +479,7 @@ void ControlPanel::setRecordState(bool t)
 bool ControlPanel::getRecordingState()
 {
 
-	return recordButton->getToggleState();
+    return recordButton->getToggleState();
 
 }
 
@@ -494,12 +494,12 @@ void ControlPanel::setRecordingDirectory(String path)
 
 bool ControlPanel::getAcquisitionState()
 {
-	return playButton->getToggleState();
+    return playButton->getToggleState();
 }
 
 void ControlPanel::setAcquisitionState(bool state)
 {
-	playButton->setToggleState(state, sendNotification);
+    playButton->setToggleState(state, sendNotification);
 }
 
 
@@ -508,52 +508,52 @@ void ControlPanel::updateChildComponents()
 
     pathComponent->addListener(AccessClass::getProcessorGraph()->getRecordNode());
     AccessClass::getProcessorGraph()->getRecordNode()->filenameComponentChanged(pathComponent);
-	updateRecordEngineList();
+    updateRecordEngineList();
 
 }
 
 void ControlPanel::updateRecordEngineList()
 {
-	int selectedEngine = recordSelector->getSelectedId();
-	recordSelector->clear(dontSendNotification);
-	recordEngines.clear();
-	int id = 1;
+    int selectedEngine = recordSelector->getSelectedId();
+    recordSelector->clear(dontSendNotification);
+    recordEngines.clear();
+    int id = 1;
 
-	for (int i = 0; i < AccessClass::getPluginManager()->getNumRecordEngines(); i++)
-	{
-		Plugin::RecordEngineInfo info;
-		info = AccessClass::getPluginManager()->getRecordEngineInfo(i);
-		recordSelector->addItem(info.name, id++);
-		recordEngines.add(info.creator());
-	}
-	if (selectedEngine < 1)
-		recordSelector->setSelectedId(1, sendNotification);
-	else
-		recordSelector->setSelectedId(selectedEngine, sendNotification);
+    for (int i = 0; i < AccessClass::getPluginManager()->getNumRecordEngines(); i++)
+    {
+        Plugin::RecordEngineInfo info;
+        info = AccessClass::getPluginManager()->getRecordEngineInfo(i);
+        recordSelector->addItem(info.name, id++);
+        recordEngines.add(info.creator());
+    }
+    if (selectedEngine < 1)
+        recordSelector->setSelectedId(1, sendNotification);
+    else
+        recordSelector->setSelectedId(selectedEngine, sendNotification);
 }
 
 String ControlPanel::getSelectedRecordEngineId()
 {
-	return recordEngines[recordSelector->getSelectedId() - 1]->getID();
+    return recordEngines[recordSelector->getSelectedId() - 1]->getID();
 }
 
 bool ControlPanel::setSelectedRecordEngineId(String id)
 {
-	if (getAcquisitionState())
-	{
-		return false;
-	}
+    if (getAcquisitionState())
+    {
+        return false;
+    }
 
-	int nEngines = recordEngines.size();
-	for (int i = 0; i < nEngines; ++i)
-	{
-		if (recordEngines[i]->getID() == id)
-		{
-			recordSelector->setSelectedId(i + 1, sendNotificationSync);
-			return true;
-		}
-	}
-	return false;
+    int nEngines = recordEngines.size();
+    for (int i = 0; i < nEngines; ++i)
+    {
+        if (recordEngines[i]->getID() == id)
+        {
+            recordSelector->setSelectedId(i + 1, sendNotificationSync);
+            return true;
+        }
+    }
+    return false;
 }
 
 void ControlPanel::createPaths()
@@ -947,15 +947,15 @@ void ControlPanel::disableCallbacks()
 
 // void ControlPanel::actionListenerCallback(const String & msg)
 // {
-// 	//std::cout << "Message Received." << std::endl;
-// 	if (playButton->getToggleState()) {
-// 		cpuMeter->updateCPU(audio->deviceManager.getCpuUsage());
-// 	}
+//  //std::cout << "Message Received." << std::endl;
+//  if (playButton->getToggleState()) {
+//      cpuMeter->updateCPU(audio->deviceManager.getCpuUsage());
+//  }
 
-// 	cpuMeter->repaint();
+//  cpuMeter->repaint();
 
-// 	diskMeter->updateDiskSpace(graph->getRecordNode()->getFreeSpace());
-// 	diskMeter->repaint();
+//  diskMeter->updateDiskSpace(graph->getRecordNode()->getFreeSpace());
+//  diskMeter->repaint();
 
 
 // }
@@ -1027,7 +1027,7 @@ void ControlPanel::saveStateToXml(XmlElement* xml)
 
     XmlElement* controlPanelState = xml->createNewChildElement("CONTROLPANEL");
     controlPanelState->setAttribute("isOpen",open);
-	controlPanelState->setAttribute("recordPath", pathComponent->getCurrentFile().getFullPathName());
+    controlPanelState->setAttribute("recordPath", pathComponent->getCurrentFile().getFullPathName());
     controlPanelState->setAttribute("baseNameText",baseNameText->getText());
     controlPanelState->setAttribute("recordEngine",recordEngines[recordSelector->getSelectedId()-1]->getID());
 
@@ -1051,20 +1051,20 @@ void ControlPanel::loadStateFromXml(XmlElement* xml)
     {
         if (xmlNode->hasTagName("CONTROLPANEL"))
         {
-			String recordPath = xmlNode->getStringAttribute("recordPath", String::empty);
-			if (!recordPath.isEmpty())
-			{
-				pathComponent->setCurrentFile(File(recordPath), true, sendNotificationAsync);
-			}
+            String recordPath = xmlNode->getStringAttribute("recordPath", String::empty);
+            if (!recordPath.isEmpty())
+            {
+                pathComponent->setCurrentFile(File(recordPath), true, sendNotificationAsync);
+            }
             baseNameText->setText(xmlNode->getStringAttribute("baseNameText", ""), dontSendNotification);
-			String selectedEngine = xmlNode->getStringAttribute("recordEngine");
-			for (int i = 0; i < recordEngines.size(); i++)
-			{
-				if (recordEngines[i]->getID() == selectedEngine)
-				{
-					recordSelector->setSelectedId(i + 1, sendNotification);
-				}
-			}
+            String selectedEngine = xmlNode->getStringAttribute("recordEngine");
+            for (int i = 0; i < recordEngines.size(); i++)
+            {
+                if (recordEngines[i]->getID() == selectedEngine)
+                {
+                    recordSelector->setSelectedId(i + 1, sendNotification);
+                }
+            }
 
             bool isOpen = xmlNode->getBoolAttribute("isOpen");
             openState(isOpen);

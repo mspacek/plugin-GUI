@@ -302,23 +302,23 @@ std::vector<float> SpikeSorter::getElectrodeVoltageScales(int electrodeID)
 
 // void SpikeSorter::setElectrodeAdvancerOffset(int i, double v)
 // {
-// 	mut.enter();
-// 	if (i >= 0)
-// 	{
-// 		electrodes[i]->depthOffsetMM = v;
-// 		addNetworkEventToQueue(StringTS("NewElectrodeDepthOffset "+String(electrodes[i]->electrodeID)+" "+String(v,4)));
-// 	}
-// 	mut.exit();
+//  mut.enter();
+//  if (i >= 0)
+//  {
+//      electrodes[i]->depthOffsetMM = v;
+//      addNetworkEventToQueue(StringTS("NewElectrodeDepthOffset "+String(electrodes[i]->electrodeID)+" "+String(v,4)));
+//  }
+//  mut.exit();
 // }
 
 // void SpikeSorter::setElectrodeAdvancer(int i, int ID)
 // {
-// 	mut.enter();
-// 	if (i >= 0)
-// 	{
-// 		electrodes[i]->advancerID = ID;
-// 	}
-// 	mut.exit();
+//  mut.enter();
+//  if (i >= 0)
+//  {
+//      electrodes[i]->advancerID = ID;
+//  }
+//  mut.exit();
 // }
 
 void SpikeSorter::addNewUnit(int electrodeID, int newUnitID, uint8 r, uint8 g, uint8 b)
@@ -388,7 +388,7 @@ int SpikeSorter::getDACassignment(int dacchannel)
         Array<int> dacChannels = th->getDACchannels();
         return dacChannels[dacchannel];
     }
-	*/
+    */
     return -1; // not assigned
 }
 
@@ -521,11 +521,11 @@ bool SpikeSorter::removeElectrode(int index)
 void SpikeSorter::setElectrodeName(int index, String newName)
 {
     mut.enter();
-	if ((electrodes.size() > 0) && (index > 0))
-	{
-		electrodes[index - 1]->name = newName;
-	//	updateSinks(electrodes[index - 1]->electrodeID, newName);
-	}
+    if ((electrodes.size() > 0) && (index > 0))
+    {
+        electrodes[index - 1]->name = newName;
+    //  updateSinks(electrodes[index - 1]->electrodeID, newName);
+    }
     mut.exit();
 }
 
@@ -795,16 +795,16 @@ void SpikeSorter::startRecording()
 
 // int64 SpikeSorter::getExtrapolatedHardwareTimestamp(int64 softwareTS)
 // {
-// 	Time timer;
-// 	// this is the case in which messages arrived before the data stream started....
-// 	if (hardware_timestamp == 0)
-// 		return 0;
+//  Time timer;
+//  // this is the case in which messages arrived before the data stream started....
+//  if (hardware_timestamp == 0)
+//      return 0;
 
-// 	// compute how many ticks passed since the last known software-hardware pair
-// 	int64 ticksPassed = software_timestamp-softwareTS;
-// 	float secondPassed = (float)ticksPassed / timer.getHighResolutionTicksPerSecond();
-// 	// adjust hardware stamp accordingly
-// 	return hardware_timestamp + secondPassed*getSampleRate();
+//  // compute how many ticks passed since the last known software-hardware pair
+//  int64 ticksPassed = software_timestamp-softwareTS;
+//  float secondPassed = (float)ticksPassed / timer.getHighResolutionTicksPerSecond();
+//  // adjust hardware stamp accordingly
+//  return hardware_timestamp + secondPassed*getSampleRate();
 // }
 
 
@@ -812,11 +812,11 @@ void SpikeSorter::startRecording()
 
 // void SpikeSorter::postTimestamppedStringToMidiBuffer(StringTS s, MidiBuffer& events)
 // {
-// 	uint8* msg_with_ts = new uint8[s.len+8]; // for the two timestamps
-// 	memcpy(msg_with_ts, s.str, s.len);
-// 	memcpy(msg_with_ts+s.len, &s.timestamp, 8);
+//  uint8* msg_with_ts = new uint8[s.len+8]; // for the two timestamps
+//  memcpy(msg_with_ts, s.str, s.len);
+//  memcpy(msg_with_ts+s.len, &s.timestamp, 8);
 
-// 	addEvent(events,           // eventBuffer
+//  addEvent(events,           // eventBuffer
 //              (uint8) NETWORK,          // type
 //              0,                // sampleNum
 //              0,                // eventId
@@ -824,7 +824,7 @@ void SpikeSorter::startRecording()
 //              (uint8) s.len+8,  // numBytes
 //              msg_with_ts);     // eventData
 
-// 	delete msg_with_ts;
+//  delete msg_with_ts;
 // }
 
 void SpikeSorter::handleEvent(int eventType, MidiMessage& event, int sampleNum)
@@ -839,20 +839,20 @@ void SpikeSorter::handleEvent(int eventType, MidiMessage& event, int sampleNum)
 
 // void SpikeSorter::addNetworkEventToQueue(StringTS S)
 // {
-// 	StringTS copy(S);
-// 	getUIComponent()->getLogWindow()->addLineToLog(copy.getString());
-// 	eventQueue.push(copy);
+//  StringTS copy(S);
+//  getUIComponent()->getLogWindow()->addLineToLog(copy.getString());
+//  eventQueue.push(copy);
 // }
 
 
 // void SpikeSorter::postEventsInQueue(MidiBuffer& events)
 // {
-// 	while (eventQueue.size() > 0)
-// 	{
-// 		StringTS msg = eventQueue.front();
-// 		postTimestamppedStringToMidiBuffer(msg,events);
-// 		eventQueue.pop();
-// 	}
+//  while (eventQueue.size() > 0)
+//  {
+//      StringTS msg = eventQueue.front();
+//      postTimestamppedStringToMidiBuffer(msg,events);
+//      eventQueue.pop();
+//  }
 // }
 
 
@@ -986,12 +986,12 @@ void SpikeSorter::process(AudioSampleBuffer& buffer,
                         /*
                         bool perfectMatch = true;
                         for (int k=0;k<40;k++) {
-                        	perfectMatch = perfectMatch & (prevSpike.data[k] == newSpike.data[k]);
+                            perfectMatch = perfectMatch & (prevSpike.data[k] == newSpike.data[k]);
                         }
                         if (perfectMatch)
                         {
-                        	int x;
-                        	x++;
+                            int x;
+                            x++;
                         }
                         */
 
@@ -1172,43 +1172,43 @@ Array<Electrode*> SpikeSorter::getElectrodes()
 
 // double SpikeSorter::getAdvancerPosition(int advancerID)
 // {
-// 	ProcessorGraph *g = getProcessorGraph();
-// 	Array<GenericProcessor*> p = g->getListOfProcessors();
-// 	for (int k=0;k<p.size();k++)
-// 	{
-// 		if (p[k] != nullptr)
-// 		{
-// 			if (p[k]->getName() == "Advancers")
-// 			{
-// 				AdvancerNode *node = (AdvancerNode*)p[k];
-// 				return node->getAdvancerPosition(advancerID);
-// 			}
-// 		}
-// 	}
-// 	return 0.0;
+//  ProcessorGraph *g = getProcessorGraph();
+//  Array<GenericProcessor*> p = g->getListOfProcessors();
+//  for (int k=0;k<p.size();k++)
+//  {
+//      if (p[k] != nullptr)
+//      {
+//          if (p[k]->getName() == "Advancers")
+//          {
+//              AdvancerNode *node = (AdvancerNode*)p[k];
+//              return node->getAdvancerPosition(advancerID);
+//          }
+//      }
+//  }
+//  return 0.0;
 // }
 
 // double SpikeSorter::getElectrodeDepth(int electrodeID)
 // {
-// 	for (int k=0;k<electrodes.size();k++)
-// 	{
-// 		if (electrodes[k]->electrodeID == electrodeID)
-// 		{
-// 			double currentAdvancerPos = getAdvancerPosition(electrodes[k]->advancerID);
-// 			return electrodes[k]->depthOffsetMM + currentAdvancerPos;
-// 		}
-// 	}
-// 	return 0.0;
+//  for (int k=0;k<electrodes.size();k++)
+//  {
+//      if (electrodes[k]->electrodeID == electrodeID)
+//      {
+//          double currentAdvancerPos = getAdvancerPosition(electrodes[k]->advancerID);
+//          return electrodes[k]->depthOffsetMM + currentAdvancerPos;
+//      }
+//  }
+//  return 0.0;
 // }
 
 
 // double SpikeSorter::getSelectedElectrodeDepth()
 // {
-// 	if (electrodes.size() == 0)
-// 	return 0.0;
+//  if (electrodes.size() == 0)
+//  return 0.0;
 
-// 	double currentAdvancerPos = getAdvancerPosition(electrodes[currentElectrode]->advancerID);
-// 	return electrodes[currentElectrode]->depthOffsetMM + currentAdvancerPos;
+//  double currentAdvancerPos = getAdvancerPosition(electrodes[currentElectrode]->advancerID);
+//  return electrodes[currentElectrode]->depthOffsetMM + currentAdvancerPos;
 // }
 void SpikeSorter::saveCustomParametersToXml(XmlElement* parentElement)
 {
@@ -1220,7 +1220,7 @@ void SpikeSorter::saveCustomParametersToXml(XmlElement* parentElement)
     mainNode->setAttribute("activeElectrode", ed->getSelectedElectrode()-1);
     mainNode->setAttribute("numPreSamples", numPreSamples);
     mainNode->setAttribute("numPostSamples", numPostSamples);
-    mainNode->setAttribute("autoDACassignment",	autoDACassignment);
+    mainNode->setAttribute("autoDACassignment", autoDACassignment);
     mainNode->setAttribute("syncThresholds",syncThresholds);
     mainNode->setAttribute("uniqueID",uniqueID);
     mainNode->setAttribute("flipSignal",flipSignal);
@@ -1358,7 +1358,7 @@ void SpikeSorter::loadCustomParametersFromXml()
         }
     }
     SpikeSorterEditor* ed = (SpikeSorterEditor*) getEditor();
-    //	ed->updateAdvancerList();
+    //  ed->updateAdvancerList();
 
     if (currentElectrode >= 0)
     {
@@ -1536,8 +1536,8 @@ void SpikeSorter::updateSinks(int electrodeID, bool rem)
         /*
         if (p[k]->getName() == "Spike Viewer")
         {
-        	SpikeSorter* node = (SpikeSorter*)p[k];
-        	node->syncWithSpikeSorter();
+            SpikeSorter* node = (SpikeSorter*)p[k];
+            node->syncWithSpikeSorter();
         }
         */
     }
@@ -1634,58 +1634,58 @@ void SpikeSorter::updateSinks(int electrodeID)
 
 
 Histogram::Histogram(float _minValue, float _maxValue, float _resolution, bool _throwOutsideSamples) :
-	minValue(_minValue), maxValue(_maxValue), resolution(_resolution), throwOutsideSamples(_throwOutsideSamples)
+    minValue(_minValue), maxValue(_maxValue), resolution(_resolution), throwOutsideSamples(_throwOutsideSamples)
 {
-	numBins = 1+ abs(maxValue-minValue) / resolution;
-	binCounts = new unsigned long[numBins];
-	binCenters = new float[numBins];
-	float deno = (numBins-1)/abs(maxValue-minValue);
-	for (int k=0;k<numBins;k++)
-	{
-		binCounts[k] = 0;
-		binCenters[k] = minValue + k/deno;
-	}
+    numBins = 1+ abs(maxValue-minValue) / resolution;
+    binCounts = new unsigned long[numBins];
+    binCenters = new float[numBins];
+    float deno = (numBins-1)/abs(maxValue-minValue);
+    for (int k=0;k<numBins;k++)
+    {
+        binCounts[k] = 0;
+        binCenters[k] = minValue + k/deno;
+    }
 }
 //
 //Histogram::Histogram(float _minValue, float _maxValue, int _numBins, bool _throwOutsideSamples) :
-//	minValue(_minValue), maxValue(_maxValue), numBins(_numBins), throwOutsideSamples(_throwOutsideSamples)
+//  minValue(_minValue), maxValue(_maxValue), numBins(_numBins), throwOutsideSamples(_throwOutsideSamples)
 //{
-//	resolution = abs(maxValue-minValue) / numBins ;
-//	binCounts = new int[numBins];
-//	binCenters = new float[numBins];
-//	for (int k=0;k<numBins;k++)
-//	{
-//		binCounts[k] = 0;
-//		binCenters[k] = minValue + k/(numBins-1)*resolution;
-//	}
+//  resolution = abs(maxValue-minValue) / numBins ;
+//  binCounts = new int[numBins];
+//  binCenters = new float[numBins];
+//  for (int k=0;k<numBins;k++)
+//  {
+//      binCounts[k] = 0;
+//      binCenters[k] = minValue + k/(numBins-1)*resolution;
+//  }
 //
 //}
 
 void Histogram::clear()
 {
 for (int k=0;k<numBins;k++)
-	{
-		binCounts[k] = 0;
-	}
+    {
+        binCounts[k] = 0;
+    }
 }
 
 
 void Histogram::addSamples(float *Samples, int numSamples) {
-	for (int k=0;k<numSamples;k++)
-	{
-		int indx = ceil( (Samples[k] - minValue) / (maxValue-minValue) * (numBins-1));
-		if (indx >= 0 && indx < numBins)
-			binCounts[indx]++;
-	}
+    for (int k=0;k<numSamples;k++)
+    {
+        int indx = ceil( (Samples[k] - minValue) / (maxValue-minValue) * (numBins-1));
+        if (indx >= 0 && indx < numBins)
+            binCounts[indx]++;
+    }
 }
 
 Histogram::~Histogram()
 {
-		delete [] binCounts;
-		delete [] binCenters;
+        delete [] binCounts;
+        delete [] binCenters;
 }
 
-	*/
+    */
 
 
 
@@ -1706,9 +1706,9 @@ Histogram::~Histogram()
 //            numCh = NumCh;
 //            samplingRate = SamplingRate;
 //            Buf.resize(numCh);
-//			for (int ch=0;ch<numCh;ch++) {
-//				Buf[ch].resize(NumSamplesToHoldPerChannel);
-//			}
+//          for (int ch=0;ch<numCh;ch++) {
+//              Buf[ch].resize(NumSamplesToHoldPerChannel);
+//          }
 //            BufTS_H.resize(NumSamplesToHoldPerChannel);
 //            BufTS_S.resize(NumSamplesToHoldPerChannel);
 //            bufLen = NumSamplesToHoldPerChannel;
@@ -1724,9 +1724,9 @@ Histogram::~Histogram()
 //
 //std::vector<double> circularBuffer::getDataArray(int channel, int N)
 //{
-//	std::vector<double> LongArray;
-//	LongArray.resize(N);
-//	mut.enter();
+//  std::vector<double> LongArray;
+//  LongArray.resize(N);
+//  mut.enter();
 //
 //            int p = ptr - 1;
 //            for (int k = 0; k < N; k++)
@@ -1742,49 +1742,49 @@ Histogram::~Histogram()
 //
 //void circularBuffer::addDataToBuffer(std::vector<std::vector<double>> Data, double SoftwareTS, double HardwareTS)
 //{
-//	mut.enter();
-//	int iNumPoints = Data[0].size();
-//	for (int k = 0; k < iNumPoints; k++)
-//	{
-//		BufTS_H[ptr] = HardwareTS + k;
-//		BufTS_S[ptr] = SoftwareTS + k / samplingRate;
-//		for (int ch = 0; ch < numCh; ch++)
-//		{
-//			Buf[ch, ptr] = Data[ch, k];
-//		}
-//		ptr++;
+//  mut.enter();
+//  int iNumPoints = Data[0].size();
+//  for (int k = 0; k < iNumPoints; k++)
+//  {
+//      BufTS_H[ptr] = HardwareTS + k;
+//      BufTS_S[ptr] = SoftwareTS + k / samplingRate;
+//      for (int ch = 0; ch < numCh; ch++)
+//      {
+//          Buf[ch, ptr] = Data[ch, k];
+//      }
+//      ptr++;
 //
-//		if (ptr == bufLen)
-//		{
-//			ptr = 0;
-//		}
-//		numSamplesInBuf++;
-//		if (numSamplesInBuf >= bufLen)
-//		{
-//			numSamplesInBuf = bufLen;
-//		}
-//	}
-//	mut.exit();
+//      if (ptr == bufLen)
+//      {
+//          ptr = 0;
+//      }
+//      numSamplesInBuf++;
+//      if (numSamplesInBuf >= bufLen)
+//      {
+//          numSamplesInBuf = bufLen;
+//      }
+//  }
+//  mut.exit();
 //}
 //
 //
 //double circularBuffer::findThresholdForChannel(int channel)
 //{
-//	// Run median on analog input
-//	double numSamplesPerSecond = 30000;
-//	std::vector<double> LongArray = getDataArray(channel, numSamplesPerSecond*5);
+//  // Run median on analog input
+//  double numSamplesPerSecond = 30000;
+//  std::vector<double> LongArray = getDataArray(channel, numSamplesPerSecond*5);
 //
-//	for (int k = 0; k < LongArray.size(); k++)
-//		LongArray[k] = fabs(LongArray[k]);
+//  for (int k = 0; k < LongArray.size(); k++)
+//      LongArray[k] = fabs(LongArray[k]);
 //
-//	std::sort (LongArray.begin(), LongArray.begin()+LongArray.size());           //(12 32 45 71)26 80 53 33
+//  std::sort (LongArray.begin(), LongArray.begin()+LongArray.size());           //(12 32 45 71)26 80 53 33
 //
 //
-//	int Middle = LongArray.size() / 2;
-//	double Median = LongArray[Middle];
-//	double NewThres = -4.0F * Median / 0.675F;
+//  int Middle = LongArray.size() / 2;
+//  double Median = LongArray[Middle];
+//  double NewThres = -4.0F * Median / 0.675F;
 //
-//	return NewThres;
+//  return NewThres;
 //}
 
 
@@ -1933,28 +1933,28 @@ void ContinuousCircularBuffer::update(std::vector<std::vector<bool>> contdata, i
 /*
 void ContinuousCircularBuffer::AddDataToBuffer(std::vector<std::vector<double>> lfp, double soft_ts)
 {
-	mut.enter();
-	int numpts = lfp[0].size();
-	for (int k = 0; k < numpts / subSampling; k++)
-	{
-		valid[ptr] = true;
-		for (int ch = 0; ch < numCh; ch++)
-		{
-			Buf[ch][ptr] = lfp[ch][k];
-			TS[ptr] = soft_ts + (double)(k * subSampling) / samplingRate;
-		}
-		ptr++;
-		if (ptr == bufLen)
-		{
-			ptr = 0;
-		}
-		numSamplesInBuf++;
-		if (numSamplesInBuf >= bufLen)
-		{
-			numSamplesInBuf = bufLen;
-		}
-	}
-	mut.exit();
+    mut.enter();
+    int numpts = lfp[0].size();
+    for (int k = 0; k < numpts / subSampling; k++)
+    {
+        valid[ptr] = true;
+        for (int ch = 0; ch < numCh; ch++)
+        {
+            Buf[ch][ptr] = lfp[ch][k];
+            TS[ptr] = soft_ts + (double)(k * subSampling) / samplingRate;
+        }
+        ptr++;
+        if (ptr == bufLen)
+        {
+            ptr = 0;
+        }
+        numSamplesInBuf++;
+        if (numSamplesInBuf >= bufLen)
+        {
+            numSamplesInBuf = bufLen;
+        }
+    }
+    mut.exit();
 }
 */
 

@@ -381,49 +381,49 @@ String NetworkEvents::handleSpecialMessages (StringTS msg)
     std::vector<String> input = msg.splitString(' ');
     if (input[0] == "StartRecord")
     {
-    	 getUIComponent()->getLogWindow()->addLineToLog("Remote triggered start recording");
+         getUIComponent()->getLogWindow()->addLineToLog("Remote triggered start recording");
 
-    	if (input.size() > 1)
-    	{
-    		getUIComponent()->getLogWindow()->addLineToLog("Remote setting session name to "+input[1]);
-    		// session name was also given.
-    		getProcessorGraph()->getRecordNode()->setDirectoryName(input[1]);
-    	}
+        if (input.size() > 1)
+        {
+            getUIComponent()->getLogWindow()->addLineToLog("Remote setting session name to "+input[1]);
+            // session name was also given.
+            getProcessorGraph()->getRecordNode()->setDirectoryName(input[1]);
+        }
         const MessageManagerLock mmLock;
-    	getControlPanel()->recordButton->setToggleState(true,true);
-    	return String("OK");
-    //	getControlPanel()->placeMessageInQueue("StartRecord");
+        getControlPanel()->recordButton->setToggleState(true,true);
+        return String("OK");
+    //  getControlPanel()->placeMessageInQueue("StartRecord");
     } if (input[0] == "SetSessionName")
     {
-    		getProcessorGraph()->getRecordNode()->setDirectoryName(input[1]);
+            getProcessorGraph()->getRecordNode()->setDirectoryName(input[1]);
     } else if (input[0] == "StopRecord")
     {
-    	const MessageManagerLock mmLock;
-    	//getControlPanel()->placeMessageInQueue("StopRecord");
-    	getControlPanel()->recordButton->setToggleState(false,true);
-    	return String("OK");
+        const MessageManagerLock mmLock;
+        //getControlPanel()->placeMessageInQueue("StopRecord");
+        getControlPanel()->recordButton->setToggleState(false,true);
+        return String("OK");
     } else if (input[0] == "ProcessorCommunication")
     {
-    	ProcessorGraph *g = getProcessorGraph();
-    	Array<GenericProcessor*> p = g->getListOfProcessors();
-    	for (int k=0;k<p.size();k++)
-    	{
-    		if (p[k]->getName().toLowerCase() == input[1].toLowerCase())
-    		{
-    			String Query="";
-    			for (int i=2;i<input.size();i++)
-    			{
-    				if (i == input.size()-1)
-    					Query+=input[i];
-    				else
-    					Query+=input[i]+" ";
-    			}
+        ProcessorGraph *g = getProcessorGraph();
+        Array<GenericProcessor*> p = g->getListOfProcessors();
+        for (int k=0;k<p.size();k++)
+        {
+            if (p[k]->getName().toLowerCase() == input[1].toLowerCase())
+            {
+                String Query="";
+                for (int i=2;i<input.size();i++)
+                {
+                    if (i == input.size()-1)
+                        Query+=input[i];
+                    else
+                        Query+=input[i]+" ";
+                }
 
-    			return p[k]->interProcessorCommunication(Query);
-    		}
-    	}
+                return p[k]->interProcessorCommunication(Query);
+            }
+        }
 
-    	return String("OK");
+        return String("OK");
     }
 
     */

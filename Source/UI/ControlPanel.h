@@ -138,7 +138,7 @@ public:
     ~DiskSpaceMeter();
 
     /** Updates the free disk space displayed by the DiskSpaceMeter. Called by
-    	the ControlPanel. */
+        the ControlPanel. */
     void updateDiskSpace(float percent);
 
     /** Draws the DiskSpaceMeter. */
@@ -356,9 +356,9 @@ public:
 
     void updateRecordEngineList();
 
-	String getSelectedRecordEngineId();
+    String getSelectedRecordEngineId();
 
-	bool setSelectedRecordEngineId(String id);
+    bool setSelectedRecordEngineId(String id);
 
     ScopedPointer<RecordButton> recordButton;
 private:
