@@ -204,8 +204,14 @@ void BinaryRecording::openSpikeFile(String basePath, SpikeRecordInfo* elec, int 
 {
 
     FILE* spFile;
-    String fullPath = basePath + "_" + elec->name.removeCharacters(" ") + "_" + String(recordingNumber) + ".spikes";
-    
+    String fullPath = basePath + "_" + elec->name.removeCharacters(" ");
+
+    if (recordingNumber > 0)
+    {
+        fullPath +=  "_" + String(recordingNumber);
+    }
+    fullPath += ".spk";
+
     std::cout << "OPENING FILE: " << fullPath << std::endl;
 
     File f = File(fullPath);
