@@ -79,8 +79,6 @@ public:
     */
     void setParameter(int parameterIndex, float newValue);
 
-    /** returns current experiment number */
-    int getExperimentNumber();
     /** returns current recording number */
     int getRecordingNumber();
 
@@ -128,10 +126,14 @@ public:
     */
     void createNewDirectory();
 
-
     File getDataDirectory()
     {
         return rootFolder;
+    }
+
+    String getBaseName()
+    {
+        return baseName;
     }
 
     /** Adds a Record Engine to use
@@ -184,6 +186,9 @@ private:
     */
     File rootFolder;
 
+    /** Base folder and file name.
+    */
+    String baseName;
 
     /** Integer timestamp saved for each buffer.
     */
@@ -208,7 +213,6 @@ private:
 
     int spikeElectrodeIndex;
 
-    int experimentNumber;
     bool hasRecorded;
     bool settingsNeeded;
     std::atomic<bool> setFirstBlock;

@@ -432,35 +432,24 @@ ControlPanel::ControlPanel(ProcessorGraph* graph_, AudioComponent* audio_)
     const File dataDirectory = File::getSpecialLocation(File::currentExecutableFile).getParentDirectory();
 #endif
 
-    filenameComponent = new FilenameComponent("folder selector",
-                                              dataDirectory.getFullPathName(),
-                                              true,
-                                              true,
-                                              true,
-                                              "*",
-                                              "",
-                                              "");
-    addChildComponent(filenameComponent);
+    pathComponent = new FilenameComponent("Folder selector",
+                                          dataDirectory.getFullPathName(),
+                                          true,
+                                          true,
+                                          true,
+                                          "*",
+                                          "",
+                                          "");
+    addChildComponent(pathComponent);
 
-    prependText = new Label("Prepend","");
-    prependText->setEditable(true);
-    prependText->addListener(this);
-    prependText->setColour(Label::backgroundColourId, Colours::lightgrey);
-    prependText->setTooltip("Prepend to name of data directory");
+    baseNameText = new Label("Base name","");
+    baseNameText->setEditable(true);
+    baseNameText->addListener(this);
+    baseNameText->setColour(Label::backgroundColourId, Colours::lightgrey);
+    //baseNameText->setColour(Label::textColourId, Colours::black);
+    baseNameText->setTooltip("Base file and folder name");
 
-    addChildComponent(prependText);
-
-    dateText = new Label("Date","YYYY-MM-DD_HH-MM-SS");
-    dateText->setColour(Label::backgroundColourId, Colours::lightgrey);
-    dateText->setColour(Label::textColourId, Colours::grey);
-    addChildComponent(dateText);
-
-    appendText = new Label("Append","");
-    appendText->setEditable(true);
-    appendText->addListener(this);
-    appendText->setColour(Label::backgroundColourId, Colours::lightgrey);
-    addChildComponent(appendText);
-    appendText->setTooltip("Append to name of data directory");
+    addChildComponent(baseNameText);
 
     //diskMeter->updateDiskSpace(graph->getRecordNode()->getFreeSpace());
     //diskMeter->repaint();
@@ -497,7 +486,7 @@ bool ControlPanel::getRecordingState()
 void ControlPanel::setRecordingDirectory(String path)
 {
     File newFile(path);
-    filenameComponent->setCurrentFile(newFile, true, sendNotificationSync);
+    pathComponent->setCurrentFile(newFile, true, sendNotificationSync);
 
     graph->getRecordNode()->newDirectoryNeeded = true;
     masterClock->resetRecordTime();
@@ -517,8 +506,8 @@ void ControlPanel::setAcquisitionState(bool state)
 void ControlPanel::updateChildComponents()
 {
 
-    filenameComponent->addListener(AccessClass::getProcessorGraph()->getRecordNode());
-    AccessClass::getProcessorGraph()->getRecordNode()->filenameComponentChanged(filenameComponent);
+    pathComponent->addListener(AccessClass::getProcessorGraph()->getRecordNode());
+    AccessClass::getProcessorGraph()->getRecordNode()->filenameComponentChanged(pathComponent);
 	updateRecordEngineList();
 
 }
@@ -530,12 +519,6 @@ void ControlPanel::updateRecordEngineList()
 	recordEngines.clear();
 	int id = 1;
 
-	for (int i = 0; i < RecordEngineManager::getNumOfBuiltInEngines(); i++)
-	{
-		RecordEngineManager* rem = RecordEngineManager::createBuiltInEngineManager(i);
-		recordSelector->addItem(rem->getName(), id++);
-		recordEngines.add(rem);
-	}
 	for (int i = 0; i < AccessClass::getPluginManager()->getNumRecordEngines(); i++)
 	{
 		Plugin::RecordEngineInfo info;
@@ -737,29 +720,21 @@ void ControlPanel::resized()
         recordOptionsButton->setBounds ( (w - 435) > 40 ? 140 : w - 350, topBound, h - 10, h - 10);
         recordOptionsButton->setVisible (true);
 
-        filenameComponent->setBounds (165, topBound, w - 500, h - 10);
-        filenameComponent->setVisible (true);
+        pathComponent->setBounds (165, topBound, w - 500, h - 10);
+        pathComponent->setVisible (true);
 
         newDirectoryButton->setBounds (w - h + 4, topBound, h - 10, h - 10);
         newDirectoryButton->setVisible (true);
 
-        prependText->setBounds (165 + w - 490, topBound, 50, h - 10);
-        prependText->setVisible (true);
-
-        dateText->setBounds (165 + w - 435, topBound, 175, h - 10);
-        dateText->setVisible (true);
-
-        appendText->setBounds (165 + w - 255, topBound, 50, h - 10);
-        appendText->setVisible (true);
+        baseNameText->setBounds (165 + w - 490, topBound, 275, h - 10);
+        baseNameText->setVisible (true);
 
     }
     else
     {
-        filenameComponent->setVisible   (false);
+        pathComponent->setVisible       (false);
         newDirectoryButton->setVisible  (false);
-        prependText->setVisible         (false);
-        dateText->setVisible            (false);
-        appendText->setVisible          (false);
+        baseNameText->setVisible        (false);
         recordSelector->setVisible      (false);
         recordOptionsButton->setVisible (false);
     }
@@ -781,8 +756,6 @@ void ControlPanel::labelTextChanged(Label* label)
     graph->getRecordNode()->newDirectoryNeeded = true;
     newDirectoryButton->setEnabledState(false);
     masterClock->resetRecordTime();
-
-    dateText->setColour(Label::textColourId, Colours::grey);
 }
 
 void ControlPanel::startRecording()
@@ -790,9 +763,8 @@ void ControlPanel::startRecording()
 
     masterClock->startRecording(); // turn on recording
     backgroundColour = Colour(255,0,0);
-    prependText->setEditable(false);
-    appendText->setEditable(false);
-    dateText->setColour(Label::textColourId, Colours::black);
+    pathComponent->setEnabled(false);
+    baseNameText->setEditable(false);
 
     graph->setRecordState(true);
 
@@ -807,8 +779,8 @@ void ControlPanel::stopRecording()
     newDirectoryButton->setEnabledState(true);
     backgroundColour = Colour (51, 51, 51);
 
-    prependText->setEditable(true);
-    appendText->setEditable(true);
+    pathComponent->setEnabled(true);
+    baseNameText->setEditable(true);
 
     recordButton->setToggleState(false, dontSendNotification);
 
@@ -823,9 +795,6 @@ void ControlPanel::buttonClicked(Button* button)
         graph->getRecordNode()->newDirectoryNeeded = true;
         newDirectoryButton->setEnabledState(false);
         masterClock->resetRecordTime();
-
-        dateText->setColour(Label::textColourId, Colours::grey);
-
         return;
     }
 
@@ -947,7 +916,6 @@ void ControlPanel::comboBoxChanged(ComboBox* combo)
     newDirectoryButton->setEnabledState(false);
     masterClock->resetRecordTime();
 
-    dateText->setColour(Label::textColourId, Colours::grey);
     lastEngineIndex=combo->getSelectedId()-1;
 }
 
@@ -1041,47 +1009,16 @@ void ControlPanel::toggleState()
     AccessClass::getUIComponent()->childComponentChanged();
 }
 
-String ControlPanel::getTextToAppend()
-{
-    String t = appendText->getText();
 
-    if (t.length() > 0)
-    {
-        return "_" + t;
-    }
-    else
-    {
-        return t;
-    }
+String ControlPanel::getBaseName()
+{
+    String t = baseNameText->getText();
+    return t;
 }
 
-String ControlPanel::getTextToPrepend()
+void ControlPanel::setBaseName(String t)
 {
-    String t = prependText->getText();
-
-    if (t.length() > 0)
-    {
-        return t + "_";
-    }
-    else
-    {
-        return t;
-    }
-}
-
-void ControlPanel::setPrependText(String t)
-{
-    prependText->setText(t, sendNotificationSync);
-}
-
-void ControlPanel::setAppendText(String t)
-{
-    appendText->setText(t, sendNotificationSync);
-}
-
-void ControlPanel::setDateText(String t)
-{
-    dateText->setText(t, dontSendNotification);
+    baseNameText->setText(t, sendNotificationSync);
 }
 
 
@@ -1090,9 +1027,8 @@ void ControlPanel::saveStateToXml(XmlElement* xml)
 
     XmlElement* controlPanelState = xml->createNewChildElement("CONTROLPANEL");
     controlPanelState->setAttribute("isOpen",open);
-	controlPanelState->setAttribute("recordPath", filenameComponent->getCurrentFile().getFullPathName());
-    controlPanelState->setAttribute("prependText",prependText->getText());
-    controlPanelState->setAttribute("appendText",appendText->getText());
+	controlPanelState->setAttribute("recordPath", pathComponent->getCurrentFile().getFullPathName());
+    controlPanelState->setAttribute("baseNameText",baseNameText->getText());
     controlPanelState->setAttribute("recordEngine",recordEngines[recordSelector->getSelectedId()-1]->getID());
 
     audioEditor->saveStateToXml(xml);
@@ -1118,10 +1054,9 @@ void ControlPanel::loadStateFromXml(XmlElement* xml)
 			String recordPath = xmlNode->getStringAttribute("recordPath", String::empty);
 			if (!recordPath.isEmpty())
 			{
-				filenameComponent->setCurrentFile(File(recordPath), true, sendNotificationAsync);
+				pathComponent->setCurrentFile(File(recordPath), true, sendNotificationAsync);
 			}
-            appendText->setText(xmlNode->getStringAttribute("appendText", ""), dontSendNotification);
-            prependText->setText(xmlNode->getStringAttribute("prependText", ""), dontSendNotification);
+            baseNameText->setText(xmlNode->getStringAttribute("baseNameText", ""), dontSendNotification);
 			String selectedEngine = xmlNode->getStringAttribute("recordEngine");
 			for (int i = 0; i < recordEngines.size(); i++)
 			{
@@ -1155,11 +1090,11 @@ void ControlPanel::loadStateFromXml(XmlElement* xml)
 
 StringArray ControlPanel::getRecentlyUsedFilenames()
 {
-    return filenameComponent->getRecentlyUsedFilenames();
+    return pathComponent->getRecentlyUsedFilenames();
 }
 
 
 void ControlPanel::setRecentlyUsedFilenames(const StringArray& filenames)
 {
-    filenameComponent->setRecentlyUsedFilenames(filenames);
+    pathComponent->setRecentlyUsedFilenames(filenames);
 }

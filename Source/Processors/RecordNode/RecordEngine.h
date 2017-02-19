@@ -98,7 +98,7 @@ public:
     virtual void setParameter (EngineParameter& parameter);
 
     /** Called when recording starts to open all needed files */
-    virtual void openFiles (File rootFolder, int experimentNumber, int recordingNumber) = 0;
+    virtual void openFiles (File rootFolder, String baseName, int recordingNumber) = 0;
 
     /** Called when recording stops to close all files
         and do all the necessary cleanups */

@@ -44,7 +44,7 @@ namespace BinaryRecordingEngine
 		~BinaryRecording();
 
 		String getEngineID() const override;
-		void openFiles(File rootFolder, int experimentNumber, int recordingNumber) override;
+		void openFiles(File rootFolder, String baseName, int recordingNumber) override;
 		void closeFiles() override;
 		void writeData(int writeChannel, int realChannel, const float* buffer, int size) override;
 		void writeEvent(int eventType, const MidiMessage& event, int64 timestamp) override;
@@ -74,7 +74,7 @@ namespace BinaryRecordingEngine
 		FILE* eventFile;
 		FILE* messageFile;
 		Array<FILE*> spikeFileArray;
-		int m_recordingNum;
+		int m_recordingNumber;
 		Array<uint64> m_startTS;
 
 		CriticalSection diskWriteLock;

@@ -40,13 +40,13 @@ RecordThread::~RecordThread()
 {
 }
 
-void RecordThread::setFileComponents(File rootFolder, int experimentNumber, int recordingNumber)
+void RecordThread::setFileComponents(File rootFolder, String baseName, int recordingNumber)
 {
     if (isThreadRunning())
         return;
 
     m_rootFolder = rootFolder;
-    m_experimentNumber = experimentNumber;
+    m_baseName = baseName;
     m_recordingNumber = recordingNumber;
 }
 
@@ -89,7 +89,7 @@ void RecordThread::run()
         Array<int64> timestamps;
         m_dataQueue->getTimestampsForBlock(0, timestamps);
         EVERY_ENGINE->updateTimestamps(timestamps);
-        EVERY_ENGINE->openFiles(m_rootFolder, m_experimentNumber, m_recordingNumber);
+        EVERY_ENGINE->openFiles(m_rootFolder, m_baseName, m_recordingNumber);
     }
     //3-Normal loop
     while (!threadShouldExit())

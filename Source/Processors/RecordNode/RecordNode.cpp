@@ -52,7 +52,6 @@ RecordNode::RecordNode()
 
     spikeElectrodeIndex = 0;
 
-    experimentNumber = 0;
     hasRecorded = false;
     settingsNeeded = false;
 
@@ -178,11 +177,13 @@ void RecordNode::createNewDirectory()
 {
     std::cout << "Creating new directory." << std::endl;
 
-    rootFolder = File(dataDirectory.getFullPathName() + File::separator + generateDirectoryName());
+    baseName = AccessClass::getControlPanel()->getBaseName();
+    rootFolder = File(dataDirectory.getFullPathName() + File::separator + baseName);
     newDirectoryNeeded = false;
 
 }
 
+/*
 String RecordNode::generateDirectoryName()
 {
     Time calendar = Time::getCurrentTime();
@@ -220,6 +221,7 @@ String RecordNode::generateDirectoryName()
     return filename;
 
 }
+*/
 
 String RecordNode::generateDateString()
 {
@@ -255,11 +257,6 @@ String RecordNode::generateDateString()
 
 }
 
-int RecordNode::getExperimentNumber()
-{
-    return experimentNumber;
-}
-
 int RecordNode::getRecordingNumber()
 {
     return recordingNumber;
@@ -282,8 +279,8 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
         if (newDirectoryNeeded)
         {
             createNewDirectory();
+            baseName = AccessClass::getControlPanel()->getBaseName();
             recordingNumber = 0;
-            experimentNumber = 1;
             settingsNeeded = true;
             EVERY_ENGINE->directoryChanged();
         }
@@ -298,12 +295,18 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
         }
         if (settingsNeeded)
         {
-            String settingsFileName = rootFolder.getFullPathName() + File::separator + "settings" + ((experimentNumber > 1) ? "_" + String(experimentNumber) : String::empty) + ".xml";
+            String settingsFileName = rootFolder.getFullPathName() + File::separator + baseName;
+            if (recordingNumber > 1)
+            {
+                settingsFileName += "_" + String(recordingNumber);
+            }
+            settingsFileName += ".xml";
+
             AccessClass::getEditorViewport()->saveState(File(settingsFileName), m_lastSettingsText);
             settingsNeeded = false;
         }
 
-        m_recordThread->setFileComponents(rootFolder, experimentNumber, recordingNumber);
+        m_recordThread->setFileComponents(rootFolder, baseName, recordingNumber);
 
         channelMap.clear();
         int totChans = channelPointers.size();

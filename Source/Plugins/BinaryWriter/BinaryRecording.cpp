@@ -43,9 +43,9 @@ String BinaryRecording::getEngineID() const
     return "RAWBINARY";
 }
 
-void BinaryRecording::openFiles(File rootFolder, int experimentNumber, int recordingNumber)
+void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingNumber)
 {
-    String basepath = rootFolder.getFullPathName() + rootFolder.separatorString + "experiment" + String(experimentNumber);
+    String basepath = rootFolder.getFullPathName() + rootFolder.separatorString + baseName;
     String fullPath = basepath;
     int nRecordedProcessors = getNumRecordedProcessors();
     //Open channel files
@@ -82,7 +82,7 @@ void BinaryRecording::openFiles(File rootFolder, int experimentNumber, int recor
     {
         openSpikeFile(basepath, getSpikeElectrode(i), recordingNumber);
     }
-    m_recordingNum = recordingNumber;
+    m_recordingNumber = recordingNumber;
 }
 
 void BinaryRecording::closeFiles()
@@ -390,8 +390,8 @@ void BinaryRecording::writeTTLEvent(const MidiMessage& event, int64 timestamp)
 
     // write 1st four bytes of event (type, nodeId, eventId, eventChannel)
     fwrite(dataptr, 1, 4, eventFile);
-    int16 recordingNumber = m_recordingNum;
-    // write recording number
+    int16 recordingNumber = m_recordingNumber;
+    // write file number
     fwrite(&recordingNumber,                     // ptr
         2,                               // size of each element
         1,                               // count
@@ -419,7 +419,7 @@ void BinaryRecording::writeSpike(int electrodeIndex, const SpikeObject& spike, i
 
     fwrite(spikeBuffer, 1, totalBytes, spikeFileArray[electrodeIndex]);
 
-    int16 recordingNumber = m_recordingNum;
+    int16 recordingNumber = m_recordingNumber;
     fwrite(&recordingNumber,                         // ptr
         2,                               // size of each element
         1,                               // count
