@@ -764,7 +764,7 @@ void ControlPanel::startRecording()
     masterClock->startRecording(); // turn on recording
     backgroundColour = Colour(255,0,0);
     pathComponent->setEnabled(false);
-    baseNameText->setEditable(false);
+    baseNameText->setEnabled(false);
 
     graph->setRecordState(true);
 
@@ -780,7 +780,7 @@ void ControlPanel::stopRecording()
     backgroundColour = Colour (51, 51, 51);
 
     pathComponent->setEnabled(true);
-    baseNameText->setEditable(true);
+    baseNameText->setEnabled(true);
 
     recordButton->setToggleState(false, dontSendNotification);
 
