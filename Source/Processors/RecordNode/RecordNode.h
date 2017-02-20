@@ -214,7 +214,6 @@ private:
     int spikeElectrodeIndex;
 
     bool hasRecorded;
-    bool settingsNeeded;
     std::atomic<bool> setFirstBlock;
     /** Generates a default directory name, based on the current date and time */
     String generateDirectoryName();

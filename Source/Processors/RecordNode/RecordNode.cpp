@@ -53,7 +53,6 @@ RecordNode::RecordNode()
     spikeElectrodeIndex = 0;
 
     hasRecorded = false;
-    settingsNeeded = false;
 
     // 128 inputs, 0 outputs
     setPlayConfigDetails(getNumInputs(),getNumOutputs(),44100.0,128);
@@ -281,7 +280,6 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
             createNewDirectory();
             baseName = AccessClass::getControlPanel()->getBaseName();
             recordingNumber = 0;
-            settingsNeeded = true;
             EVERY_ENGINE->directoryChanged();
         }
         else
@@ -293,18 +291,17 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
         {
             rootFolder.createDirectory();
         }
-        if (settingsNeeded)
-        {
-            String settingsFileName = rootFolder.getFullPathName() + File::separator + baseName;
-            if (recordingNumber > 1)
-            {
-                settingsFileName += "_" + String(recordingNumber);
-            }
-            settingsFileName += ".xml";
 
-            AccessClass::getEditorViewport()->saveState(File(settingsFileName), m_lastSettingsText);
-            settingsNeeded = false;
+
+        // write a new settings file for every recording
+        String settingsFileName = rootFolder.getFullPathName() + File::separator + baseName;
+        if (recordingNumber > 0)
+        {
+            settingsFileName += "_" + String(recordingNumber);
         }
+        settingsFileName += ".xml";
+        std::cout << "WRITING FILE: " << settingsFileName << std::endl;
+        AccessClass::getEditorViewport()->saveState(File(settingsFileName), m_lastSettingsText);
 
         m_recordThread->setFileComponents(rootFolder, baseName, recordingNumber);
 
@@ -424,7 +421,6 @@ bool RecordNode::enable()
     {
         hasRecorded = false;
         experimentNumber++;
-        settingsNeeded = true;
     }
 
     //When starting a recording, if a new directory is needed it gets rewritten. Else is incremented by one.
