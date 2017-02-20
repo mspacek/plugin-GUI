@@ -82,6 +82,8 @@ public:
     /** returns current recording number */
     int getRecordingNumber();
 
+    /** returns current base name file glob pattern, based on current recording number */
+    String getBaseNameGlob();
     /** Called by the processor graph for each processor that could record data
     */
     void registerProcessor(GenericProcessor* sourceNode);

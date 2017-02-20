@@ -180,7 +180,9 @@ void RecordNode::createNewDirectory()
     rootFolder = File(dataDirectory.getFullPathName() + File::separator + baseName);
     newDirectoryNeeded = false;
 
+    }
 }
+
 
 /*
 String RecordNode::generateDirectoryName()
@@ -261,6 +263,17 @@ int RecordNode::getRecordingNumber()
     return recordingNumber;
 }
 
+String RecordNode::getBaseNameGlob()
+{
+    String baseNameGlob = baseName;
+    if (recordingNumber > 0)
+    {
+        baseNameGlob += "_" + String(recordingNumber);
+    }
+    baseNameGlob += ".*";
+    return baseNameGlob;
+}
+
 void RecordNode::setParameter(int parameterIndex, float newValue)
 {
     //editor->updateParameterButtons(parameterIndex);
@@ -288,8 +301,12 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
         }
 
         if (!rootFolder.exists())
+        // if files with baseName + recordingNumber already exist, inc recordingNumber
+        while (rootFolder.getNumberOfChildFiles(File::findFiles, getBaseNameGlob()) > 0)
         {
             rootFolder.createDirectory();
+            std::cout << "FOUND EXISTING RECORDING " << String(recordingNumber) << std::endl;
+            recordingNumber++;
         }
 
 
