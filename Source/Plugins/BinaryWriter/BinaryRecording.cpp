@@ -411,6 +411,10 @@ void BinaryRecording::writeMessage(const MidiMessage& event, int64 timestamp)
     fwrite(" ", 1, 1, messageFile);
     fwrite(dataptr, 1, msgLength-1, messageFile);
     fwrite("\n", 1, 1, messageFile);
+    // since this file is typically quite small, rarely written to, and rarely crosses
+    // multiples of the 4K system file buffer, be safe and flush immediately to disk on every
+    // fwrite so that we don't lose its contents in a system crash:
+    fflush(messageFile);
     diskWriteLock.exit();
 
 }
