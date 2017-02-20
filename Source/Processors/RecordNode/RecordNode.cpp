@@ -113,7 +113,6 @@ void RecordNode::filenameComponentChanged(FilenameComponent* fnc)
 
     dataDirectory = fnc->getCurrentFile();
     newDirectoryNeeded = true;
-
 }
 
 
@@ -174,12 +173,18 @@ void RecordNode::addInputChannel(GenericProcessor* sourceNode, int chan)
 
 void RecordNode::createNewDirectory()
 {
-    std::cout << "Creating new directory." << std::endl;
-
     baseName = AccessClass::getControlPanel()->getBaseName();
     rootFolder = File(dataDirectory.getFullPathName() + File::separator + baseName);
+    ensureRootFolderExists();
     newDirectoryNeeded = false;
+}
 
+void RecordNode::ensureRootFolderExists()
+{
+    if (!rootFolder.exists())
+    {
+        std::cout << "CREATING NEW FOLDER: " << rootFolder.getFullPathName() << std::endl;
+        rootFolder.createDirectory();
     }
 }
 
@@ -285,9 +290,6 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
     if (parameterIndex == 1)
     {
 
-        
-        // std::cout << "START RECORDING." << std::endl;
-
         if (newDirectoryNeeded)
         {
             createNewDirectory();
@@ -300,15 +302,18 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
             recordingNumber++; // increment recording number within this directory
         }
 
-        if (!rootFolder.exists())
+        // it's possible the user deleted the folder after the first recording, so it needs
+        // to be recreated before starting a subsequent recording
+        ensureRootFolderExists();
+
         // if files with baseName + recordingNumber already exist, inc recordingNumber
         while (rootFolder.getNumberOfChildFiles(File::findFiles, getBaseNameGlob()) > 0)
         {
-            rootFolder.createDirectory();
             std::cout << "FOUND EXISTING RECORDING " << String(recordingNumber) << std::endl;
             recordingNumber++;
         }
 
+        std::cout << "STARTING RECORDING " << String(recordingNumber) << std::endl;
 
         // write a new settings file for every recording
         String settingsFileName = rootFolder.getFullPathName() + File::separator + baseName;
@@ -336,7 +341,7 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
             if (chan->getRecordState())
             {
                 channelMap.add(ch);
-                //This is bassed on the assumption that all channels from the same processor are added contiguously
+                //This is based on the assumption that all channels from the same processor are added contiguously
                 //If this behaviour changes, this check should be most thorough
                 if (chan->nodeId != lastProcessor)
                 {
@@ -373,9 +378,7 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
     }
     else if (parameterIndex == 0)
     {
-
-
-        std::cout << "STOP RECORDING." << std::endl;
+        std::cout << "STOP RECORDING." << std::endl << std::endl;
 
         if (isRecording)
         {
@@ -405,10 +408,8 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
     }
     else if (parameterIndex == 2)
     {
-
         if (isProcessing)
         {
-
             std::cout << "Toggling channel " << currentChannel << std::endl;
 
             if (isRecording)
@@ -437,7 +438,6 @@ bool RecordNode::enable()
     if (hasRecorded)
     {
         hasRecorded = false;
-        experimentNumber++;
     }
 
     //When starting a recording, if a new directory is needed it gets rewritten. Else is incremented by one.

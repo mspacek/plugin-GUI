@@ -52,7 +52,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
     for (int i = 0; i < nRecordedProcessors; i++)
     {
         const RecordProcessorInfo& pInfo = getProcessorInfo(i);
-        if (nRecordedProcessors > 1) // exclude the processorId from the .dat filename
+        if (nRecordedProcessors > 1) // include the processorId in the .dat filename
         {
             fullPath += "_" + String(pInfo.processorId);
         }
@@ -61,6 +61,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
             fullPath += "_" + String(recordingNumber);
         }
         fullPath += ".dat";
+        std::cout << "OPENING FILE: " << fullPath << std::endl;
         File datFile(fullPath);
         ScopedPointer<SequentialBlockFile> bFile =
             new SequentialBlockFile(pInfo.recordedChannels.size(),

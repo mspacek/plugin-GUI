@@ -80,7 +80,6 @@ void BlixxProcessor::process(AudioSampleBuffer& buffer,
     */
 
     checkForEvents(events);
-
 }
 
 int BlixxProcessor::checkForEvents(MidiBuffer& events)

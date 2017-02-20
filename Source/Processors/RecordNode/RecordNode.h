@@ -84,6 +84,7 @@ public:
 
     /** returns current base name file glob pattern, based on current recording number */
     String getBaseNameGlob();
+
     /** Called by the processor graph for each processor that could record data
     */
     void registerProcessor(GenericProcessor* sourceNode);
@@ -127,6 +128,10 @@ public:
     /** Creates a new data directory in the location specified by the fileNameComponent.
     */
     void createNewDirectory();
+
+    /** Make sure rootFolder exists on disk, if not, create it
+    */
+    void ensureRootFolderExists();
 
     File getDataDirectory()
     {
