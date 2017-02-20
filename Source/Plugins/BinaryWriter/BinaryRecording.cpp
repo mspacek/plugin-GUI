@@ -215,8 +215,7 @@ void BinaryRecording::openEventFile(String basepath, int recordingNumber)
         //std::cout << "File ID: " << f << ", number of bytes: " << header.getNumBytesAsUTF8() << std::endl;
         fwrite(header.toUTF8(), 1, header.getNumBytesAsUTF8(), f);
         //std::cout << "Wrote header." << std::endl;
-        // std::cout << "Block index: " << blockIndex << std::endl;
-
+        //std::cout << "Block index: " << blockIndex << std::endl;
     }
     else
     {
@@ -227,7 +226,6 @@ void BinaryRecording::openEventFile(String basepath, int recordingNumber)
     }
     eventFile = f;
     diskWriteLock.exit();
-
 }
 
 void BinaryRecording::openSpikeFile(String basePath, SpikeRecordInfo* elec, int recordingNumber)
@@ -406,8 +404,6 @@ void BinaryRecording::writeMessage(const MidiMessage& event, int64 timestamp)
 
     int msgLength = event.getRawDataSize() - 6;
     const char* dataptr = (const char*)event.getRawData() + 6;
-
-
     String timestampText(timestamp);
 
     diskWriteLock.enter();

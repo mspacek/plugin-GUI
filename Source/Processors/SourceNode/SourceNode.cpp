@@ -363,13 +363,13 @@ void SourceNode::process (AudioSampleBuffer& buffer, MidiBuffer& events)
                 else
                 {
                     // signal channel state is ON
-                    addEvent(events,    // MidiBuffer
-                             TTL,       // eventType
-                             i,         // sampleNum
-                             1,         // eventID
-                             c,         // eventChannel
-                             8,
-                             (uint8*)(&eventCodeBuffer[i]));
+                    addEvent (events,    // MidiBuffer
+                              TTL,       // eventType
+                              i,         // sampleNum
+                              1,         // eventID
+                              c,         // eventChannel
+                              8,
+                              (uint8*)(&eventCodeBuffer[i]));
                 }
 
                 eventChannelState[c] = state;

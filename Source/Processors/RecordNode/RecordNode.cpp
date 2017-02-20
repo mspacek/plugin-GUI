@@ -440,7 +440,8 @@ bool RecordNode::enable()
         hasRecorded = false;
     }
 
-    //When starting a recording, if a new directory is needed it gets rewritten. Else is incremented by one.
+    // When starting a recording, if a new directory is needed, recordingNumber is rewritten,
+    // otherwise it's incremented by one
     recordingNumber = -1;
     EVERY_ENGINE->configureEngine();
     EVERY_ENGINE->startAcquisition();
