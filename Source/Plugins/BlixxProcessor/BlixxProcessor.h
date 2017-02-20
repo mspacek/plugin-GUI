@@ -115,7 +115,7 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BlixxProcessor);
 
-    enum Edges { RISING = 0, FALLING = 1 };
+    enum Edges { RISING = 1, FALLING = 0 };
     MidiBuffer blixxEvents; // temporary buffer to hold BLIXX frame draw events
 
 };

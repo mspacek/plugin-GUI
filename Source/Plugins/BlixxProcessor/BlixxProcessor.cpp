@@ -105,19 +105,23 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
         {
             const uint8* dataptr = message.getRawData();
             int eventType = *(dataptr+0);
-            //int sourceNodeId = *(dataptr+1);
+            int sourceNodeId = *(dataptr+1);
             int eventId = *(dataptr+2);
             int eventChannel = *(dataptr+3);
-            //int save = *(dataptr+4);
+            int save = *(dataptr+4);
 
-            //printf("eventType, sourceNodeId, eventId, eventChannel, save, samplePosition: "
-            //      "%d, %d, %d, %d, %d, %d\n",
-            //      eventType, sourceNodeId, eventId, eventChannel, save, samplePosition);
-
-            if (eventType == TTL && eventChannel == vsyncChannel && eventId == RISING)
+            if (eventType == TTL && eventChannel == vsyncChannel)
                 //&& all the other relevant pins are already high
             {
-                String blixxstr = "BLIXXFRAME";
+                printf("eventType, sourceNodeId, eventId, eventChannel, save, samplePosition: "
+                      "%d, %d, %d, %d, %d, %d\n",
+                      eventType, sourceNodeId, eventId, eventChannel, save, samplePosition);
+
+
+                String blixxstr;
+                if (eventId == RISING)                blixxstr = "RISING";
+                else if (eventId == FALLING)          blixxstr = "FALLING";
+                
                 CharPointer_UTF8 blixxstrdata = blixxstr.toUTF8();
                 addEvent(blixxEvents, // MidiBuffer to add event to
                          MESSAGE, // eventType
@@ -127,7 +131,7 @@ int BlixxProcessor::checkForEvents(MidiBuffer& events)
                          blixxstrdata.sizeInBytes(), // numBytes
                          (uint8*)blixxstrdata.getAddress()); // data
                 ++nblixx;
-                std::cout << "*** detected BLIXX event" << std::endl;
+                //std::cout << "*** detected BLIXX event" << std::endl;
             }
         }
 
