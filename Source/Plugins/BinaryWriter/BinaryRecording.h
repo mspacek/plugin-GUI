@@ -56,12 +56,12 @@ namespace BinaryRecordingEngine
 
 	private:
 
-		void openSpikeFile(String basepath, SpikeRecordInfo* elec, int recordingNumber);
 		String generateSpikeHeader(SpikeRecordInfo* elec);
 		String generateEventHeader();
 
-		void openMessageFile(String basepath, int recordingNumber);
 		void openEventFile(String basepath, int recordingNumber);
+		void openSpikeFile(String basepath, SpikeRecordInfo* elec, int recordingNumber);
+		void openMessageFile(String basepath, int recordingNumber);
 		void writeTTLEvent(const MidiMessage& event, int64 timestamp);
 		void writeMessage(const MidiMessage& event, int64 timestamp);
 
@@ -72,8 +72,8 @@ namespace BinaryRecordingEngine
 		OwnedArray<SequentialBlockFile>  m_DataFiles;
 
 		FILE* eventFile;
-		FILE* messageFile;
 		Array<FILE*> spikeFileArray;
+		FILE* messageFile;
 		int m_recordingNumber;
 		Array<uint64> m_startTS;
 

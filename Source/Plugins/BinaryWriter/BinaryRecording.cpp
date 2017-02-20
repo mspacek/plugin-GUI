@@ -131,7 +131,8 @@ void BinaryRecording::resetChannels()
 
 void BinaryRecording::writeData(int writeChannel, int realChannel, const float* buffer, int size)
 {
-    if (size > m_bufferSize) //Shouldn't happen, and if it happens it'll be slow, but better this than crashing. Will be reset on file close and reset.
+    if (size > m_bufferSize) // Shouldn't happen, and if it happens it'll be slow, but better
+                             // this than crashing. Will be reset on file close and reset.
     {
         std::cerr << "Write buffer overrun, resizing to" << size << std::endl;
         m_bufferSize = size;
@@ -142,7 +143,11 @@ void BinaryRecording::writeData(int writeChannel, int realChannel, const float* 
     FloatVectorOperations::copyWithMultiply(m_scaledBuffer.getData(), buffer, multFactor, size);
     AudioDataConverters::convertFloatToInt16LE(m_scaledBuffer.getData(), m_intBuffer.getData(), size);
 
-    m_DataFiles[getProcessorFromChannel(writeChannel)]->writeChannel(getTimestamp(writeChannel)-m_startTS[writeChannel],getChannelNumInProc(writeChannel),m_intBuffer.getData(),size);
+    m_DataFiles[getProcessorFromChannel(writeChannel)]
+                ->writeChannel(getTimestamp(writeChannel) - m_startTS[writeChannel],
+                               getChannelNumInProc(writeChannel),
+                               m_intBuffer.getData(),
+                               size);
 }
 
 //Code below is copied from OriginalRecording, so it's not as clean as newer one
@@ -154,7 +159,7 @@ void BinaryRecording::addSpikeElectrode(int index, const SpikeRecordInfo* elec)
 
 void BinaryRecording::openEventFile(String basepath, int recordingNumber)
 {
-    FILE* chFile;
+    FILE* f;
     String fullPath = basepath;
 
     if (recordingNumber > 0)
@@ -164,49 +169,38 @@ void BinaryRecording::openEventFile(String basepath, int recordingNumber)
     fullPath += ".evt";
 
     std::cout << "OPENING FILE: " << fullPath << std::endl;
-
-    File f = File(fullPath);
-
-    bool fileExists = f.exists();
-
+    File testf = File(fullPath);
+    bool fileExists = testf.exists();
     diskWriteLock.enter();
-
-    chFile = fopen(fullPath.toUTF8(), "ab");
-
+    f = fopen(fullPath.toUTF8(), "ab");
     if (!fileExists)
     {
         // create and write header
-        std::cout << "Writing header." << std::endl;
+        //std::cout << "Writing header." << std::endl;
         String header = generateEventHeader();
         //std::cout << header << std::endl;
-        std::cout << "File ID: " << chFile << ", number of bytes: " << header.getNumBytesAsUTF8() << std::endl;
-
-
-        fwrite(header.toUTF8(), 1, header.getNumBytesAsUTF8(), chFile);
-
-        std::cout << "Wrote header." << std::endl;
-
+        //std::cout << "File ID: " << f << ", number of bytes: " << header.getNumBytesAsUTF8() << std::endl;
+        fwrite(header.toUTF8(), 1, header.getNumBytesAsUTF8(), f);
+        //std::cout << "Wrote header." << std::endl;
         // std::cout << "Block index: " << blockIndex << std::endl;
 
     }
     else
     {
-        std::cout << "File already exists, just opening." << std::endl;
-        fseek(chFile, 0, SEEK_END);
+        std::cout << "ERROR: " << fullPath << " already exists" << std::endl;
+        jassertfalse;
+        //std::cout << "File already exists, just opening." << std::endl;
+        //fseek(f, 0, SEEK_END);
     }
-
-    eventFile = chFile;
-    
+    eventFile = f;
     diskWriteLock.exit();
 
 }
 
 void BinaryRecording::openSpikeFile(String basePath, SpikeRecordInfo* elec, int recordingNumber)
 {
-
-    FILE* spFile;
+    FILE* f;
     String fullPath = basePath + "_" + elec->name.removeCharacters(" ");
-
     if (recordingNumber > 0)
     {
         fullPath +=  "_" + String(recordingNumber);
@@ -214,28 +208,27 @@ void BinaryRecording::openSpikeFile(String basePath, SpikeRecordInfo* elec, int 
     fullPath += ".spk";
 
     std::cout << "OPENING FILE: " << fullPath << std::endl;
-
-    File f = File(fullPath);
-
-    bool fileExists = f.exists();
-
+    File testf = File(fullPath);
+    bool fileExists = testf.exists();
     diskWriteLock.enter();
-
-    spFile = fopen(fullPath.toUTF8(), "ab");
-
+    f = fopen(fullPath.toUTF8(), "ab");
     if (!fileExists)
     {
         String header = generateSpikeHeader(elec);
-        fwrite(header.toUTF8(), 1, header.getNumBytesAsUTF8(), spFile);
+        fwrite(header.toUTF8(), 1, header.getNumBytesAsUTF8(), f);
+    }
+    else
+    {
+        std::cout << "ERROR: " << fullPath << " already exists" << std::endl;
+        jassertfalse;
     }
     diskWriteLock.exit();
-    spikeFileArray.set(elec->recordIndex, spFile);
-
+    spikeFileArray.set(elec->recordIndex, f);
 }
 
 void BinaryRecording::openMessageFile(String basepath, int recordingNumber)
 {
-    FILE* mFile;
+    FILE* f;
     String fullPath = basepath;
     if (recordingNumber > 0)
     {
@@ -244,19 +237,18 @@ void BinaryRecording::openMessageFile(String basepath, int recordingNumber)
     fullPath += ".msg";
 
     std::cout << "OPENING FILE: " << fullPath << std::endl;
-
-    File f = File(fullPath);
-
-    //bool fileExists = f.exists();
-
+    File testf = File(fullPath);
+    bool fileExists = testf.exists();
     diskWriteLock.enter();
-
-    mFile = fopen(fullPath.toUTF8(), "ab");
-
+    f = fopen(fullPath.toUTF8(), "ab");
+    if (fileExists)
+    {
+        std::cout << "ERROR: " << fullPath << " already exists" << std::endl;
+        jassertfalse;
+    }
     //If this file needs a header, it goes here
-
     diskWriteLock.exit();
-    messageFile = mFile;
+    messageFile = f;
 
 }
 
@@ -406,6 +398,7 @@ void BinaryRecording::writeTTLEvent(const MidiMessage& event, int64 timestamp)
 
     diskWriteLock.exit();
 }
+*/
 
 void BinaryRecording::writeSpike(int electrodeIndex, const SpikeObject& spike, int64 timestamp)
 {
