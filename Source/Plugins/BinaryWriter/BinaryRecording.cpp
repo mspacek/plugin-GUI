@@ -77,6 +77,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
     }
 
     //Other files, using OriginalRecording code
+    openDINFile(basepath, recordingNumber);
     openEventFile(basepath, recordingNumber);
     openMessageFile(basepath, recordingNumber);
     for (int i = 0; i < spikeFileArray.size(); i++)
@@ -98,6 +99,13 @@ void BinaryRecording::closeFiles()
             spikeFileArray.set(i, nullptr);
             diskWriteLock.exit();
         }
+    }
+    if (DINFile != nullptr)
+    {
+        diskWriteLock.enter();
+        fclose(DINFile);
+        DINFile = nullptr;
+        diskWriteLock.exit();
     }
     if (eventFile != nullptr)
     {
@@ -155,6 +163,31 @@ void BinaryRecording::writeData(int writeChannel, int realChannel, const float* 
 void BinaryRecording::addSpikeElectrode(int index, const SpikeRecordInfo* elec)
 {
     spikeFileArray.add(nullptr);
+}
+
+void BinaryRecording::openDINFile(String basepath, int recordingNumber)
+{
+    FILE* f;
+    String fullPath = basepath;
+
+    if (recordingNumber > 0)
+    {
+        fullPath +=  "_" + String(recordingNumber);
+    }
+    fullPath += ".din";
+
+    std::cout << "OPENING FILE: " << fullPath << std::endl;
+    File testf = File(fullPath);
+    bool fileExists = testf.exists();
+    diskWriteLock.enter();
+    f = fopen(fullPath.toUTF8(), "ab");
+    if (fileExists)
+    {
+        std::cout << "ERROR: " << fullPath << " already exists" << std::endl;
+        jassertfalse;
+    }
+    DINFile = f;
+    diskWriteLock.exit();
 }
 
 void BinaryRecording::openEventFile(String basepath, int recordingNumber)
@@ -335,10 +368,35 @@ String BinaryRecording::generateSpikeHeader(SpikeRecordInfo* elec)
 
 void BinaryRecording::writeEvent(int eventType, const MidiMessage& event, int64 timestamp)
 {
+    //std::cout << "*** eventType, isWritable: " << eventType << ", "
+    //          << isWritableEvent(eventType) << std::endl;
     if (isWritableEvent(eventType))
-        writeTTLEvent(event, timestamp);
-    if (eventType == GenericProcessor::MESSAGE)
-        writeMessage(event, timestamp);
+        if (eventType == GenericProcessor::TIMESTAMP) // == 0
+        {
+            std::cout << "*** WARNING: skipping TIMESTAMP event!" << std::endl;
+        }
+        else if (eventType == GenericProcessor::BUFFER_SIZE) // == 1
+        {
+            std::cout << "*** WARNING: skipping BUFFER_SIZE event!" << std::endl;
+        }
+        else if (eventType == GenericProcessor::PARAMETER_CHANGE) // == 2
+        {
+            std::cout << "*** WARNING: skipping PARAMETER_CHANGE event!" << std::endl;
+        }
+        else if (eventType == GenericProcessor::TTL) // == 3
+        {
+            //std::cout << "TTL event" << std::endl;
+            writeTTLEvent(event, timestamp);
+        }
+        else if (eventType == GenericProcessor::MESSAGE) // == 4
+        {
+            //std::cout << "MESSAGE event" << std::endl;
+            writeMessage(event, timestamp);
+        }
+        else if (eventType == GenericProcessor::BINARY_MSG) // == 5
+        {
+            std::cout << "*** WARNING: skipping BINARY_MSG event!" << std::endl;
+        }
 }
 
 void BinaryRecording::writeMessage(const MidiMessage& event, int64 timestamp)
@@ -363,42 +421,22 @@ void BinaryRecording::writeMessage(const MidiMessage& event, int64 timestamp)
 
 void BinaryRecording::writeTTLEvent(const MidiMessage& event, int64 timestamp)
 {
-    // find file and write samples to disk
-    // std::cout << "Received event!" << std::endl;
-
-    if (eventFile == nullptr)
+    if (DINFile == nullptr)
         return;
 
-    const uint8* dataptr = event.getRawData();
-
-
-    //With the new external recording thread, this field has no sense.
-    int16 samplePos = 0;
-
+    uint64 ttl = *(event.getRawData() + 6);
+    //std::cout << "*** writeTTLEvent: t, val: " << timestamp << ", " << ttl << std::endl;
     diskWriteLock.enter();
-
-    fwrite(&timestamp,                  // ptr
-        8,                              // size of each element
-        1,                              // count
-        eventFile);             // ptr to FILE object
-
-    fwrite(&samplePos,                          // ptr
-        2,                              // size of each element
-        1,                              // count
-        eventFile);             // ptr to FILE object
-
-    // write 1st four bytes of event (type, nodeId, eventId, eventChannel)
-    fwrite(dataptr, 1, 4, eventFile);
-    int16 recordingNumber = m_recordingNumber;
-    // write file number
-    fwrite(&recordingNumber,                     // ptr
-        2,                               // size of each element
-        1,                               // count
-        eventFile);             // ptr to FILE object
-
+    fwrite(&timestamp, // ptr
+           8,          // size of each element
+           1,          // count
+           DINFile);   // ptr to FILE object
+    fwrite(&ttl,       // ptr
+           8,          // size of each element
+           1,          // count
+           DINFile);   // ptr to FILE object
     diskWriteLock.exit();
 }
-*/
 
 void BinaryRecording::writeSpike(int electrodeIndex, const SpikeObject& spike, int64 timestamp)
 {

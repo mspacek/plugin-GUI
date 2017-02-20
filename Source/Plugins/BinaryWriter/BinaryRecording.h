@@ -59,9 +59,11 @@ namespace BinaryRecordingEngine
 		String generateSpikeHeader(SpikeRecordInfo* elec);
 		String generateEventHeader();
 
+		void openDINFile(String basepath, int recordingNumber);
 		void openEventFile(String basepath, int recordingNumber);
 		void openSpikeFile(String basepath, SpikeRecordInfo* elec, int recordingNumber);
 		void openMessageFile(String basepath, int recordingNumber);
+        // Saves (int64 timestamp, uint64 TTL word) pairs to .din file on every bit change:
 		void writeTTLEvent(const MidiMessage& event, int64 timestamp);
 		void writeMessage(const MidiMessage& event, int64 timestamp);
 
@@ -71,6 +73,7 @@ namespace BinaryRecordingEngine
 
 		OwnedArray<SequentialBlockFile>  m_DataFiles;
 
+		FILE* DINFile;
 		FILE* eventFile;
 		Array<FILE*> spikeFileArray;
 		FILE* messageFile;
