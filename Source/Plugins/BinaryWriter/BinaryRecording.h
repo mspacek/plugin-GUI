@@ -37,55 +37,55 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace BinaryRecordingEngine
 {
 
-	class BinaryRecording : public RecordEngine
-	{
-	public:
-		BinaryRecording();
-		~BinaryRecording();
+    class BinaryRecording : public RecordEngine
+    {
+    public:
+        BinaryRecording();
+        ~BinaryRecording();
 
-		String getEngineID() const override;
-		void openFiles(File rootFolder, String baseName, int recordingNumber) override;
-		void closeFiles() override;
-		void writeData(int writeChannel, int realChannel, const float* buffer, int size) override;
-		void writeEvent(int eventType, const MidiMessage& event, int64 timestamp) override;
-		void resetChannels() override;
-		void addSpikeElectrode(int index, const SpikeRecordInfo* elec) override;
-		void writeSpike(int electrodeIndex, const SpikeObject& spike, int64 timestamp) override;
+        String getEngineID() const override;
+        void openFiles(File rootFolder, String baseName, int recordingNumber) override;
+        void closeFiles() override;
+        void writeData(int writeChannel, int realChannel, const float* buffer, int size) override;
+        void writeEvent(int eventType, const MidiMessage& event, int64 timestamp) override;
+        void resetChannels() override;
+        void addSpikeElectrode(int index, const SpikeRecordInfo* elec) override;
+        void writeSpike(int electrodeIndex, const SpikeObject& spike, int64 timestamp) override;
 
-		static RecordEngineManager* getEngineManager();
+        static RecordEngineManager* getEngineManager();
 
-	private:
+    private:
 
-		String generateSpikeHeader(SpikeRecordInfo* elec);
-		String generateEventHeader();
+        String generateSpikeHeader(SpikeRecordInfo* elec);
+        String generateEventHeader();
 
-		void openDINFile(String basepath, int recordingNumber);
-		void openEventFile(String basepath, int recordingNumber);
-		void openSpikeFile(String basepath, SpikeRecordInfo* elec, int recordingNumber);
-		void openMessageFile(String basepath, int recordingNumber);
+        void openDINFile(String basepath, int recordingNumber);
+        void openEventFile(String basepath, int recordingNumber);
+        void openSpikeFile(String basepath, SpikeRecordInfo* elec, int recordingNumber);
+        void openMessageFile(String basepath, int recordingNumber);
         // Saves (int64 timestamp, uint64 TTL word) pairs to .din file on every bit change:
-		void writeTTLEvent(const MidiMessage& event, int64 timestamp);
-		void writeMessage(const MidiMessage& event, int64 timestamp);
+        void writeTTLEvent(const MidiMessage& event, int64 timestamp);
+        void writeMessage(const MidiMessage& event, int64 timestamp);
 
-		HeapBlock<float> m_scaledBuffer;
-		HeapBlock<int16> m_intBuffer;
-		int m_bufferSize;
+        HeapBlock<float> m_scaledBuffer;
+        HeapBlock<int16> m_intBuffer;
+        int m_bufferSize;
 
-		OwnedArray<SequentialBlockFile>  m_DataFiles;
+        OwnedArray<SequentialBlockFile>  m_DataFiles;
 
-		FILE* DINFile;
-		FILE* eventFile;
-		Array<FILE*> spikeFileArray;
-		FILE* messageFile;
-		int m_recordingNumber;
-		Array<uint64> m_startTS;
+        FILE* DINFile;
+        FILE* eventFile;
+        Array<FILE*> spikeFileArray;
+        FILE* messageFile;
+        int m_recordingNumber;
+        Array<uint64> m_startTS;
 
-		CriticalSection diskWriteLock;
+        CriticalSection diskWriteLock;
 
-		//Compile-time constants
-		const int samplesPerBlock{ 4096 };
+        //Compile-time constants
+        const int samplesPerBlock{ 4096 };
 
-	};
+    };
 
 }
 
