@@ -386,12 +386,17 @@ void BinaryRecording::writeEvent(int eventType, const MidiMessage& event, int64 
             //std::cout << "TTL event" << std::endl;
             writeTTLEvent(event, timestamp);
         }
-        else if (eventType == GenericProcessor::MESSAGE) // == 4
+        else if (eventType == GenericProcessor::SPIKE) // == 4
+        {
+            std::cout << "*** WARNING: skipping SPIKE event!" << std::endl;
+            // TODO: this definitely needs to be handled
+        }
+        else if (eventType == GenericProcessor::MESSAGE) // == 5
         {
             //std::cout << "MESSAGE event" << std::endl;
             writeMessage(event, timestamp);
         }
-        else if (eventType == GenericProcessor::BINARY_MSG) // == 5
+        else if (eventType == GenericProcessor::BINARY_MSG) // == 6
         {
             std::cout << "*** WARNING: skipping BINARY_MSG event!" << std::endl;
         }
