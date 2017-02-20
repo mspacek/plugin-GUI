@@ -156,6 +156,10 @@ void MessageCenter::process(AudioSampleBuffer& buffer, MidiBuffer& eventBuffer)
                  data.sizeInBytes(), //It doesn't hurt to send the end-string null and can help avoid issues
                  (uint8*) data.getAddress());
 
+        //std::cout << "*** MessageCenter::process: msgLength, strlen, msg: " << data.sizeInBytes() << ", "
+                  //<< strlen(data) << ", "
+                  //<< (uint8*) data.getAddress() << std::endl;
+
         newEventAvailable = false;
     }
 

@@ -39,6 +39,11 @@ BlixxProcessor::BlixxProcessor()
      * to ensure its messages are saved to disk */
     setProcessorType (PROCESSOR_TYPE_FILTER);
 
+    std::cout << std::endl;
+    std::cout << "WARNING: Don't use the Blixx Processor! It's no longer necessary, and "
+                 "remains only as an example!" << std::endl;
+    std::cout << std::endl;
+
     blixxEvents = MidiBuffer(); // temporary buffer to hold BLIXX frame draw events
 }
 

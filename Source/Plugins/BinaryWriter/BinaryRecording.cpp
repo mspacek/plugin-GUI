@@ -452,17 +452,13 @@ void BinaryRecording::writeSpike(int electrodeIndex, const SpikeObject& spike, i
         spike.nChannels * 2 +            // account for thresholds
         SPIKE_METADATA_SIZE;             // 42, from SpikeObject.h
 
-
     diskWriteLock.enter();
-
     fwrite(spikeBuffer, 1, totalBytes, spikeFileArray[electrodeIndex]);
-
     int16 recordingNumber = m_recordingNumber;
     fwrite(&recordingNumber,                         // ptr
         2,                               // size of each element
         1,                               // count
         spikeFileArray[electrodeIndex]); // ptr to FILE object
-
     diskWriteLock.exit();
 }
 
