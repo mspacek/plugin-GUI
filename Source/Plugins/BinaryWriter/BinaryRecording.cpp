@@ -438,7 +438,7 @@ void BinaryRecording::writeMessage(const MidiMessage& event, int64 timestamp)
 
     diskWriteLock.enter();
     fwrite(timestampText.toUTF8(), 1, timestampText.length(), messageFile);
-    fwrite(" ", 1, 1, messageFile);
+    fwrite("  ", 1, 2, messageFile);
     fwrite(dataptr, 1, msgLength-1, messageFile);
     fwrite("\n", 1, 1, messageFile);
     // since this file is typically quite small, rarely written to, and rarely crosses
