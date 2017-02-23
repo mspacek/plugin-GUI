@@ -631,14 +631,9 @@ void GenericProcessor::setTimestamp (MidiBuffer& events, int64 timestamp)
 
     if (m_isNeedsToSendTimestampMessage)
     {
-        String eventString = "Processor: "
-                                + String (getNodeId()) 
-                                + " start time: " 
-                                + String (timestamp) 
-                                + "@" 
-                                + String (getSampleRate()) 
-                                + "Hz";
-
+        String eventString = "processor = " + String(getNodeId()) + "; "
+                           + "sample0 = " + String(timestamp) + "; "
+                           + "sampleRate = " + String(getSampleRate());
         CharPointer_UTF8 data = eventString.toUTF8();
 
         addEvent (events,

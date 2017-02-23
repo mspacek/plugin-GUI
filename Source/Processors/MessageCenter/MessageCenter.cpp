@@ -123,10 +123,11 @@ int64 MessageCenter::getTimestamp(bool softwareTime)
 void MessageCenter::process(AudioSampleBuffer& buffer, MidiBuffer& eventBuffer)
 {
     softTimestamp = Time::getHighResolutionTicks() - lastTime;
-    setTimestamp(eventBuffer,getTimestamp());
+    setTimestamp(eventBuffer, getTimestamp());
     if (needsToSendTimestampMessage)
     {
-        String eventString = "Software time: " + String(getTimestamp(true)) + "@" + String(Time::getHighResolutionTicksPerSecond()) + "Hz";
+        String eventString = "software_time = " + String(getTimestamp(true)) + "; "
+                           + "software_sampleRate = " + String(Time::getHighResolutionTicksPerSecond());
         CharPointer_UTF8 data = eventString.toUTF8();
 
         addEvent(eventBuffer,
