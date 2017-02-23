@@ -57,6 +57,7 @@ namespace BinaryRecordingEngine
     private:
 
         String generateSpikeHeader(SpikeRecordInfo* elec);
+        String generateMessageHeader();
         String generateEventHeader();
 
         void openDINFile(String basepath, int recordingNumber);
