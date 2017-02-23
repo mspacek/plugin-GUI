@@ -127,3 +127,4 @@ build/
 /Builds/MacOSX/Plugins/Config/Env.xcconfig
 #10. git conflict resolution files
 *.orig
+/Source/Plugins/BinaryWriter/GitVersion.cpp

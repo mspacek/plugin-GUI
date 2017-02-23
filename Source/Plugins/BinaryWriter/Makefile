@@ -1,4 +1,3 @@
-
 LIBNAME := $(notdir $(CURDIR))
 OBJDIR := $(OBJDIR)/$(LIBNAME)
 TARGET := $(LIBNAME).so
@@ -34,5 +33,9 @@ clean:
 	@echo "Cleaning $(LIBNAME)"
 	-@rm -rf $(OBJDIR)
 	-@rm -f $(OUTDIR)/$(TARGET)
+	-@rm -f GitVersion.cpp
 
 -include $(OBJ:%.o=%.d)
+
+GitVersion.cpp: ../../../.git/HEAD ../../../.git/index
+	echo "const char* GITVERSION = \"$(shell git describe --tags --always --dirty)\";" > $@
