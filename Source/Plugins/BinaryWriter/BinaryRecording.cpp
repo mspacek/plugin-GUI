@@ -214,6 +214,7 @@ void BinaryRecording::openEventFile(String basepath, int recordingNumber)
         //std::cout << header << std::endl;
         //std::cout << "File ID: " << f << ", number of bytes: " << header.getNumBytesAsUTF8() << std::endl;
         fwrite(header.toUTF8(), 1, header.getNumBytesAsUTF8(), f);
+        fflush(f); // ensure header is written to disk immediately
         //std::cout << "Wrote header." << std::endl;
         //std::cout << "Block index: " << blockIndex << std::endl;
     }
