@@ -37,5 +37,6 @@ clean:
 
 -include $(OBJ:%.o=%.d)
 
+## Define GITVERSION symbol, see http://stackoverflow.com/a/6526504
 GitVersion.cpp: ../../../.git/HEAD ../../../.git/index
 	echo "const char* GITVERSION = \"$(shell git describe --tags --always --dirty)\";" > $@
