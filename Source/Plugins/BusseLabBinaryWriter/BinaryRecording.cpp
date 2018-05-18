@@ -58,6 +58,21 @@ String BinaryRecording::getProcessorString(const InfoObjectCommon* channelInfo)
 	fName += File::separatorString;
 	return fName;
 }
+/*
+
+TODO:
+
+* create brand new files for all file types if recordingNumber has been inc'd.
+  Don't overwrite existing. See oe.old
+* generate normal text msg log file
+* generate a single 2D uint64 .npy file for ts and din, might have to be in fortran order to
+  alternate in hex viewer. Make sure they're aligned to 16 byte multiples
+* flush messages and din to disk immediately, or reasonably fast, don't wait til rec stops
+* test spike detection and saving
+* get channel map working
+* generate desired .json file for kilosort and spyke
+
+*/
 
 void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingNumber)
 {
@@ -164,57 +179,45 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	}
 
 	int nEvents = getNumRecordedEvents();
-	String eventPath(basepath + "events" + File::separatorString);
 	Array<var> jsonEventFiles;
 
 	for (int ev = 0; ev < nEvents; ev++)
 	{
 		const EventChannel* chan = getEventChannel(ev);
-		String eventName = getProcessorString(chan);
-		NpyType type;
-		String dataFileName;
+		String eventName;
+		NpyType dtype;
+		NpyType tstype = NpyType(BaseType::INT64, 1);
+		ScopedPointer<EventRecording> rec = new EventRecording();
 
 		switch (chan->getChannelType())
 		{
 		case EventChannel::TEXT:
-			eventName += "TEXT_group";
-			type = NpyType(BaseType::CHAR, chan->getLength());
-			dataFileName = "text";
+			eventName = "msg";
+			dtype = NpyType(BaseType::CHAR, chan->getLength());
+			rec->dataFile = new NpyFile(basepath + '_' + eventName + ".npy", dtype);
+			rec->tsFile = new NpyFile(basepath + '_' + eventName + "_ts.npy", tstype);
 			break;
 		case EventChannel::TTL:
-			eventName += "TTL";
-			type = NpyType(BaseType::INT16, 1);
-			dataFileName = "channel_states";
-			break;
-		default:
-			eventName += "BINARY_group";
-			type = NpyType(chan->getEquivalentMetaDataType(), chan->getLength());
-			dataFileName = "data_array";
+			if (!m_saveTTLWords) break;
+			eventName = "din";
+			dtype = NpyType(BaseType::INT16, 1);
+			rec->dataFile = new NpyFile(basepath + '_' + eventName + ".npy", dtype);
+			rec->tsFile = new NpyFile(basepath + '_' + eventName + "_ts.npy", tstype);
 			break;
 		}
-		eventName += "_" + String(chan->getSourceIndex() + 1) + File::separatorString;
-		ScopedPointer<EventRecording> rec = new EventRecording();
 		
-		rec->mainFile = new NpyFile(eventPath + eventName + dataFileName + ".npy", type);
-		rec->timestampFile = new NpyFile(eventPath + eventName + "timestamps.npy", NpyType(BaseType::INT64, 1));
-		rec->channelFile = new NpyFile(eventPath + eventName + "channels.npy", NpyType(BaseType::UINT16, 1));
-		if (chan->getChannelType() == EventChannel::TTL && m_saveTTLWords)
-		{
-			rec->extraFile = new NpyFile(eventPath + eventName + "full_words.npy", NpyType(BaseType::UINT8, chan->getDataSize()));
-		}
-
 		DynamicObject::Ptr jsonChannel = new DynamicObject();
 		jsonChannel->setProperty("folder_name", eventName.replace(File::separatorString, "/"));
 		jsonChannel->setProperty("channel_name", chan->getName());
 		jsonChannel->setProperty("description", chan->getDescription());
 		jsonChannel->setProperty("identifier", chan->getIdentifier());
 		jsonChannel->setProperty("sample_rate", chan->getSampleRate());
-		jsonChannel->setProperty("type", jsonTypeValue(type.getType()));
+		jsonChannel->setProperty("type", jsonTypeValue(dtype.getType()));
 		jsonChannel->setProperty("num_channels", (int)chan->getNumChannels());
 		jsonChannel->setProperty("source_processor", chan->getSourceName());
 		createChannelMetaData(chan, jsonChannel);
 
-		rec->metaDataFile = createEventMetadataFile(chan, eventPath + eventName + "metadata.npy", jsonChannel);
+		rec->metaDataFile = createEventMetadataFile(chan, basepath + eventName + "_metadata.npy", jsonChannel);
 		m_eventFiles.add(rec.release());
 		jsonEventFiles.add(var(jsonChannel));
 	}
@@ -267,7 +270,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 			}
 		}
 		
-		if (!found)
+		if (!found) // write spike data to file
 		{
 			int fileIndex = m_spikeFiles.size();
 			m_spikeFileIndexes.set(sp, fileIndex);
@@ -281,9 +284,9 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 
 			String spikeName = getProcessorString(ch) + "spike_group_" + String(groupIndex) + File::separatorString;
 
-			rec->mainFile = new NpyFile(spikePath + spikeName + "spike_waveforms.npy", NpyType(BaseType::INT16, ch->getTotalSamples()), ch->getNumChannels());
-			rec->timestampFile = new NpyFile(spikePath + spikeName + "spike_times.npy", NpyType(BaseType::INT64, 1));
-			rec->channelFile = new NpyFile(spikePath + spikeName + "spike_electrode_indices.npy", NpyType(BaseType::UINT16, 1));
+			rec->dataFile = new NpyFile(spikePath + spikeName + "spike_waveforms.npy", NpyType(BaseType::INT16, ch->getTotalSamples()), ch->getNumChannels());
+			rec->tsFile = new NpyFile(spikePath + spikeName + "spike_times.npy", NpyType(BaseType::INT64, 1));
+			rec->chanFile = new NpyFile(spikePath + spikeName + "spike_electrode_indices.npy", NpyType(BaseType::UINT16, 1));
 			rec->extraFile = new NpyFile(spikePath + spikeName + "spike_clusters.npy", NpyType(BaseType::UINT16, 1));
 			Array<NpyType> tsTypes;
 			
@@ -299,7 +302,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 			jsonFile->setProperty("pre_peak_samples", (int)ch->getPrePeakSamples());
 			jsonFile->setProperty("post_peak_samples", (int)ch->getPostPeakSamples());
 			
-			rec->metaDataFile = createEventMetadataFile(ch, spikePath + spikeName + "metadata.npy", jsonFile);
+			rec->metaDataFile = createEventMetadataFile(ch, spikePath + spikeName + "_metadata.npy", jsonFile);
 			m_spikeFiles.add(rec.release());
 			jsonSpikeFiles.add(var(jsonFile));
 		}
@@ -313,7 +316,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		jsonFile->setProperty("channels", jsonSpikeChannels.getReference(i));
 	}
 
-	File syncFile = File(basepath + "sync_messages.txt");
+	File syncFile = File(basepath + "_sync_messages.txt");
 	Result res = syncFile.create();
 	if (res.failed())
 	{
@@ -331,7 +334,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	jsonSettingsFile->setProperty("continuous", jsonContinuousfiles);
 	jsonSettingsFile->setProperty("events", jsonEventFiles);
 	jsonSettingsFile->setProperty("spikes", jsonSpikeFiles);
-	FileOutputStream settingsFileStream(File(basepath + "structure.oebin"));
+	FileOutputStream settingsFileStream(File(basepath + "_settings.json"));
 
 	jsonSettingsFile->writeAsJSON(settingsFileStream, 2, false);
 }
@@ -519,22 +522,20 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 	if (!rec) return;
 	const EventChannel* info = getEventChannel(eventIndex);
 	int64 ts = ev->getTimestamp();
-	rec->timestampFile->writeData(&ts, sizeof(int64));
+	rec->tsFile->writeData(&ts, sizeof(int64));
 
-	uint16 chan = ev->getChannel() +1;
-	rec->channelFile->writeData(&chan, sizeof(uint16));
+	//uint16 chan = ev->getChannel() +1;
+	//rec->chanFile->writeData(&chan, sizeof(uint16));
 
 	if (ev->getEventType() == EventChannel::TTL)
 	{
 		TTLEvent* ttl = static_cast<TTLEvent*>(ev.get());
 		int16 data = (ttl->getChannel()+1) * (ttl->getState() ? 1 : -1);
-		rec->mainFile->writeData(&data, sizeof(int16));
-		if (rec->extraFile)
-			rec->extraFile->writeData(ttl->getTTLWordPointer(), info->getDataSize());
+		rec->dataFile->writeData(ttl->getTTLWordPointer(), info->getDataSize());
 	}
 	else
 	{
-		rec->mainFile->writeData(ev->getRawDataPointer(), info->getDataSize());
+		rec->dataFile->writeData(ev->getRawDataPointer(), info->getDataSize());
 	}
 	
 	writeEventMetaData(ev.get(), rec->metaDataFile);
@@ -569,12 +570,12 @@ void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)
 	double multFactor = 1 / (float(0x7fff) * channel->getChannelBitVolts(0));
 	FloatVectorOperations::copyWithMultiply(m_scaledBuffer.getData(), spike->getDataPointer(), multFactor, totalSamples);
 	AudioDataConverters::convertFloatToInt16LE(m_scaledBuffer.getData(), m_intBuffer.getData(), totalSamples);
-	rec->mainFile->writeData(m_intBuffer.getData(), totalSamples*sizeof(int16));
+	rec->dataFile->writeData(m_intBuffer.getData(), totalSamples*sizeof(int16));
 	
 	int64 ts = spike->getTimestamp();
-	rec->timestampFile->writeData(&ts, sizeof(int64));
+	rec->tsFile->writeData(&ts, sizeof(int64));
 
-	rec->channelFile->writeData(&spikeChannel, sizeof(uint16));
+	rec->chanFile->writeData(&spikeChannel, sizeof(uint16));
 
 	uint16 sortedID = spike->getSortedID();
 	rec->extraFile->writeData(&sortedID, sizeof(uint16));
@@ -585,10 +586,10 @@ void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)
 
 void BinaryRecording::increaseEventCounts(EventRecording* rec)
 {
-	rec->mainFile->increaseRecordCount();
-	rec->timestampFile->increaseRecordCount();
+	rec->dataFile->increaseRecordCount();
+	rec->tsFile->increaseRecordCount();
 	if (rec->extraFile) rec->extraFile->increaseRecordCount();
-	if (rec->channelFile) rec->channelFile->increaseRecordCount();
+	if (rec->chanFile) rec->chanFile->increaseRecordCount();
 	if (rec->metaDataFile) rec->metaDataFile->increaseRecordCount();
 }
 

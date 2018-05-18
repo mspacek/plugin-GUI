@@ -54,10 +54,10 @@ namespace BinaryRecordingEngine
 		class EventRecording
 		{
 		public:
-			ScopedPointer<NpyFile> mainFile;
-			ScopedPointer<NpyFile> timestampFile;
+			ScopedPointer<NpyFile> dataFile;
+			ScopedPointer<NpyFile> tsFile;
 			ScopedPointer<NpyFile> metaDataFile;
-			ScopedPointer<NpyFile> channelFile;
+			ScopedPointer<NpyFile> chanFile;
 			ScopedPointer<NpyFile> extraFile;
 		};
 		
