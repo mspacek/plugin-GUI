@@ -26,7 +26,7 @@
 GraphViewer::GraphViewer()
 {
     JUCEApplication* app = JUCEApplication::getInstance();
-    currentVersionText = "GUI version " + app->getApplicationVersion();
+    currentVersionText = "Busse Lab GUI version " + app->getApplicationVersion();
     
     rootNum = 0;
 }
