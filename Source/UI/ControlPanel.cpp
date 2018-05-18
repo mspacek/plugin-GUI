@@ -419,12 +419,6 @@ ControlPanel::ControlPanel(ProcessorGraph* graph_, AudioComponent* audio_)
     recordOptionsButton->setTooltip("Configure options for selected record engine");
     addChildComponent(recordOptionsButton);
 
-    newDirectoryButton = new UtilityButton("+", Font("Small Text", 15, Font::plain));
-    newDirectoryButton->setEnabledState(false);
-    newDirectoryButton->addListener(this);
-    newDirectoryButton->setTooltip("Start a new data directory");
-    addChildComponent(newDirectoryButton);
-
 
 #if defined(__APPLE__)
     const File dataDirectory = CoreServices::getDefaultUserSaveDirectory();
@@ -442,25 +436,14 @@ ControlPanel::ControlPanel(ProcessorGraph* graph_, AudioComponent* audio_)
                                               "");
     addChildComponent(filenameComponent);
 
-    prependText = new Label("Prepend","");
-    prependText->setEditable(true);
-    prependText->addListener(this);
-    prependText->setColour(Label::backgroundColourId, Colours::lightgrey);
-    prependText->setTooltip("Prepend to name of data directory");
+    baseNameText = new Label("Base name","");
+    baseNameText->setEditable(true);
+    baseNameText->addListener(this);
+    baseNameText->setColour(Label::backgroundColourId, Colours::lightgrey);
+    //baseNameText->setColour(Label::textColourId, Colours::black);
+    baseNameText->setTooltip("Base file and folder name");
 
-    addChildComponent(prependText);
-
-    dateText = new Label("Date","YYYY-MM-DD_HH-MM-SS");
-    dateText->setColour(Label::backgroundColourId, Colours::lightgrey);
-    dateText->setColour(Label::textColourId, Colours::grey);
-    addChildComponent(dateText);
-
-    appendText = new Label("Append","");
-    appendText->setEditable(true);
-    appendText->addListener(this);
-    appendText->setColour(Label::backgroundColourId, Colours::lightgrey);
-    addChildComponent(appendText);
-    appendText->setTooltip("Append to name of data directory");
+    addChildComponent(baseNameText);
 
     //diskMeter->updateDiskSpace(graph->getRecordNode()->getFreeSpace());
     //diskMeter->repaint();
@@ -740,26 +723,14 @@ void ControlPanel::resized()
         filenameComponent->setBounds (165, topBound, w - 500, h - 10);
         filenameComponent->setVisible (true);
 
-        newDirectoryButton->setBounds (w - h + 4, topBound, h - 10, h - 10);
-        newDirectoryButton->setVisible (true);
-
-        prependText->setBounds (165 + w - 490, topBound, 50, h - 10);
-        prependText->setVisible (true);
-
-        dateText->setBounds (165 + w - 435, topBound, 175, h - 10);
-        dateText->setVisible (true);
-
-        appendText->setBounds (165 + w - 255, topBound, 50, h - 10);
-        appendText->setVisible (true);
+        baseNameText->setBounds (165 + w - 490, topBound, 315, h - 10);
+        baseNameText->setVisible (true);
 
     }
     else
     {
         filenameComponent->setVisible   (false);
-        newDirectoryButton->setVisible  (false);
-        prependText->setVisible         (false);
-        dateText->setVisible            (false);
-        appendText->setVisible          (false);
+        baseNameText->setVisible        (false);
         recordSelector->setVisible      (false);
         recordOptionsButton->setVisible (false);
     }
@@ -779,10 +750,7 @@ void ControlPanel::openState(bool os)
 void ControlPanel::labelTextChanged(Label* label)
 {
     graph->getRecordNode()->newDirectoryNeeded = true;
-    newDirectoryButton->setEnabledState(false);
     masterClock->resetRecordTime();
-
-    dateText->setColour(Label::textColourId, Colours::grey);
 }
 
 void ControlPanel::startRecording()
@@ -790,9 +758,8 @@ void ControlPanel::startRecording()
 
     masterClock->startRecording(); // turn on recording
     backgroundColour = Colour(255,0,0);
-    prependText->setEditable(false);
-    appendText->setEditable(false);
-    dateText->setColour(Label::textColourId, Colours::black);
+    filenameComponent->setEnabled(false);
+    baseNameText->setEnabled(false);
 
     graph->setRecordState(true);
 
@@ -804,11 +771,9 @@ void ControlPanel::stopRecording()
     graph->setRecordState(false); // turn off recording in processor graph
 
     masterClock->stopRecording();
-    newDirectoryButton->setEnabledState(true);
     backgroundColour = Colour (51, 51, 51);
 
-    prependText->setEditable(true);
-    appendText->setEditable(true);
+    baseNameText->setEnabled(true);
 
     recordButton->setToggleState(false, dontSendNotification);
 
@@ -818,17 +783,6 @@ void ControlPanel::stopRecording()
 void ControlPanel::buttonClicked(Button* button)
 
 {
-    if (button == newDirectoryButton && newDirectoryButton->getEnabledState())
-    {
-        graph->getRecordNode()->newDirectoryNeeded = true;
-        newDirectoryButton->setEnabledState(false);
-        masterClock->resetRecordTime();
-
-        dateText->setColour(Label::textColourId, Colours::grey);
-
-        return;
-    }
-
     if (button == playButton)
     {
         if (playButton->getToggleState())
@@ -944,10 +898,8 @@ void ControlPanel::comboBoxChanged(ComboBox* combo)
     AccessClass::getProcessorGraph()->getRecordNode()->registerRecordEngine(re);
 
     graph->getRecordNode()->newDirectoryNeeded = true;
-    newDirectoryButton->setEnabledState(false);
     masterClock->resetRecordTime();
 
-    dateText->setColour(Label::textColourId, Colours::grey);
     lastEngineIndex=combo->getSelectedId()-1;
 }
 
@@ -1041,47 +993,16 @@ void ControlPanel::toggleState()
     AccessClass::getUIComponent()->childComponentChanged();
 }
 
-String ControlPanel::getTextToAppend()
-{
-    String t = appendText->getText();
 
-    if (t.length() > 0)
-    {
-        return "_" + t;
-    }
-    else
-    {
+String ControlPanel::getBaseName()
+{
+    String t = baseNameText->getText();
         return t;
-    }
 }
 
-String ControlPanel::getTextToPrepend()
+void ControlPanel::setBaseName(String t)
 {
-    String t = prependText->getText();
-
-    if (t.length() > 0)
-    {
-        return t + "_";
-    }
-    else
-    {
-        return t;
-    }
-}
-
-void ControlPanel::setPrependText(String t)
-{
-    prependText->setText(t, sendNotificationSync);
-}
-
-void ControlPanel::setAppendText(String t)
-{
-    appendText->setText(t, sendNotificationSync);
-}
-
-void ControlPanel::setDateText(String t)
-{
-    dateText->setText(t, dontSendNotification);
+    baseNameText->setText(t, sendNotificationSync);
 }
 
 
@@ -1091,8 +1012,7 @@ void ControlPanel::saveStateToXml(XmlElement* xml)
     XmlElement* controlPanelState = xml->createNewChildElement("CONTROLPANEL");
     controlPanelState->setAttribute("isOpen",open);
 	controlPanelState->setAttribute("recordPath", filenameComponent->getCurrentFile().getFullPathName());
-    controlPanelState->setAttribute("prependText",prependText->getText());
-    controlPanelState->setAttribute("appendText",appendText->getText());
+    controlPanelState->setAttribute("baseNameText",baseNameText->getText());
     controlPanelState->setAttribute("recordEngine",recordEngines[recordSelector->getSelectedId()-1]->getID());
 
     audioEditor->saveStateToXml(xml);
@@ -1120,8 +1040,7 @@ void ControlPanel::loadStateFromXml(XmlElement* xml)
 			{
 				filenameComponent->setCurrentFile(File(recordPath), true, sendNotificationAsync);
 			}
-            appendText->setText(xmlNode->getStringAttribute("appendText", ""), dontSendNotification);
-            prependText->setText(xmlNode->getStringAttribute("prependText", ""), dontSendNotification);
+            baseNameText->setText(xmlNode->getStringAttribute("baseNameText", ""), dontSendNotification);
 			String selectedEngine = xmlNode->getStringAttribute("recordEngine");
 			for (int i = 0; i < recordEngines.size(); i++)
 			{

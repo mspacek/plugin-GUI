@@ -34,7 +34,7 @@ public:
 
     String getEngineID() const override;
 
-    void openFiles (File rootFolder, int experimentNumber, int recordingNumber) override;
+    void openFiles (File rootFolder, String baseName, int recordingNumber) override;
     void closeFiles() override;
 
     void writeData  (int writeChannel, int realChannel, const float* buffer, int size)  override;

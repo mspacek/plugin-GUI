@@ -41,7 +41,7 @@ class RecordThread : public Thread
 public:
 	RecordThread(const OwnedArray<RecordEngine>& engines);
 	~RecordThread();
-	void setFileComponents(File rootFolder, int experimentNumber, int recordingNumber);
+    void setFileComponents(File rootFolder, String baseName, int recordingNumber);
 	void setChannelMap(const Array<int>& channels);
 	void setQueuePointers(DataQueue* data, EventMsgQueue* events, SpikeMsgQueue* spikes);
 
@@ -64,7 +64,7 @@ private:
 	std::atomic<bool> m_cleanExit;
 
 	File m_rootFolder;
-	int m_experimentNumber;
+    String m_baseName;
 	int m_recordingNumber;
 	int m_numChannels;
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RecordThread);

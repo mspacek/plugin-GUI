@@ -83,7 +83,7 @@ void OriginalRecording::resetChannels()
 	procIndex = 0;
 }
 
-void OriginalRecording::openFiles(File rootFolder, int experimentNumber, int recordingNumber)
+void OriginalRecording::openFiles(File rootFolder, String baseName, int recordingNumber)
 {
     this->recordingNumber = recordingNumber;
     this->experimentNumber = experimentNumber;

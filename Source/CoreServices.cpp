@@ -108,16 +108,6 @@ void createNewRecordingDir()
    getControlPanel()->labelTextChanged(NULL);
 }
 
-void setPrependTextToRecordingDir(String text)
-{
-    getControlPanel()->setPrependText(text);
-}
-
-void setAppendTextToRecordingDir(String text)
-{
-    getControlPanel()->setAppendText(text);
-}
-
 String getSelectedRecordEngineId()
 {
 	return getControlPanel()->getSelectedRecordEngineId();
@@ -140,14 +130,14 @@ File getRecordingPath()
     return getProcessorGraph()->getRecordNode()->getDataDirectory();
 }
 
+String getBaseName()
+{
+	return getProcessorGraph()->getRecordNode()->getBaseName();
+}
+
 int getRecordingNumber()
 {
 	return getProcessorGraph()->getRecordNode()->getRecordingNumber();
-}
-
-int getExperimentNumber()
-{
-	return getProcessorGraph()->getRecordNode()->getExperimentNumber();
 }
 
 void writeSpike(const SpikeEvent* spike, const SpikeChannel* chan)

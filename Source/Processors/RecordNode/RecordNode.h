@@ -76,10 +76,11 @@ public:
     */
     void setParameter(int parameterIndex, float newValue) override;
 
-	/** returns current experiment number */
-	int getExperimentNumber() const;
 	/** returns current recording number */
 	int getRecordingNumber() const;
+
+    /** returns current base name file glob pattern, based on current recording number */
+    String getBaseNameGlob();
 
     /** Called by the processor graph for each processor that could record data
     */
@@ -124,8 +125,16 @@ public:
     */
     void createNewDirectory();
 
+    /** Make sure rootFolder exists on disk, if not, create it
+    */
+    void ensureRootFolderExists();
 
 	File getDataDirectory() const;
+
+    String getBaseName() const
+    {
+        return baseName;
+    }
 
     /** Adds a Record Engine to use
     */
@@ -179,6 +188,9 @@ private:
     */
     File rootFolder;
 
+    /** Base folder and file name.
+    */
+    String baseName;
 
     /** Integer timestamp saved for each buffer.
     */
@@ -195,9 +207,7 @@ private:
 
     int spikeElectrodeIndex;
 
-    int experimentNumber;
     bool hasRecorded;
-    bool settingsNeeded;
 	std::atomic<bool> setFirstBlock;
     /** Generates a default directory name, based on the current date and time */
     String generateDirectoryName();

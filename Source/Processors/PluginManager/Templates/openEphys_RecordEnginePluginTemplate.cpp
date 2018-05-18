@@ -39,7 +39,7 @@ String PROCESSORCLASSNAME::getEngineID() const
 }
 
 
-void PROCESSORCLASSNAME::openFiles (File rootFolder, int experimentNumber, int recordingNumber)
+void PROCESSORCLASSNAME::openFiles (File rootFolder, String baseName, int recordingNumber)
 {
 }
 

@@ -59,11 +59,9 @@ String BinaryRecording::getProcessorString(const InfoObjectCommon* channelInfo)
 	return fName;
 }
 
-void BinaryRecording::openFiles(File rootFolder, int experimentNumber, int recordingNumber)
+void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingNumber)
 {
-	String basepath = rootFolder.getFullPathName() + rootFolder.separatorString + "experiment" + String(experimentNumber)
-		+ File::separatorString + "recording" + String(recordingNumber + 1) + File::separatorString;
-	String contPath = basepath + "continuous" + File::separatorString;
+	String basepath = rootFolder.getFullPathName() + rootFolder.separatorString + baseName;
 	//Open channel files
 	int nProcessors = getNumRecordedProcessors();
 
@@ -115,8 +113,7 @@ void BinaryRecording::openFiles(File rootFolder, int experimentNumber, int recor
 			}
 			if (!found)
 			{
-				String datPath = getProcessorString(channelInfo);
-				continuousFileNames.add(contPath + datPath + "continuous.dat");
+				continuousFileNames.add(basepath + ".dat");
 				
 				ScopedPointer<NpyFile> tFile = new NpyFile(contPath + datPath + "timestamps.npy", NpyType(BaseType::INT64,1));
 				m_dataTimestampFiles.add(tFile.release());
@@ -130,7 +127,7 @@ void BinaryRecording::openFiles(File rootFolder, int experimentNumber, int recor
 				jsonChanArray.add(var(jsonChan));
 				jsonChannels.add(var(jsonChanArray));
 				DynamicObject::Ptr jsonFile = new DynamicObject();
-				jsonFile->setProperty("folder_name", datPath.replace(File::separatorString, "/")); //to make it more system agnostic, replace separator with only one slash
+				jsonFile->setProperty("folder_name", basepath.replace(File::separatorString, "/")); //to make it more system agnostic, replace separator with only one slash
 				jsonFile->setProperty("sample_rate", channelInfo->getSampleRate());
 				jsonFile->setProperty("source_processor_name", channelInfo->getSourceName());
 				jsonFile->setProperty("source_processor_id", channelInfo->getSourceNodeID());

@@ -49,9 +49,7 @@ RecordNode::RecordNode()
 
     spikeElectrodeIndex = 0;
 
-    experimentNumber = 0;
     hasRecorded = false;
-    settingsNeeded = false;
 
     // 128 inputs, 0 outputs
     setPlayConfigDetails(getNumInputs(),getNumOutputs(),44100.0,128);
@@ -173,13 +171,23 @@ void RecordNode::addInputChannel(const GenericProcessor* sourceNode, int chan)
 
 void RecordNode::createNewDirectory()
 {
-    std::cout << "Creating new directory." << std::endl;
-
-    rootFolder = File(dataDirectory.getFullPathName() + File::separator + generateDirectoryName());
+    baseName = AccessClass::getControlPanel()->getBaseName();
+    rootFolder = File(dataDirectory.getFullPathName() + File::separator + baseName);
+    ensureRootFolderExists();
     newDirectoryNeeded = false;
-
 }
 
+void RecordNode::ensureRootFolderExists()
+{
+    if (!rootFolder.exists())
+    {
+        std::cout << "CREATING NEW FOLDER: " << rootFolder.getFullPathName() << std::endl;
+        rootFolder.createDirectory();
+    }
+}
+
+
+/*
 String RecordNode::generateDirectoryName()
 {
     Time calendar = Time::getCurrentTime();
@@ -217,6 +225,7 @@ String RecordNode::generateDirectoryName()
     return filename;
 
 }
+*/
 
 String RecordNode::generateDateString() const
 {
@@ -252,14 +261,20 @@ String RecordNode::generateDateString() const
 
 }
 
-int RecordNode::getExperimentNumber() const
-{
-	return experimentNumber;
-}
-
 int RecordNode::getRecordingNumber() const
 {
-	return recordingNumber;
+    return recordingNumber;
+}
+
+String RecordNode::getBaseNameGlob()
+{
+    String baseNameGlob = baseName;
+    if (recordingNumber > 0)
+    {
+        baseNameGlob += "_" + String(recordingNumber);
+    }
+    baseNameGlob += ".*";
+    return baseNameGlob;
 }
 
 void RecordNode::setParameter(int parameterIndex, float newValue)
@@ -273,15 +288,11 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
     if (parameterIndex == 1)
     {
 
-		
-		// std::cout << "START RECORDING." << std::endl;
-
         if (newDirectoryNeeded)
         {
             createNewDirectory();
+            baseName = AccessClass::getControlPanel()->getBaseName();
             recordingNumber = 0;
-            experimentNumber = 1;
-            settingsNeeded = true;
             EVERY_ENGINE->directoryChanged();
         }
         else
@@ -289,18 +300,30 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
             recordingNumber++; // increment recording number within this directory
         }
 
-        if (!rootFolder.exists())
+        // it's possible the user deleted the folder after the first recording, so it needs
+        // to be recreated before starting a subsequent recording
+        ensureRootFolderExists();
+
+        // if files with baseName + recordingNumber already exist, inc recordingNumber
+        while (rootFolder.getNumberOfChildFiles(File::findFiles, getBaseNameGlob()) > 0)
         {
-            rootFolder.createDirectory();
-        }
-        if (settingsNeeded)
-        {
-            String settingsFileName = rootFolder.getFullPathName() + File::separator + "settings" + ((experimentNumber > 1) ? "_" + String(experimentNumber) : String::empty) + ".xml";
-            AccessClass::getEditorViewport()->saveState(File(settingsFileName), m_lastSettingsText);
-            settingsNeeded = false;
+            std::cout << "FOUND EXISTING RECORDING " << String(recordingNumber) << std::endl;
+            recordingNumber++;
         }
 
-		m_recordThread->setFileComponents(rootFolder, experimentNumber, recordingNumber);
+        std::cout << "STARTING RECORDING " << String(recordingNumber) << std::endl;
+
+        // write a new settings file for every recording
+        String settingsFileName = rootFolder.getFullPathName() + File::separator + baseName;
+        if (recordingNumber > 0)
+        {
+            settingsFileName += "_" + String(recordingNumber);
+        }
+        settingsFileName += ".xml";
+        std::cout << "WRITING FILE: " << settingsFileName << std::endl;
+            AccessClass::getEditorViewport()->saveState(File(settingsFileName), m_lastSettingsText);
+
+        m_recordThread->setFileComponents(rootFolder, baseName, recordingNumber);
 
 		channelMap.clear();
 		int totChans = dataChannelArray.size();
@@ -353,9 +376,7 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
     }
     else if (parameterIndex == 0)
     {
-
-
-        std::cout << "STOP RECORDING." << std::endl;
+        std::cout << "STOP RECORDING." << std::endl << std::endl;
 
         if (isRecording)
         {
@@ -418,10 +439,10 @@ bool RecordNode::enable()
     {
         hasRecorded = false;
         experimentNumber++;
-        settingsNeeded = true;
     }
 
-    //When starting a recording, if a new directory is needed it gets rewritten. Else is incremented by one.
+    // When starting a recording, if a new directory is needed, recordingNumber is rewritten,
+    // otherwise it's incremented by one
     recordingNumber = -1;
     EVERY_ENGINE->configureEngine();
     EVERY_ENGINE->startAcquisition();

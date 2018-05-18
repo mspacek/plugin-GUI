@@ -324,20 +324,11 @@ public:
     /** Notifies the control panel when the filename is updated */
     void labelTextChanged(Label*);
 
-    /** Used by RecordNode to set the filename. */
-    String getTextToPrepend();
+    /** Used by RecordNode to retrieve the base file and folder name. */
+    String getBaseName();
 
-    /** Used by RecordNode to set the filename. */
-    String getTextToAppend();
-
-    /** Manually set the text to be prepended to the recording directory */
-    void setPrependText(String text);
-
-    /** Manually set the text to be appended to the recording directory */
-    void setAppendText(String text);
-
-    /** Set date text. */
-    void setDateText(String);
+    /** Set base file and folder name. */
+    void setBaseName(String);
 
     /** Save settings. */
     void saveStateToXml(XmlElement*);
@@ -377,14 +368,11 @@ private:
     ScopedPointer<CPUMeter> cpuMeter;
     ScopedPointer<DiskSpaceMeter> diskMeter;
     ScopedPointer<FilenameComponent> filenameComponent;
-    ScopedPointer<UtilityButton> newDirectoryButton;
     ScopedPointer<ControlPanelButton> cpb;
 
     ScopedPointer<ComboBox> recordSelector;
 
-    ScopedPointer<Label> prependText;
-    ScopedPointer<Label> dateText;
-    ScopedPointer<Label> appendText;
+    ScopedPointer<Label> baseNameText;
 
     ProcessorGraph* graph;
     AudioComponent* audio;
