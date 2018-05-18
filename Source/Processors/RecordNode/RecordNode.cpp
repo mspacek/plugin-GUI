@@ -438,7 +438,6 @@ bool RecordNode::enable()
     if (hasRecorded)
     {
         hasRecorded = false;
-        experimentNumber++;
     }
 
     // When starting a recording, if a new directory is needed, recordingNumber is rewritten,

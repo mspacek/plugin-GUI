@@ -773,6 +773,7 @@ void ControlPanel::stopRecording()
     masterClock->stopRecording();
     backgroundColour = Colour (51, 51, 51);
 
+    filenameComponent->setEnabled(true);
     baseNameText->setEnabled(true);
 
     recordButton->setToggleState(false, dontSendNotification);
