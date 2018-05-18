@@ -41,7 +41,7 @@ BinaryRecording::~BinaryRecording()
 
 String BinaryRecording::getEngineID() const
 {
-	return "RAWBINARY";
+	return "BUSSELABRAWBINARY";
 }
 
 String BinaryRecording::getProcessorString(const InfoObjectCommon* channelInfo)
@@ -594,7 +594,7 @@ void BinaryRecording::increaseEventCounts(EventRecording* rec)
 
 RecordEngineManager* BinaryRecording::getEngineManager()
 {
-	RecordEngineManager* man = new RecordEngineManager("RAWBINARY", "Binary", &(engineFactory<BinaryRecording>));
+	RecordEngineManager* man = new RecordEngineManager("BUSSELABRAWBINARY", "Binary", &(engineFactory<BinaryRecording>));
 	EngineParameter* param;
 	param = new EngineParameter(EngineParameter::BOOL, 0, "Record TTL full words", true);
 	man->addParameter(param);
