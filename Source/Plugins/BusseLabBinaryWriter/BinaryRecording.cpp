@@ -31,7 +31,7 @@ BinaryRecording::BinaryRecording()
 {
 	m_scaledBuffer.malloc(MAX_BUFFER_SIZE);
 	m_intBuffer.malloc(MAX_BUFFER_SIZE);
-	m_tsBuffer.malloc(MAX_BUFFER_SIZE);
+	//m_tsBuffer.malloc(MAX_BUFFER_SIZE);
 }
 
 BinaryRecording::~BinaryRecording()
@@ -115,8 +115,8 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 			{
 				continuousFileNames.add(basepath + ".dat");
 				
-				ScopedPointer<NpyFile> tFile = new NpyFile(contPath + datPath + "timestamps.npy", NpyType(BaseType::INT64,1));
-				m_dataTimestampFiles.add(tFile.release());
+				//ScopedPointer<NpyFile> tFile = new NpyFile(basepath + "_timestamps.npy", NpyType(BaseType::INT64,1));
+				//m_dataTimestampFiles.add(tFile.release());
 
 				m_fileIndexes.set(recordedChan, nInfoArrays);
 				m_channelIndexes.set(recordedChan, 0);
@@ -452,7 +452,7 @@ void BinaryRecording::resetChannels()
 	m_DataFiles.clear();
 	m_channelIndexes.clear();
 	m_fileIndexes.clear();
-	m_dataTimestampFiles.clear();
+	//m_dataTimestampFiles.clear();
 	m_eventFiles.clear();
 	m_spikeChannelIndexes.clear();
 	m_spikeFileIndexes.clear();
@@ -461,7 +461,7 @@ void BinaryRecording::resetChannels()
 
 	m_scaledBuffer.malloc(MAX_BUFFER_SIZE);
 	m_intBuffer.malloc(MAX_BUFFER_SIZE);
-	m_tsBuffer.malloc(MAX_BUFFER_SIZE);
+	//m_tsBuffer.malloc(MAX_BUFFER_SIZE);
 	m_bufferSize = MAX_BUFFER_SIZE;
 	m_startTS.clear();
 }
@@ -474,14 +474,14 @@ void BinaryRecording::writeData(int writeChannel, int realChannel, const float* 
 		m_bufferSize = size;
 		m_scaledBuffer.malloc(size);
 		m_intBuffer.malloc(size);
-		m_tsBuffer.malloc(size);
+		//m_tsBuffer.malloc(size);
 	}
 	double multFactor = 1 / (float(0x7fff) * getDataChannel(realChannel)->getBitVolts());
 	FloatVectorOperations::copyWithMultiply(m_scaledBuffer.getData(), buffer, multFactor, size);
 	AudioDataConverters::convertFloatToInt16LE(m_scaledBuffer.getData(), m_intBuffer.getData(), size);
 	int fileIndex = m_fileIndexes[writeChannel];
 	m_DataFiles[fileIndex]->writeChannel(getTimestamp(writeChannel) - m_startTS[writeChannel], m_channelIndexes[writeChannel], m_intBuffer.getData(), size);
-
+    /*
 	if (m_channelIndexes[writeChannel] == 0)
 	{
 		int64 baseTS = getTimestamp(writeChannel);
@@ -493,6 +493,7 @@ void BinaryRecording::writeData(int writeChannel, int realChannel, const float* 
 		m_dataTimestampFiles[fileIndex]->writeData(m_tsBuffer, size*sizeof(int64));
 		m_dataTimestampFiles[fileIndex]->increaseRecordCount(size);
 	}
+    */
 }
 
 
