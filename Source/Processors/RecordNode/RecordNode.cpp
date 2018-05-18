@@ -319,7 +319,7 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
         {
             settingsFileName += "_" + String(recordingNumber);
         }
-        settingsFileName += ".xml";
+        settingsFileName += "_settings.xml";
         std::cout << "WRITING FILE: " << settingsFileName << std::endl;
             AccessClass::getEditorViewport()->saveState(File(settingsFileName), m_lastSettingsText);
 
