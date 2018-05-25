@@ -64,10 +64,7 @@ TODO:
 
 * create brand new files for all file types if recordingNumber has been inc'd.
   Don't overwrite existing. See oe.old
-* generate normal text msg log file
-* generate a single 2D uint64 .npy file for ts and din, might have to be in fortran order to
-  alternate in hex viewer. Make sure they're aligned to 16 byte multiples
-* flush messages and din to disk immediately, or reasonably fast, don't wait til rec stops
+* generate normal text msg log file, as in oe.old
 * test spike detection and saving
 * get channel map working
 * generate desired .json file for kilosort and spyke
@@ -186,23 +183,23 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		const EventChannel* chan = getEventChannel(ev);
 		String eventName;
 		NpyType dtype;
-		NpyType tstype = NpyType(BaseType::INT64, 1);
 		ScopedPointer<EventRecording> rec = new EventRecording();
 
 		switch (chan->getChannelType())
 		{
+		/*
 		case EventChannel::TEXT:
 			eventName = "msg";
 			dtype = NpyType(BaseType::CHAR, chan->getLength());
 			rec->dataFile = new NpyFile(basepath + '_' + eventName + ".npy", dtype);
 			rec->tsFile = new NpyFile(basepath + '_' + eventName + "_ts.npy", tstype);
 			break;
+		*/
 		case EventChannel::TTL:
 			if (!m_saveTTLWords) break;
 			eventName = "din";
-			dtype = NpyType(BaseType::INT16, 1);
+			dtype = NpyType(BaseType::INT64, 2); // each row is [timestamp, word]
 			rec->dataFile = new NpyFile(basepath + '_' + eventName + ".npy", dtype);
-			rec->tsFile = new NpyFile(basepath + '_' + eventName + "_ts.npy", tstype);
 			break;
 		}
 		
@@ -484,7 +481,7 @@ void BinaryRecording::writeData(int writeChannel, int realChannel, const float* 
 	AudioDataConverters::convertFloatToInt16LE(m_scaledBuffer.getData(), m_intBuffer.getData(), size);
 	int fileIndex = m_fileIndexes[writeChannel];
 	m_DataFiles[fileIndex]->writeChannel(getTimestamp(writeChannel) - m_startTS[writeChannel], m_channelIndexes[writeChannel], m_intBuffer.getData(), size);
-    /*
+	/*
 	if (m_channelIndexes[writeChannel] == 0)
 	{
 		int64 baseTS = getTimestamp(writeChannel);
@@ -496,7 +493,7 @@ void BinaryRecording::writeData(int writeChannel, int realChannel, const float* 
 		m_dataTimestampFiles[fileIndex]->writeData(m_tsBuffer, size*sizeof(int64));
 		m_dataTimestampFiles[fileIndex]->increaseRecordCount(size);
 	}
-    */
+	*/
 }
 
 
@@ -519,27 +516,24 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 {
 	EventPtr ev = Event::deserializeFromMessage(event, getEventChannel(eventIndex));
 	EventRecording* rec = m_eventFiles[eventIndex];
-	if (!rec) return;
-	const EventChannel* info = getEventChannel(eventIndex);
-	int64 ts = ev->getTimestamp();
-	rec->tsFile->writeData(&ts, sizeof(int64));
-
-	//uint16 chan = ev->getChannel() +1;
-	//rec->chanFile->writeData(&chan, sizeof(uint16));
-
+	if (!rec)
+		return;
 	if (ev->getEventType() == EventChannel::TTL)
 	{
+		int64 ts = ev->getTimestamp();
 		TTLEvent* ttl = static_cast<TTLEvent*>(ev.get());
-		int16 data = (ttl->getChannel()+1) * (ttl->getState() ? 1 : -1);
-		rec->dataFile->writeData(ttl->getTTLWordPointer(), info->getDataSize());
+		// cast void pointer to uint8 pointer, dereference, cast to int64:
+		int64 word = (int64)*(uint8*)(ttl->getTTLWordPointer());
+		rec->dataFile->writeData(&ts, sizeof(int64));
+		rec->dataFile->writeData(&word, sizeof(int64));
+		writeEventMetaData(ev.get(), rec->metaDataFile);
+		increaseEventCounts(rec);
 	}
 	else
 	{
-		rec->dataFile->writeData(ev->getRawDataPointer(), info->getDataSize());
+		std::cout << "don't know how to handle event type " << ev->getEventType() << std::endl;
 	}
 	
-	writeEventMetaData(ev.get(), rec->metaDataFile);
-	increaseEventCounts(rec);
 }
 
 void BinaryRecording::writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx, int64 timestamp, float, String text)
@@ -548,8 +542,6 @@ void BinaryRecording::writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx, 
 		return;
 	m_syncTextFile->writeText(text + "\n", false, false);
 }
-
-
 
 void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)
 {
@@ -587,7 +579,7 @@ void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)
 void BinaryRecording::increaseEventCounts(EventRecording* rec)
 {
 	rec->dataFile->increaseRecordCount();
-	rec->tsFile->increaseRecordCount();
+	if (rec->tsFile) rec->tsFile->increaseRecordCount();
 	if (rec->extraFile) rec->extraFile->increaseRecordCount();
 	if (rec->chanFile) rec->chanFile->increaseRecordCount();
 	if (rec->metaDataFile) rec->metaDataFile->increaseRecordCount();
