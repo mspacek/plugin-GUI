@@ -70,6 +70,7 @@ bool NpyFile::openFile(String path)
 		std::cerr << "Error creating file " << path << ":" << res.getErrorMessage() << std::endl;
 		return false;
 	}
+	file.deleteFile(); // overwrite, never append a new .npy file to end of an existing one
 	m_file = file.createOutputStream();
 	if (!m_file)
 		return false;
