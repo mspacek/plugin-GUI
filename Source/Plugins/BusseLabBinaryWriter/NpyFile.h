@@ -55,6 +55,7 @@ namespace BinaryRecordingEngine
 		void increaseRecordCount(int count = 1);
 	private:
 		bool openFile(String path);
+		String getShapeString();
 		void writeHeader(const Array<NpyType>& typeList);
 		void updateHeader();
 		ScopedPointer<FileOutputStream> m_file;

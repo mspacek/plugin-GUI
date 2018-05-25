@@ -35,7 +35,6 @@ using namespace BinaryRecordingEngine;
 
 NpyFile::NpyFile(String path, const Array<NpyType>& typeList)
 {
-		
 	m_dim1 = 1;
 	m_dim2 = 1;
 
@@ -52,12 +51,10 @@ NpyFile::NpyFile(String path, const Array<NpyType>& typeList)
 	if (!openFile(path))
 		return;
 	writeHeader(typeList);
-		
 }
 
 NpyFile::NpyFile(String path, NpyType type, unsigned int dim)
 {
-	
 	if (!openFile(path))
 		return;
 
@@ -66,7 +63,6 @@ NpyFile::NpyFile(String path, NpyType type, unsigned int dim)
 	m_dim1 = dim;
 	m_dim2 = type.getTypeLength();
 	writeHeader(typeList);
-
 }
 
 bool NpyFile::openFile(String path)
@@ -88,6 +84,22 @@ bool NpyFile::openFile(String path)
 
 	m_okOpen = true;
 	return true;
+}
+
+String NpyFile::getShapeString()
+{
+	String shape;
+	shape.preallocateBytes(32);
+	shape = "(";
+	shape += String(m_recordCount) + ", ";
+	if (m_dim1 > 1)
+	{
+		shape += String(m_dim1) + ", ";
+	}
+	if (m_dim2 > 1)
+		shape += String(m_dim2);
+	shape += "), }";
+	return shape;
 }
 
 void NpyFile::writeHeader(const Array<NpyType>& typeList)
@@ -126,7 +138,7 @@ void NpyFile::writeHeader(const Array<NpyType>& typeList)
 	// save byte offset of shape field in .npy file
 	// magic + header length field + current string header length:
 	m_shapePos = magicLen + sizeof(uint16) + strHeader.length();
-	strHeader += "(0,), }"; // initialize to empty array
+	strHeader += getShapeString(); // inits to 0 records, i.e. 1st dim has length 0
 	int baseHeaderLen = magicLen + sizeof(uint16) + strHeader.length() + 1; // +1 for newline
 	int padlen = nbytesAlign - (baseHeaderLen % nbytesAlign);
 	strHeader = strHeader.paddedRight(' ', strHeader.length() + padlen);
@@ -151,17 +163,7 @@ void NpyFile::updateHeader()
 	int currentPos = m_file->getPosition();
 	if (m_file->setPosition(m_shapePos))
 	{
-		String newShape;
-		newShape.preallocateBytes(32);
-		newShape = "(";
-		newShape += String(m_recordCount) + ",";
-		if (m_dim1 > 1)
-		{
-			newShape += String(m_dim1) + ",";
-		}
-		if (m_dim2 > 1)
-			newShape += String(m_dim2);
-		newShape += "), }";
+		String newShape = getShapeString();
 		if (m_shapePos + newShape.getNumBytesAsUTF8() + 1 > m_headerLen) // +1 for newline
 		{
 			std::cerr << "Error. Header has grown too big to update in-place " << std::endl;
