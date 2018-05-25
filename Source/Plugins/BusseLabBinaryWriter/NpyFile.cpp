@@ -91,13 +91,13 @@ String NpyFile::getShapeString()
 	String shape;
 	shape.preallocateBytes(32);
 	shape = "(";
-	shape += String(m_recordCount) + ", ";
+	shape += String(m_recordCount) + ",";
 	if (m_dim1 > 1)
 	{
-		shape += String(m_dim1) + ", ";
+		shape += " " + String(m_dim1) + ",";
 	}
 	if (m_dim2 > 1)
-		shape += String(m_dim2);
+		shape += " " + String(m_dim2);
 	shape += "), }";
 	return shape;
 }
