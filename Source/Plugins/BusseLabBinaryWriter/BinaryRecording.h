@@ -45,6 +45,7 @@ namespace BinaryRecordingEngine
 		void addSpikeElectrode(int index, const SpikeChannel* elec) override;
 		void writeSpike(int electrodeIndex, const SpikeEvent* spike) override;
 		void writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx, int64 timestamp, float, String text) override;
+		String getMessageHeader();
 		void setParameter(EngineParameter& parameter) override;
 
 		static RecordEngineManager* getEngineManager();
