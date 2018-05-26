@@ -70,7 +70,7 @@ String BinaryRecording::getRecordingNumberString(int recordingNumber)
 
 TODO:
 
-* merge sync messages file into msg.txt file, settle on msg.txt scheme
+* settle on msg.txt structure
 * test spike detection and saving
 * get channel map working
 * generate desired .json file for kilosort and spyke
@@ -208,13 +208,13 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 					msgFileName += getRecordingNumberString(recordingNumber);
 				msgFileName += "." + eventName + ".txt";
 				std::cout << "OPENING FILE: " << msgFileName << std::endl;
-				File msgFile = File(msgFileName);
-				Result res = msgFile.create();
+				File msgf = File(msgFileName);
+				Result res = msgf.create();
 				if (res.failed())
 					std::cerr << "Error creating message text file:" << res.getErrorMessage()
 							  << std::endl;
 				else
-					rec->msgFile = msgFile.createOutputStream();
+					m_msgFile = msgf.createOutputStream();
 				break;
 			}
 		case EventChannel::TTL:
@@ -343,17 +343,6 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		jsonFile->setProperty("channels", jsonSpikeChannels.getReference(i));
 	}
 
-	File syncFile = File(basepath + ".sync_messages.txt");
-	Result res = syncFile.create();
-	if (res.failed())
-	{
-		std::cerr << "Error creating sync text file:" << res.getErrorMessage() << std::endl;
-	}
-	else
-	{
-		m_syncTextFile = syncFile.createOutputStream();
-	}
-	
 	m_recordingNum = recordingNumber;
 
 	DynamicObject::Ptr jsonSettingsFile = new DynamicObject();
@@ -491,7 +480,7 @@ void BinaryRecording::resetChannels()
 	m_spikeChannelIndexes.clear();
 	m_spikeFileIndexes.clear();
 	m_spikeFiles.clear();
-	m_syncTextFile = nullptr;
+	m_msgFile = nullptr;
 
 	m_scaledBuffer.malloc(MAX_BUFFER_SIZE);
 	m_intBuffer.malloc(MAX_BUFFER_SIZE);
@@ -559,8 +548,8 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 		const String tsstr = String(ts);
 		//String msg = String((char*)ev->getRawDataPointer(), info->getDataSize());
 		const String msg = String((char*)ev->getRawDataPointer());
-		rec->msgFile->writeText(tsstr + "\t" + msg + '\n', false, false, nullptr);
-		rec->msgFile->flush();
+		m_msgFile->writeText(tsstr + "\t" + msg + '\n', false, false, nullptr);
+		m_msgFile->flush();
 	}
 	else if (ev->getEventType() == EventChannel::TTL)
 	{
@@ -582,9 +571,10 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 
 void BinaryRecording::writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx, int64 timestamp, float, String text)
 {
-	if (!m_syncTextFile)
+	if (!m_msgFile)
 		return;
-	m_syncTextFile->writeText(text + "\n", false, false, nullptr);
+	m_msgFile->writeText(text + "\n", false, false, nullptr);
+	m_msgFile->flush();
 }
 
 void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)

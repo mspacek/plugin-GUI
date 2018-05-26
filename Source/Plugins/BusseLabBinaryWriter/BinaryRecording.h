@@ -59,7 +59,6 @@ namespace BinaryRecordingEngine
 			ScopedPointer<NpyFile> metaDataFile;
 			ScopedPointer<NpyFile> chanFile;
 			ScopedPointer<NpyFile> extraFile;
-			ScopedPointer<FileOutputStream> msgFile;
 		};
 		
 
@@ -84,7 +83,7 @@ namespace BinaryRecordingEngine
 		OwnedArray<EventRecording> m_eventFiles;
 		OwnedArray<EventRecording> m_spikeFiles;
 		OwnedArray<NpyFile> m_dataTimestampFiles;
-		ScopedPointer<FileOutputStream> m_syncTextFile;
+		ScopedPointer<FileOutputStream> m_msgFile;
 
 		Array<unsigned int> m_spikeFileIndexes;
 		Array<uint16> m_spikeChannelIndexes;
