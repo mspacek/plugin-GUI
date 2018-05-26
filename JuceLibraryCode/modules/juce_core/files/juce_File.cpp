@@ -735,7 +735,7 @@ bool File::appendText (const String& text,
     if (out.failedToOpen())
         return false;
 
-    out.writeText (text, asUnicode, writeUnicodeHeaderBytes);
+    out.writeText (text, asUnicode, writeUnicodeHeaderBytes, nullptr);
     return true;
 }
 

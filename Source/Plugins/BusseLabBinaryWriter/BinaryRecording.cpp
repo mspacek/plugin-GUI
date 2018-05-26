@@ -559,7 +559,7 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 		const String tsstr = String(ts);
 		//String msg = String((char*)ev->getRawDataPointer(), info->getDataSize());
 		const String msg = String((char*)ev->getRawDataPointer());
-		rec->msgFile->writeText(tsstr + "\t" + msg + '\n', false, false);
+		rec->msgFile->writeText(tsstr + "\t" + msg + '\n', false, false, nullptr);
 		rec->msgFile->flush();
 	}
 	else if (ev->getEventType() == EventChannel::TTL)
@@ -584,7 +584,7 @@ void BinaryRecording::writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx, 
 {
 	if (!m_syncTextFile)
 		return;
-	m_syncTextFile->writeText(text + "\n", false, false);
+	m_syncTextFile->writeText(text + "\n", false, false, nullptr);
 }
 
 void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)
