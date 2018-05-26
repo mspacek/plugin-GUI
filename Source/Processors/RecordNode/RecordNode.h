@@ -79,6 +79,9 @@ public:
 	/** returns current recording number */
 	int getRecordingNumber() const;
 
+    /** converts current recording number to 0 padded string */
+    String getRecordingNumberString(int recordingNumber);
+
     /** returns current base name file glob pattern, based on current recording number */
     String getBaseNameGlob();
 

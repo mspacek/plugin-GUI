@@ -59,6 +59,7 @@ namespace BinaryRecordingEngine
 			ScopedPointer<NpyFile> metaDataFile;
 			ScopedPointer<NpyFile> chanFile;
 			ScopedPointer<NpyFile> extraFile;
+			ScopedPointer<FileOutputStream> msgFile;
 		};
 		
 
@@ -68,6 +69,7 @@ namespace BinaryRecordingEngine
 		void increaseEventCounts(EventRecording* rec);
 		static String jsonTypeValue(BaseType type);
 		static String getProcessorString(const InfoObjectCommon* channelInfo);
+		String getRecordingNumberString(int recordingNumber);
 
 		bool m_saveTTLWords{ true };
 	

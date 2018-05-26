@@ -58,13 +58,19 @@ String BinaryRecording::getProcessorString(const InfoObjectCommon* channelInfo)
 	fName += File::separatorString;
 	return fName;
 }
+
+String BinaryRecording::getRecordingNumberString(int recordingNumber)
+{
+	String s = String(recordingNumber);
+	s = "_r" + s.paddedLeft('0', 2); // pad with at most 1 leading 0
+	return s;
+}
+
 /*
 
 TODO:
 
-* create brand new files for all file types if recordingNumber has been inc'd.
-  Don't overwrite existing. See oe.old
-* generate normal text msg log file, as in oe.old
+* merge sync messages file into msg.txt file, settle on msg.txt scheme
 * test spike detection and saving
 * get channel map working
 * generate desired .json file for kilosort and spyke
@@ -125,9 +131,16 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 			}
 			if (!found)
 			{
-				continuousFileNames.add(basepath + ".dat");
+				String datFileName = basepath;
+				if (nProcessors > 1) // include the processorId in the .dat filename
+					datFileName += "_" + String(pInfo.processorId);
+				if (recordingNumber > 0)
+					datFileName += getRecordingNumberString(recordingNumber);
+				datFileName += ".dat";
+				std::cout << "OPENING FILE: " << datFileName << std::endl;
+				continuousFileNames.add(datFileName);
 				
-				//ScopedPointer<NpyFile> tFile = new NpyFile(basepath + "_timestamps.npy", NpyType(BaseType::INT64,1));
+				//ScopedPointer<NpyFile> tFile = new NpyFile(basepath + ".timestamps.npy", NpyType(BaseType::INT64,1));
 				//m_dataTimestampFiles.add(tFile.release());
 
 				m_fileIndexes.set(recordedChan, nInfoArrays);
@@ -187,20 +200,37 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 
 		switch (chan->getChannelType())
 		{
-		/*
 		case EventChannel::TEXT:
-			eventName = "msg";
-			dtype = NpyType(BaseType::CHAR, chan->getLength());
-			rec->dataFile = new NpyFile(basepath + '_' + eventName + ".npy", dtype);
-			rec->tsFile = new NpyFile(basepath + '_' + eventName + "_ts.npy", tstype);
-			break;
-		*/
+			{
+				eventName = "msg";
+				String msgFileName = basepath;
+				if (recordingNumber > 0)
+					msgFileName += getRecordingNumberString(recordingNumber);
+				msgFileName += "." + eventName + ".txt";
+				std::cout << "OPENING FILE: " << msgFileName << std::endl;
+				File msgFile = File(msgFileName);
+				Result res = msgFile.create();
+				if (res.failed())
+					std::cerr << "Error creating message text file:" << res.getErrorMessage()
+							  << std::endl;
+				else
+					rec->msgFile = msgFile.createOutputStream();
+				break;
+			}
 		case EventChannel::TTL:
-			if (!m_saveTTLWords) break;
-			eventName = "din";
-			dtype = NpyType(BaseType::INT64, 2); // 2D, each row is [timestamp, word]
-			rec->dataFile = new NpyFile(basepath + '_' + eventName + ".npy", dtype);
-			break;
+			{
+				if (!m_saveTTLWords)
+					break;
+				eventName = "din";
+				String dinFileName = basepath;
+				if (recordingNumber > 0)
+					dinFileName += getRecordingNumberString(recordingNumber);
+				dinFileName += "." + eventName + ".npy";
+				std::cout << "OPENING FILE: " << dinFileName << std::endl;
+				dtype = NpyType(BaseType::INT64, 2); // 2D, each row is [timestamp, word]
+				rec->dataFile = new NpyFile(dinFileName, dtype);
+				break;
+			}
 		}
 		
 		DynamicObject::Ptr jsonChannel = new DynamicObject();
@@ -214,7 +244,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		jsonChannel->setProperty("source_processor", chan->getSourceName());
 		createChannelMetaData(chan, jsonChannel);
 
-		rec->metaDataFile = createEventMetadataFile(chan, basepath + eventName + "_metadata.npy", jsonChannel);
+		rec->metaDataFile = createEventMetadataFile(chan, basepath + eventName + ".metadata.npy", jsonChannel);
 		m_eventFiles.add(rec.release());
 		jsonEventFiles.add(var(jsonChannel));
 	}
@@ -299,7 +329,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 			jsonFile->setProperty("pre_peak_samples", (int)ch->getPrePeakSamples());
 			jsonFile->setProperty("post_peak_samples", (int)ch->getPostPeakSamples());
 			
-			rec->metaDataFile = createEventMetadataFile(ch, spikePath + spikeName + "_metadata.npy", jsonFile);
+			rec->metaDataFile = createEventMetadataFile(ch, spikePath + spikeName + ".metadata.npy", jsonFile);
 			m_spikeFiles.add(rec.release());
 			jsonSpikeFiles.add(var(jsonFile));
 		}
@@ -313,7 +343,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		jsonFile->setProperty("channels", jsonSpikeChannels.getReference(i));
 	}
 
-	File syncFile = File(basepath + "_sync_messages.txt");
+	File syncFile = File(basepath + ".sync_messages.txt");
 	Result res = syncFile.create();
 	if (res.failed())
 	{
@@ -331,7 +361,11 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	jsonSettingsFile->setProperty("continuous", jsonContinuousfiles);
 	jsonSettingsFile->setProperty("events", jsonEventFiles);
 	jsonSettingsFile->setProperty("spikes", jsonSpikeFiles);
-	FileOutputStream settingsFileStream(File(basepath + "_settings.json"));
+
+	String jsonSettingsFileName = basepath;
+	if (recordingNumber > 0)
+		jsonSettingsFileName += getRecordingNumberString(recordingNumber);
+	FileOutputStream settingsFileStream(File(jsonSettingsFileName + ".settings.json"));
 
 	jsonSettingsFile->writeAsJSON(settingsFileStream, 2, false);
 }
@@ -518,9 +552,18 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 	EventRecording* rec = m_eventFiles[eventIndex];
 	if (!rec)
 		return;
-	if (ev->getEventType() == EventChannel::TTL)
+	const EventChannel* info = getEventChannel(eventIndex);
+	int64 ts = ev->getTimestamp();
+	if (ev->getEventType() == EventChannel::TEXT)
 	{
-		int64 ts = ev->getTimestamp();
+		const String tsstr = String(ts);
+		//String msg = String((char*)ev->getRawDataPointer(), info->getDataSize());
+		const String msg = String((char*)ev->getRawDataPointer());
+		rec->msgFile->writeText(tsstr + "\t" + msg + '\n', false, false);
+		rec->msgFile->flush();
+	}
+	else if (ev->getEventType() == EventChannel::TTL)
+	{
 		TTLEvent* ttl = static_cast<TTLEvent*>(ev.get());
 		// cast void pointer to uint8 pointer, dereference, cast to int64:
 		int64 word = (int64)*(uint8*)(ttl->getTTLWordPointer());
@@ -531,7 +574,8 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 	}
 	else
 	{
-		std::cout << "don't know how to handle event type " << ev->getEventType() << std::endl;
+		std::cerr << "Error. Don't know how to handle event type " << ev->getEventType()
+				  << std::endl;
 	}
 	
 }
