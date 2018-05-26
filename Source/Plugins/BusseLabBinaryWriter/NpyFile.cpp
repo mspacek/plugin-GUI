@@ -151,7 +151,6 @@ void NpyFile::writeHeader(const Array<NpyType>& typeList)
 	m_file->write(&strHeaderLen, sizeof(uint16));
 	m_file->write(strHeader.toUTF8(), strHeaderLen);
 	m_headerLen = m_file->getPosition(); // total header length
-	std::cout << "m_headerLen: " << m_headerLen << std::endl;
 	m_file->flush();
 }
 

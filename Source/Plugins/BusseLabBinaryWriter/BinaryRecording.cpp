@@ -198,7 +198,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		case EventChannel::TTL:
 			if (!m_saveTTLWords) break;
 			eventName = "din";
-			dtype = NpyType(BaseType::INT64, 2); // each row is [timestamp, word]
+			dtype = NpyType(BaseType::INT64, 2); // 2D, each row is [timestamp, word]
 			rec->dataFile = new NpyFile(basepath + '_' + eventName + ".npy", dtype);
 			break;
 		}
