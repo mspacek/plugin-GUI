@@ -490,6 +490,7 @@ void BinaryRecording::addSpikeElectrode(int index, const SpikeChannel* elec)
 
 void BinaryRecording::writeEventMetaData(const MetaDataEvent* event, NpyFile* file)
 {
+	std::cout << "in writeEventMetaData()" << std::endl;
 	if (!file || !event) return;
 	int nMetaData = event->getMetadataValueCount();
 	for (int i = 0; i < nMetaData; i++)
@@ -520,7 +521,6 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 		TTLEvent* ttl = static_cast<TTLEvent*>(ev.get());
 		// cast void pointer to uint8 pointer, dereference, cast to int64:
 		int64 word = (int64)*(uint8*)(ttl->getTTLWordPointer());
-		writeEventMetaData(ev.get(), rec->metaDataFile);
 		rec->dataFile->writeData(&ts, sizeof(int64)); // timestamp
 		rec->dataFile->writeData(&word, sizeof(int64)); // digital input word
 		increaseEventCounts(rec);
