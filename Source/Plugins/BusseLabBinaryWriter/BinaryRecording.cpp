@@ -75,10 +75,11 @@ TODO:
 
 * test spike detection and saving
 * get channel map working
-* generate desired .json file for kilosort and spyke
+* parse the chanmap to extract probe_name
+* test that enabled chans are written correctly to .json when some chans are disabled
+* handle auxchans, if any, in .json
 * give plugin a version number, add to .json?
-* add git rev to .json?
-
+* add git rev to .json/.msg.txt?
 */
 
 void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingNumber)
@@ -96,27 +97,26 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	m_channelIndexes.insertMultiple(0, 0, nChans);
 	m_fileIndexes.insertMultiple(0, 0, nChans);
 
-	Array<const DataChannel*> indexedDataChannels;
-	Array<unsigned int> indexedChannelCount;
-
 	const RecordProcessorInfo& pInfo0 = getProcessorInfo(0); // info for processor 0
 	int nRecChans = pInfo0.recordedChannels.size();
 	int recordedChan0 = pInfo0.recordedChannels[0];
 	int realChan0 = getRealChannel(recordedChan0);
 	const DataChannel* channelInfo0 = getDataChannel(realChan0);
 
-	// compare each chan's sample rate and uV per AD to that of chan 0:
+	// compare each chan's sample rate and uV per AD to that of chani 0:
 	int sample_rate = channelInfo0->getSampleRate();
 	double uV_per_AD = channelInfo0->getBitVolts();
 
 	// iterate over all recorded chans:
-	for (int chan = 0; chan < nRecChans; chan++)
+	var chans; // holds enabled chans
+	for (int chani = 0; chani < nRecChans; chani++)
 	{
-		int recordedChan = pInfo0.recordedChannels[chan];
+		int recordedChan = pInfo0.recordedChannels[chani];
+		chans.append(recordedChan);
 		int realChan = getRealChannel(recordedChan);
 		const DataChannel* channelInfo = getDataChannel(realChan);
 
-		// compare to chan 0:
+		// compare to chani 0:
 		if (channelInfo->getSampleRate() != sample_rate)
 			std::cerr << "ERROR: sample rate of chan " << realChan << " != " << sample_rate
 					  << std::endl;
@@ -126,7 +126,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 
 		// fill in m_channelIndexes and m_fileIndexes for use in writeData, though
 		// given the simplified setup assumed, these probably aren't even necessary any more:
-		m_channelIndexes.set(recordedChan, chan);
+		m_channelIndexes.set(recordedChan, chani); // index, value
 		m_fileIndexes.set(recordedChan, 0);
 	}
 
@@ -149,6 +149,11 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 			std::cout << "Start timestamp: " << getTimestamp(i) << std::endl;
 		m_startTS.add(getTimestamp(i));
 	}
+	Time now = Time::getCurrentTime();
+	String datetime = now.toISO8601(true);
+	String tz = now.getUTCOffsetString(true);
+	datetime = datetime.upToLastOccurrenceOf(tz, false, false); // strip time zone
+	//datetime = datetime.upToLastOccurrenceOf(".", false, false); // strip subseconds
 
 	// build JSON data structure:
 	DynamicObject::Ptr json = new DynamicObject();
@@ -157,12 +162,13 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	json->setProperty("sample_rate", sample_rate);
 	json->setProperty("dtype", "int16");
 	json->setProperty("uV_per_AD", uV_per_AD);
+	/// TODO: parse the chanmap to extract probe_name:
 	json->setProperty("probe_name", "");
-	json->setProperty("chans", "");
-	json->setProperty("auxchans", "");
+	json->setProperty("chans", chans);
+	var auxchans;
+	/// TODO: handle auxchans, if any
+	json->setProperty("auxchans", auxchans);
 	json->setProperty("nsamples_offset", m_startTS[0]);
-	String datetime = Time::getCurrentTime().toISO8601(true);
-	//datetime = datetime.upToLastOccurrenceOf(".", false, false); // strip subseconds and TZ
 	json->setProperty("datetime", datetime);
 	json->setProperty("author", "Open-Ephys, BusseLabBinaryWriter plugin");
 	json->setProperty("version", CoreServices::getGUIVersion());
