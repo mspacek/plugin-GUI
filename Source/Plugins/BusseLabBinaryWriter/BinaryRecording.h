@@ -78,20 +78,17 @@ namespace BinaryRecordingEngine
 		HeapBlock<int64> m_tsBuffer;
 		int m_bufferSize;
 
-		OwnedArray<SequentialBlockFile>  m_DataFiles;
+		OwnedArray<SequentialBlockFile> m_DataFiles;
 		Array<unsigned int> m_channelIndexes;
 		Array<unsigned int> m_fileIndexes;
 		OwnedArray<EventRecording> m_eventFiles;
 		OwnedArray<EventRecording> m_spikeFiles;
-		OwnedArray<NpyFile> m_dataTimestampFiles;
-		ScopedPointer<FileOutputStream> m_msgFile;
-
 		Array<unsigned int> m_spikeFileIndexes;
 		Array<uint16> m_spikeChannelIndexes;
+		ScopedPointer<FileOutputStream> m_msgFile;
 
 		int m_recordingNum;
 		Array<int64> m_startTS;
-
 
 		//Compile-time constants
 		const int samplesPerBlock{ 4096 };

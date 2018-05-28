@@ -268,17 +268,16 @@ int RecordNode::getRecordingNumber() const
 
 String RecordNode::getRecordingNumberString(int recordingNumber)
 {
-    String s = String(recordingNumber);
-    s = "_r" + s.paddedLeft('0', 2); // pad with at most 1 leading 0
+    String s = "";
+    if (recordingNumber > 0)
+        s = "_r" + String(recordingNumber).paddedLeft('0', 2); // pad with at most 1 leading 0
     return s;
 }
 
 String RecordNode::getBaseNameGlob()
 {
     String baseNameGlob = baseName;
-    if (recordingNumber > 0)
-        baseNameGlob += getRecordingNumberString(recordingNumber);
-    baseNameGlob += ".*";
+    baseNameGlob += getRecordingNumberString(recordingNumber) + ".*";
     return baseNameGlob;
 }
 
@@ -320,9 +319,7 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
 
         // write a new settings file for every recording
         String settingsFileName = rootFolder.getFullPathName() + File::separator + baseName;
-        if (recordingNumber > 0)
-            settingsFileName += getRecordingNumberString(recordingNumber);
-        settingsFileName += ".settings.xml";
+        settingsFileName += getRecordingNumberString(recordingNumber) + ".settings.xml";
         std::cout << "WRITING FILE: " << settingsFileName << std::endl;
             AccessClass::getEditorViewport()->saveState(File(settingsFileName), m_lastSettingsText);
 
@@ -359,7 +356,7 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
 				chanProcOrder++;
 			}
 		}
-		std::cout << "Num Recording Processors: " << procInfo.size() << std::endl;
+		std::cout << "Number of recording processors: " << procInfo.size() << std::endl;
 		int numRecordedChannels = channelMap.size();
 
 		//WARNING: If at some point we record at more that one recordEngine at once, we should change this, as using OwnedArrays only works for the first
