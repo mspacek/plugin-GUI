@@ -165,9 +165,10 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	/// TODO: parse the chanmap to extract probe_name:
 	json->setProperty("probe_name", "");
 	json->setProperty("chans", chans);
-	var auxchans;
 	/// TODO: handle auxchans, if any
-	json->setProperty("auxchans", auxchans);
+	var auxchans;
+	if (auxchans)
+		json->setProperty("auxchans", auxchans);
 	json->setProperty("nsamples_offset", m_startTS[0]);
 	json->setProperty("datetime", datetime);
 	json->setProperty("author", "Open-Ephys, BusseLabBinaryWriter plugin");
