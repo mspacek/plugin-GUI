@@ -76,6 +76,7 @@ TODO:
 * test spike detection and saving
 * get channel map working
 * parse the chanmap to extract probe_name
+* need to deal with 0 vs 1-based channel IDs - which to use depends on probe type
 * test that enabled chans are written correctly to .json when some chans are disabled
 * handle auxchans, if any, in .json
 * give plugin a version number, add to .json?
@@ -177,7 +178,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 
 	// write JSON data to disk:
 	String jsonFileName = basepath;
-	jsonFileName += getRecordingNumberString(recordingNumber) + ".json";
+	jsonFileName += getRecordingNumberString(recordingNumber) + ".dat.json";
 	File jsonf = File(jsonFileName);
 	Result res = jsonf.create();
 	if (res.failed())
@@ -194,7 +195,6 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	for (int ev = 0; ev < nEvents; ev++)
 	{
 		const EventChannel* chan = getEventChannel(ev);
-		String eventName;
 		NpyType dtype;
 		ScopedPointer<EventRecording> rec = new EventRecording();
 
@@ -202,10 +202,8 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		{
 		case EventChannel::TEXT:
 			{
-				eventName = "msg";
 				String msgFileName = basepath;
-				msgFileName += getRecordingNumberString(recordingNumber);
-				msgFileName += "." + eventName + ".txt";
+				msgFileName += getRecordingNumberString(recordingNumber) + ".msg.txt";
 				std::cout << "OPENING FILE: " << msgFileName << std::endl;
 				File msgf = File(msgFileName);
 				Result res = msgf.create();
@@ -222,10 +220,8 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 			{
 				if (!m_saveTTLWords)
 					break;
-				eventName = "din";
 				String dinFileName = basepath;
-				dinFileName += getRecordingNumberString(recordingNumber);
-				dinFileName += "." + eventName + ".npy";
+				dinFileName += getRecordingNumberString(recordingNumber) + ".din.npy";
 				std::cout << "OPENING FILE: " << dinFileName << std::endl;
 				dtype = NpyType(BaseType::INT64, 2); // 2D, each row is [timestamp, word]
 				rec->dataFile = new NpyFile(dinFileName, dtype);
