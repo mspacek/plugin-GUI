@@ -74,13 +74,16 @@ String BinaryRecording::getRecordingNumberString(int recordingNumber)
 TODO:
 
 * test spike detection and saving
+* check assumption that there's only one spike detector in the signal chain?
+* how does clustering work? does it fill the cluster id field in .spikes.npy properly?
 * get channel map working
 * parse the chanmap to extract probe_name
-* need to deal with 0 vs 1-based channel IDs - which to use depends on probe type
+* need to deal with 0 vs 1-based channel IDs in .json and spike.npy - which to use depends on probe type
 * test that enabled chans are written correctly to .json when some chans are disabled
 * handle auxchans, if any, in .json
 * give plugin a version number, add to .json?
 * add git rev to .json/.msg.txt?
+* fix memory leaks reported on exit
 */
 
 void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingNumber)
@@ -233,132 +236,19 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		}
 	}
 
-	// open spike files:
-	int nSpikes = getNumRecordedSpikes();
-	Array<const SpikeChannel*> indexedSpikes;
-	Array<uint16> indexedChannels;
-	m_spikeFileIndexes.insertMultiple(0, 0, nSpikes);
-	m_spikeChannelIndexes.insertMultiple(0, 0, nSpikes);
-	String spikePath(basepath + "spikes" + File::separatorString);
-	Array<var> jsonSpikeFiles;
-	Array<var> jsonSpikeChannels;
-	std::map<uint32, int> groupMap;
-	for (int sp = 0; sp < nSpikes; sp++)
-	{
-		const SpikeChannel* ch = getSpikeChannel(sp);
-		DynamicObject::Ptr jsonChannel = new DynamicObject();
-		unsigned int numSpikeChannels = ch->getNumChannels();
-		jsonChannel->setProperty("channel_name", ch->getName());
-		jsonChannel->setProperty("description", ch->getDescription());
-		jsonChannel->setProperty("identifier", ch->getIdentifier());
-		Array<var> jsonChannelInfo;
-		for (int i = 0; i < numSpikeChannels; i++)
-		{
-			SourceChannelInfo sourceInfo = ch->getSourceChannelInfo()[i];
-			DynamicObject::Ptr jsonSpikeChInfo = new DynamicObject();
-			jsonSpikeChInfo->setProperty("source_processor_id", sourceInfo.processorID);
-			jsonSpikeChInfo->setProperty("source_processor_sub_idx", sourceInfo.subProcessorID);
-			jsonSpikeChInfo->setProperty("source_processor_channel", sourceInfo.channelIDX);
-			jsonChannelInfo.add(var(jsonSpikeChInfo));
-		}
-		jsonChannel->setProperty("source_channel_info", jsonChannelInfo);
-		createChannelMetaData(ch, jsonChannel);
+	// open .spikes.npy file:
+	String spikeFileName = basepath;
+	spikeFileName += getRecordingNumberString(recordingNumber) + ".spikes.npy";
+	std::cout << "OPENING FILE: " << spikeFileName << std::endl;
+	ScopedPointer<EventRecording> rec = new EventRecording();
+	// 3D, each row is [timestamp, chani, clusteri]:
+	NpyType spikedtype = NpyType(BaseType::INT64, 3);
+	rec->dataFile = new NpyFile(spikeFileName, spikedtype);
+	m_spikeFile = rec.release(); // store file handle
 
-		int nIndexed = indexedSpikes.size();
-		bool found = false;
-		for (int i = 0; i < nIndexed; i++)
-		{
-			const SpikeChannel* ich = indexedSpikes[i];
-			// identical channels (same data and metadata) from the same processor
-			// will be saved to the same file:
-			if (ch->getSourceNodeID() == ich->getSourceNodeID() &&
-			    ch->getSubProcessorIdx() == ich->getSubProcessorIdx() &&
-			    *ch == *ich)
-			{
-				found = true;
-				m_spikeFileIndexes.set(sp, i);
-				unsigned int numChans = indexedChannels[i];
-				indexedChannels.set(i, numChans);
-				m_spikeChannelIndexes.set(sp, numChans + 1);
-				jsonSpikeChannels.getReference(i).append(var(jsonChannel));
-				break;
-			}
-		}
-		
-		if (!found) // write spike data to file
-		{
-			int fileIndex = m_spikeFiles.size();
-			m_spikeFileIndexes.set(sp, fileIndex);
-			indexedSpikes.add(ch);
-			m_spikeChannelIndexes.set(sp, 0);
-			indexedChannels.add(1);
-			ScopedPointer<EventRecording> rec = new EventRecording();
-			
-			uint32 procID = GenericProcessor::getProcessorFullId(ch->getSourceNodeID(), ch->getSubProcessorIdx());
-			int groupIndex = ++groupMap[procID];
-
-			String spikeName = getProcessorString(ch) + "spike_group_" + String(groupIndex) + File::separatorString;
-
-			rec->dataFile = new NpyFile(spikePath + spikeName + "spike_waveforms.npy", NpyType(BaseType::INT16, ch->getTotalSamples()), ch->getNumChannels());
-			rec->tsFile = new NpyFile(spikePath + spikeName + "spike_times.npy", NpyType(BaseType::INT64, 1));
-			rec->chanFile = new NpyFile(spikePath + spikeName + "spike_electrode_indices.npy", NpyType(BaseType::UINT16, 1));
-			rec->extraFile = new NpyFile(spikePath + spikeName + "spike_clusters.npy", NpyType(BaseType::UINT16, 1));
-			Array<NpyType> tsTypes;
-			
-			Array<var> jsonChanArray;
-			jsonChanArray.add(var(jsonChannel));
-			jsonSpikeChannels.add(var(jsonChanArray));
-			DynamicObject::Ptr jsonFile = new DynamicObject();
-			
-			jsonFile->setProperty("folder_name", spikeName.replace(File::separatorString,"/"));
-			jsonFile->setProperty("sample_rate", ch->getSampleRate());
-			jsonFile->setProperty("source_processor", ch->getSourceName());
-			jsonFile->setProperty("num_channels", (int)numSpikeChannels);
-			jsonFile->setProperty("pre_peak_samples", (int)ch->getPrePeakSamples());
-			jsonFile->setProperty("post_peak_samples", (int)ch->getPostPeakSamples());
-			
-			rec->metaDataFile = createEventMetadataFile(ch, spikePath + spikeName + ".metadata.npy", jsonFile);
-			m_spikeFiles.add(rec.release());
-			jsonSpikeFiles.add(var(jsonFile));
-		}
-	}
-	int nSpikeFiles = jsonSpikeFiles.size();
-	for (int i = 0; i < nSpikeFiles; i++)
-	{
-		int size = jsonSpikeChannels.getReference(i).size();
-		DynamicObject::Ptr jsonFile = jsonSpikeFiles.getReference(i).getDynamicObject();
-		jsonFile->setProperty("num_channels", size);
-		jsonFile->setProperty("channels", jsonSpikeChannels.getReference(i));
-	}
-
-	m_recordingNum = recordingNumber;
-
+	//m_recordingNum = recordingNumber; // don't really need to store this?
 }
 
-NpyFile* BinaryRecording::createEventMetadataFile(const MetaDataEventObject* channel,
-												  String filename, DynamicObject* jsonFile)
-{
-	int nMetaData = channel->getEventMetaDataCount();
-	if (nMetaData < 1) return nullptr;
-
-	Array<NpyType> types;
-	Array<var> jsonMetaData;
-	for (int i = 0; i < nMetaData; i++)
-	{
-		const MetaDataDescriptor* md = channel->getEventMetaDataDescriptor(i);
-		types.add(NpyType(md->getName(), md->getType(), md->getLength()));
-		DynamicObject::Ptr jsonValues = new DynamicObject();
-		jsonValues->setProperty("name", md->getName());
-		jsonValues->setProperty("description", md->getDescription());
-		jsonValues->setProperty("identifier", md->getIdentifier());
-		jsonValues->setProperty("type", jsonTypeValue(md->getType()));
-		jsonValues->setProperty("length", (int)md->getLength());
-		jsonMetaData.add(var(jsonValues));
-	}
-	if (jsonFile)
-		jsonFile->setProperty("event_metadata", jsonMetaData);
-	return new NpyFile(filename, types);
-}
 
 template <typename TO, typename FROM>
 void dataToVar(var& dataTo, const void* dataFrom, int length)
@@ -370,79 +260,6 @@ void dataToVar(var& dataTo, const void* dataFrom, int length)
 	}
 }
 
-void BinaryRecording::createChannelMetaData(const MetaDataInfoObject* channel,
-											DynamicObject* jsonFile)
-{
-	int nMetaData = channel->getMetaDataCount();
-	if (nMetaData < 1) return;
-
-	Array<var> jsonMetaData;
-	for (int i = 0; i < nMetaData; i++)
-	{
-		const MetaDataDescriptor* md = channel->getMetaDataDescriptor(i);
-		const MetaDataValue* mv = channel->getMetaDataValue(i);
-		DynamicObject::Ptr jsonValues = new DynamicObject();
-		MetaDataDescriptor::MetaDataTypes type = md->getType();
-		unsigned int length = md->getLength();
-		jsonValues->setProperty("name", md->getName());
-		jsonValues->setProperty("description", md->getDescription());
-		jsonValues->setProperty("identifier", md->getIdentifier());
-		jsonValues->setProperty("type", jsonTypeValue(type));
-		jsonValues->setProperty("length", (int)length);
-		var val;
-		if (type == MetaDataDescriptor::CHAR)
-		{
-			String tmp;
-			mv->getValue(tmp);
-			val = tmp;
-		}
-		else
-		{
-			const void* buf = mv->getRawValuePointer();
-			switch (type)
-			{
-			case MetaDataDescriptor::INT8:
-				dataToVar<int, int8>(val, buf, length);
-				break;
-			case MetaDataDescriptor::UINT8:
-				dataToVar<int, uint8>(val, buf, length);
-				break;
-			case MetaDataDescriptor::INT16:
-				dataToVar<int, int16>(val, buf, length);
-				break;
-			case MetaDataDescriptor::UINT16:
-				dataToVar<int, uint16>(val, buf, length);
-				break;
-			case MetaDataDescriptor::INT32:
-				dataToVar<int, int32>(val, buf, length);
-				break;
-			case MetaDataDescriptor::UINT32:
-				// a full uint32 doesn't fit in a regular int, so increase size:
-				dataToVar<int64, uint8>(val, buf, length);
-				break;
-			case MetaDataDescriptor::INT64:
-				dataToVar<int64, int64>(val, buf, length);
-				break;
-			case MetaDataDescriptor::UINT64:
-				// this might overrun and end negative if the uint64 is really big,
-				// but there is no way to store a full uint64 in a var:
-				dataToVar<int64, uint64>(val, buf, length);
-				break;
-			case MetaDataDescriptor::FLOAT:
-				dataToVar<float, float>(val, buf, length);
-				break;
-			case MetaDataDescriptor::DOUBLE:
-				dataToVar<double, double>(val, buf, length);
-				break;
-			default:
-				val = "invalid";
-			}
-		}
-		jsonValues->setProperty("value", val);
-		jsonMetaData.add(var(jsonValues));
-	}
-	jsonFile->setProperty("channel_metadata", jsonMetaData);
-}
 
 void BinaryRecording::closeFiles()
 {
@@ -455,10 +272,8 @@ void BinaryRecording::resetChannels()
 	m_DataFiles.clear();
 	m_channelIndexes.clear();
 	m_fileIndexes.clear();
-	m_eventFiles.clear();
-	m_spikeFiles.clear();
-	m_spikeChannelIndexes.clear();
-	m_spikeFileIndexes.clear();
+	m_dinFile = nullptr;
+	m_spikeFile = nullptr;
 	m_msgFile = nullptr;
 
 	m_scaledBuffer.malloc(MAX_BUFFER_SIZE);
@@ -492,18 +307,6 @@ void BinaryRecording::writeData(int writeChannel, int realChannel, const float* 
 
 void BinaryRecording::addSpikeElectrode(int index, const SpikeChannel* elec)
 {
-}
-
-void BinaryRecording::writeEventMetaData(const MetaDataEvent* event, NpyFile* file)
-{
-	std::cout << "in writeEventMetaData()" << std::endl;
-	if (!file || !event) return;
-	int nMetaData = event->getMetadataValueCount();
-	for (int i = 0; i < nMetaData; i++)
-	{
-		const MetaDataValue* val = event->getMetaDataValue(i);
-		file->writeData(val->getRawValuePointer(), val->getDataSize());
-	}
 }
 
 void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
@@ -559,47 +362,28 @@ void BinaryRecording::writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx,
 
 void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)
 {
+	//std::cout << "electrodeIndex " << electrodeIndex << std::endl;
 	const SpikeChannel* channel = getSpikeChannel(electrodeIndex);
-	EventRecording* rec = m_spikeFiles[m_spikeFileIndexes[electrodeIndex]];
-	uint16 spikeChannel = m_spikeChannelIndexes[electrodeIndex];
+	EventRecording* rec = m_spikeFile;
 
-	int totalSamples = channel->getTotalSamples() * channel->getNumChannels();
-
-
-	if (totalSamples > m_bufferSize)
-	// shouldn't happen, and if it does it'll be slow, but better this than crashing
-	{
-		std::cerr << "(spike) Write buffer overrun, resizing to" << totalSamples << std::endl;
-		m_bufferSize = totalSamples;
-		m_scaledBuffer.malloc(totalSamples);
-		m_intBuffer.malloc(totalSamples);
-	}
-	double multFactor = 1 / (float(0x7fff) * channel->getChannelBitVolts(0));
-	FloatVectorOperations::copyWithMultiply(m_scaledBuffer.getData(), spike->getDataPointer(),
-											multFactor, totalSamples);
-	AudioDataConverters::convertFloatToInt16LE(m_scaledBuffer.getData(), m_intBuffer.getData(),
-											   totalSamples);
-	rec->dataFile->writeData(m_intBuffer.getData(), totalSamples*sizeof(int16));
-	
 	int64 ts = spike->getTimestamp();
-	rec->tsFile->writeData(&ts, sizeof(int64));
-
-	rec->chanFile->writeData(&spikeChannel, sizeof(uint16));
-
-	uint16 sortedID = spike->getSortedID();
-	rec->extraFile->writeData(&sortedID, sizeof(uint16));
-	writeEventMetaData(spike, rec->metaDataFile);
-
+	/// why can't i do something like spike->getChannel?
+	//int64 spikeChannel = (int64)(uint16)(m_spikeChannelIndexes[electrodeIndex]);
+	/// TODO: electrodeIndex probably needs to be dereferenced...
+	int64 spikeChannel = electrodeIndex;
+	int64 sortedID = (int64)(uint16)spike->getSortedID();
+	rec->dataFile->writeData(&ts, sizeof(int64)); // timestamp
+	rec->dataFile->writeData(&spikeChannel, sizeof(int64)); // spike channel
+	rec->dataFile->writeData(&sortedID, sizeof(int64)); // cluster ID
 	increaseEventCounts(rec);
 }
 
 void BinaryRecording::increaseEventCounts(EventRecording* rec)
 {
 	rec->dataFile->increaseRecordCount();
-	if (rec->tsFile) rec->tsFile->increaseRecordCount();
-	if (rec->extraFile) rec->extraFile->increaseRecordCount();
-	if (rec->chanFile) rec->chanFile->increaseRecordCount();
-	if (rec->metaDataFile) rec->metaDataFile->increaseRecordCount();
+	//if (rec->tsFile) rec->tsFile->increaseRecordCount();
+	//if (rec->extraFile) rec->extraFile->increaseRecordCount();
+	//if (rec->chanFile) rec->chanFile->increaseRecordCount();
 }
 
 RecordEngineManager* BinaryRecording::getEngineManager()
@@ -615,35 +399,4 @@ RecordEngineManager* BinaryRecording::getEngineManager()
 void BinaryRecording::setParameter(EngineParameter& parameter)
 {
 	boolParameter(0, m_saveTTLWords);
-}
-
-String BinaryRecording::jsonTypeValue(BaseType type)
-{
-	switch (type)
-	{
-	case BaseType::CHAR:
-		return "string";
-	case BaseType::INT8:
-		return "int8";
-	case BaseType::UINT8:
-		return "uint8";
-	case BaseType::INT16:
-		return "int16";
-	case BaseType::UINT16:
-		return "uint16";
-	case BaseType::INT32:
-		return "int32";
-	case BaseType::UINT32:
-		return "uint32";
-	case BaseType::INT64:
-		return "int64";
-	case BaseType::UINT64:
-		return "uint64";
-	case BaseType::FLOAT:
-		return "float";
-	case BaseType::DOUBLE:
-		return "double";
-	default:
-		return String::empty;
-	}
 }

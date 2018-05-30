@@ -56,18 +56,12 @@ namespace BinaryRecordingEngine
 		{
 		public:
 			ScopedPointer<NpyFile> dataFile;
-			ScopedPointer<NpyFile> tsFile;
-			ScopedPointer<NpyFile> metaDataFile;
-			ScopedPointer<NpyFile> chanFile;
-			ScopedPointer<NpyFile> extraFile;
+			//ScopedPointer<NpyFile> tsFile;
+			//ScopedPointer<NpyFile> chanFile;
+			//ScopedPointer<NpyFile> extraFile;
 		};
-		
 
-		NpyFile* createEventMetadataFile(const MetaDataEventObject* channel, String fileName, DynamicObject* jsonObject);
-		void createChannelMetaData(const MetaDataInfoObject* channel, DynamicObject* jsonObject);
-		void writeEventMetaData(const MetaDataEvent* event, NpyFile* file);
 		void increaseEventCounts(EventRecording* rec);
-		static String jsonTypeValue(BaseType type);
 		static String getProcessorString(const InfoObjectCommon* channelInfo);
 		String getRecordingNumberString(int recordingNumber);
 
@@ -81,18 +75,15 @@ namespace BinaryRecordingEngine
 		OwnedArray<SequentialBlockFile> m_DataFiles;
 		Array<unsigned int> m_channelIndexes;
 		Array<unsigned int> m_fileIndexes;
-		OwnedArray<EventRecording> m_spikeFiles;
-		Array<unsigned int> m_spikeFileIndexes;
-		Array<uint16> m_spikeChannelIndexes;
 		EventRecording* m_dinFile;
+		EventRecording* m_spikeFile;
 		ScopedPointer<FileOutputStream> m_msgFile;
 
-		int m_recordingNum;
+		//int m_recordingNum;
 		Array<int64> m_startTS;
 
 		//Compile-time constants
 		const int samplesPerBlock{ 4096 };
-
 	};
 
 }
