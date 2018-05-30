@@ -380,11 +380,13 @@ public:
 		SINGLE,
 		STEREOTRODE,
 		TETRODE,
+		POLY32,
+		POLY64,
 		INVALID = 100
 	};
 
 	/** Default constructor 
-		@param type The type of electrode this channel represents (SINGLE, STEREOTRODE, TETRODE)
+		@param type The type of electrode this channel represents (SINGLE, STEREOTRODE, TETRODE, etc.)
 		@param source A pointer to the source processor
 		@param souceChannels An array containing const pointers to the channels that originate the data for this spike electrode
 		@param subproc Optional. The source subprocessor index.

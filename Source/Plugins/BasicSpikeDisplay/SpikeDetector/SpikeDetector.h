@@ -135,7 +135,7 @@ public:
     /** Sets the current electrode index */
     SimpleElectrode* setCurrentElectrodeIndex (int);
 
-    /** Returns a list of possible electrode types (e.g., stereotrode, tetrode). */
+    /** Returns a list of possible electrode types (e.g., stereotrode, tetrode, etc.). */
     StringArray electrodeTypes;
     // =====================================================================
 

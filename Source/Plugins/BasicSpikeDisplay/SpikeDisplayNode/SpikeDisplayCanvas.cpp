@@ -339,6 +339,7 @@ void SpikeDisplay::resized()
         int numColumns = 1;
         int column, row;
 
+		// mspacek: how does this change for polytrodes?
         int stereotrodeStart = 0;
         int tetrodeStart = 0;
 

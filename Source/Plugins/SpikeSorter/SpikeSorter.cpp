@@ -1102,7 +1102,9 @@ bool SpikeSorter::samplesAvailable(int nSamples)
 
 }
 
-void SpikeSorter::addProbes(String probeType,int numProbes, int nElectrodesPerProbe, int nChansPerElectrode,  double firstContactOffset, double interelectrodeDistance)
+void SpikeSorter::addProbes(String probeType, int numProbes, int nElectrodesPerProbe,
+							int nChansPerElectrode, double firstContactOffset,
+							double interelectrodeDistance)
 {
     for (int probeIter=0; probeIter<numProbes; probeIter++)
     {
@@ -1112,7 +1114,8 @@ void SpikeSorter::addProbes(String probeType,int numProbes, int nElectrodesPerPr
             double depth = firstContactOffset - electrodeIter*interelectrodeDistance;
             String name;
             if (nElectrodesPerProbe > 1)
-                name = probeType + " " + String(probeCounter) + " ["+String(electrodeIter+1)+"/"+String(nElectrodesPerProbe)+"]";
+                name = probeType + " " + String(probeCounter) + " ["+String(electrodeIter+1)
+                + "/" + String(nElectrodesPerProbe) + "]";
             else
                 name = probeType + " " + String(probeCounter);
 

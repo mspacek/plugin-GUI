@@ -32,7 +32,7 @@ class SpikeSorterCanvas;
 
   User interface for the SpikeSorter processor.
 
-  Allows the user to add single electrodes, stereotrodes, or tetrodes.
+  Allows the user to add single electrodes, stereotrodes, tetrodes, etc.
 
   Parameters of individual channels, such as channel mapping, threshold,
   and enabled state, can be edited.

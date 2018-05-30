@@ -359,12 +359,14 @@ void SpikeSorterEditor::buttonEvent(Button* button)
         probeMenu.addItem(1,"Single Electrode");
         probeMenu.addItem(2,"Stereotrode");
         probeMenu.addItem(3,"Tetrode");
+        probeMenu.addItem(4,"Polytrode32");
+        probeMenu.addItem(5,"Polytrode64");
         PopupMenu depthprobeMenu;
-        depthprobeMenu.addItem(4,"8 ch, 125um");
-        depthprobeMenu.addItem(5,"16 ch, 125um");
-        depthprobeMenu.addItem(6,"24 ch, 125um");
-        depthprobeMenu.addItem(7,"32 ch, 50um");
-        depthprobeMenu.addItem(8,"32 ch, 25um");
+        depthprobeMenu.addItem(6,"8 ch, 125um");
+        depthprobeMenu.addItem(7,"16 ch, 125um");
+        depthprobeMenu.addItem(8,"24 ch, 125um");
+        depthprobeMenu.addItem(9,"32 ch, 50um");
+        depthprobeMenu.addItem(10,"32 ch, 25um");
         probeMenu.addSubMenu("Depth probe", depthprobeMenu,true);
 
         const int result = probeMenu.show();
@@ -398,34 +400,46 @@ void SpikeSorterEditor::buttonEvent(Button* button)
                 firstElectrodeOffset = 0;
                 break;
             case 4:
+                ProbeType = "Polytrode32";
+                nChansPerElectrode = 32;
+                nElectrodes = 1;
+                firstElectrodeOffset = 0;
+                break;
+            case 5:
+                ProbeType = "Polytrode64";
+                nChansPerElectrode = 64;
+                nElectrodes = 1;
+                firstElectrodeOffset = 0;
+                break;
+            case 6:
                 ProbeType = "Depth Probe";
                 nChansPerElectrode = 1;
                 nElectrodes = 8;
                 interelectrodeDistance = 0.125;
                 firstElectrodeOffset= -0.5;
                 break;
-            case 5:
+            case 7:
                 ProbeType = "Depth Probe";
                 nChansPerElectrode = 1;
                 nElectrodes = 16;
                 interelectrodeDistance = 0.125;
                 firstElectrodeOffset= -0.5;
                 break;
-            case 6:
+            case 8:
                 ProbeType = "Depth Probe";
                 nChansPerElectrode = 1;
                 nElectrodes = 24;
                 interelectrodeDistance = 0.125;
                 firstElectrodeOffset= -0.5;
                 break;
-            case 7:
+            case 9:
                 ProbeType = "Depth Probe";
                 nChansPerElectrode = 1;
                 nElectrodes = 32;
                 interelectrodeDistance = 0.050;
                 firstElectrodeOffset= -0.5;
                 break;
-            case 8:
+            case 10:
                 ProbeType = "Depth Probe";
                 nChansPerElectrode = 1;
                 nElectrodes = 32;
@@ -434,7 +448,8 @@ void SpikeSorterEditor::buttonEvent(Button* button)
                 break;
         }
 
-        processor->addProbes(ProbeType,numProbes, nElectrodes,nChansPerElectrode, firstElectrodeOffset,interelectrodeDistance);
+        processor->addProbes(ProbeType, numProbes, nElectrodes, nChansPerElectrode,
+						     firstElectrodeOffset, interelectrodeDistance);
         refreshElectrodeList();
 
         CoreServices::updateSignalChain(this);

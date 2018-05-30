@@ -46,7 +46,7 @@ SpikeDetectorEditor::SpikeDetectorEditor(GenericProcessor* parentNode, bool useD
     for (int i = 0; i < processor->electrodeTypes.size(); i++)
     {
         String type = processor->electrodeTypes[i];
-        electrodeTypes->addItem(type += "s", i+1);
+        electrodeTypes->addItem(type, i+1);
     }
 
     electrodeTypes->setEditableText(false);

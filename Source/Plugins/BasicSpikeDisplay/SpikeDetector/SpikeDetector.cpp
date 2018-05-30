@@ -39,6 +39,8 @@ SpikeDetector::SpikeDetector()
     electrodeTypes.add ("single electrode");
     electrodeTypes.add ("stereotrode");
     electrodeTypes.add ("tetrode");
+    electrodeTypes.add ("polytrode32");
+    electrodeTypes.add ("polytrode64");
 
     //// the technically correct form (Greek cardinal prefixes):
     // electrodeTypes.add("hentrode");
