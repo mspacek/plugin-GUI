@@ -176,13 +176,13 @@ protected:
     /** Gets the number of recorded channels */
     int getNumRecordedChannels() const;
 
-	/** Gets the number of recorded event channels
-	 (right now all channels are recorded) */
-	int getNumRecordedEvents() const;
+    /** Gets the number of recorded event channels
+     (right now all channels are recorded) */
+    int getNumRecordedEventChannels() const;
 
-	/** Gets the number of recorded spike channels
-	(right now all channels are recorded) */
-	int getNumRecordedSpikes() const;
+    /** Gets the number of recorded spike channels
+    (right now all channels are recorded) */
+    int getNumRecordedSpikeChannels() const;
 
     /** Gets the number of processors being recorded
     */
@@ -200,10 +200,11 @@ protected:
     */
     int getChannelNumInProc (int channel) const;
 
-	/** Gets the last created settings.xml in text form. Should be called at file opening to get the latest version.
-		Since the string will be large, returns a const reference. It should never be const_casted.
-	*/
-	const String& getLatestSettingsXml() const;
+    /** Gets the last created settings.xml in text form. Should be called at file opening to
+     get the latest version. Since the string will be large, returns a const reference. It
+     should never be const_casted.
+    */
+    const String& getLatestSettingsXml() const;
 
 private:
     Array<int64> timestamps;

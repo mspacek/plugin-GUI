@@ -126,7 +126,8 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 					  << std::endl;
 
 		// fill in m_channelIndexes and m_fileIndexes for use in writeData, though
-		// given the simplified setup assumed, these probably aren't even necessary any more:
+		// given the simplified setup assumed, these might not be necessary any more:
+		/// TODO: is this right? shouldn't the args be reversed??????????????
 		m_channelIndexes.set(recordedChan, chani); // index, value
 		m_fileIndexes.set(recordedChan, 0);
 	}
@@ -137,17 +138,18 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	ScopedPointer<SequentialBlockFile> bFile = new SequentialBlockFile(nRecChans,
 																	   samplesPerBlock);
 	std::cout << "OPENING FILE: " << datFileName << std::endl;
-	//continuousFileNames.add(datFileName);
 	if (bFile->openFile(datFileName))
 		m_DataFiles.add(bFile.release());
 	else
 		m_DataFiles.add(nullptr);
 
-	// get timestamps:
+	// get start timestamps for all channels (TODO: should be the same for all?):
+	int refts = getTimestamp(0);
 	for (int i = 0; i < nChans; i++)
 	{
 		if (i == 0)
-			std::cout << "Start timestamp: " << getTimestamp(i) << std::endl;
+			std::cout << "Start timestamp: " << refts << std::endl;
+		jassert(getTimestamp(i) == refts);
 		m_startTS.add(getTimestamp(i));
 	}
 	Time now = Time::getCurrentTime();
@@ -156,7 +158,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	datetime = datetime.upToLastOccurrenceOf(tz, false, false); // strip time zone
 	//datetime = datetime.upToLastOccurrenceOf(".", false, false); // strip subseconds
 
-	// build JSON data structure:
+	// collect .dat metadata in JSON data structure:
 	DynamicObject::Ptr json = new DynamicObject();
 	//json->setProperty("dat_fname", datFileName);
 	json->setProperty("nchans", nRecChans);
@@ -176,7 +178,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	json->setProperty("version", CoreServices::getGUIVersion());
 	json->setProperty("notes", "");
 
-	// write JSON data to disk:
+	// write .dat metadata to .dat.json file:
 	String jsonFileName = basepath;
 	jsonFileName += getRecordingNumberString(recordingNumber) + ".dat.json";
 	File jsonf = File(jsonFileName);
@@ -184,19 +186,17 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	if (res.failed())
 		std::cerr << "Error creating JSON file:" << res.getErrorMessage()
 				  << std::endl;
-	ScopedPointer<FileOutputStream>	jsonFile = jsonf.createOutputStream();
+	ScopedPointer<FileOutputStream> jsonFile = jsonf.createOutputStream();
 	String jsonstr = JSON::toString(var(json), false); // JUCE 5.3.2 has maximumDecimalPlaces
 	std::cout << "WRITING FILE: " << jsonFileName << std::endl;
 	jsonFile->writeText(jsonstr, false, false, nullptr);
 	jsonFile->flush();
 
-	// open msg and ttl event files:
-	int nEvents = getNumRecordedEvents();
-	for (int ev = 0; ev < nEvents; ev++)
+	// open .msg.txt and .din.npy event files:
+	int nEventChans = getNumRecordedEventChannels();
+	for (int evChani = 0; evChani < nEventChans; evChani++)
 	{
-		const EventChannel* chan = getEventChannel(ev);
-		NpyType dtype;
-		ScopedPointer<EventRecording> rec = new EventRecording();
+		const EventChannel* chan = getEventChannel(evChani);
 
 		switch (chan->getChannelType())
 		{
@@ -211,7 +211,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 					std::cerr << "Error creating message text file:" << res.getErrorMessage()
 							  << std::endl;
 				else
-					m_msgFile = msgf.createOutputStream();
+					m_msgFile = msgf.createOutputStream(); // store file handle
 					m_msgFile->writeText(getMessageHeader(datetime), false, false, nullptr);
 					m_msgFile->flush();
 				break;
@@ -223,12 +223,14 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 				String dinFileName = basepath;
 				dinFileName += getRecordingNumberString(recordingNumber) + ".din.npy";
 				std::cout << "OPENING FILE: " << dinFileName << std::endl;
-				dtype = NpyType(BaseType::INT64, 2); // 2D, each row is [timestamp, word]
-				rec->dataFile = new NpyFile(dinFileName, dtype);
+				ScopedPointer<EventRecording> rec = new EventRecording();
+				// 2D, each row is [timestamp, word]:
+				NpyType dindtype = NpyType(BaseType::INT64, 2);
+				rec->dataFile = new NpyFile(dinFileName, dindtype);
+				m_dinFile = rec.release(); // store file handle
 				break;
 			}
 		}
-		m_eventFiles.add(rec.release());
 	}
 
 	// open spike files:
@@ -507,7 +509,7 @@ void BinaryRecording::writeEventMetaData(const MetaDataEvent* event, NpyFile* fi
 void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 {
 	EventPtr ev = Event::deserializeFromMessage(event, getEventChannel(eventIndex));
-	EventRecording* rec = m_eventFiles[eventIndex];
+	EventRecording* rec = m_dinFile;
 	if (!rec)
 		return;
 	const EventChannel* info = getEventChannel(eventIndex);
@@ -534,7 +536,6 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
 		std::cerr << "Error. Don't know how to handle event type " << ev->getEventType()
 				  << std::endl;
 	}
-	
 }
 
 String BinaryRecording::getMessageHeader(String datetime)

@@ -103,12 +103,12 @@ int RecordEngine::getNumRecordedChannels() const
     return channelMap.size();
 }
 
-int RecordEngine::getNumRecordedEvents() const
+int RecordEngine::getNumRecordedEventChannels() const
 {
 	return AccessClass::getProcessorGraph()->getRecordNode()->getTotalEventChannels();
 }
 
-int RecordEngine::getNumRecordedSpikes() const
+int RecordEngine::getNumRecordedSpikeChannels() const
 {
 	return AccessClass::getProcessorGraph()->getRecordNode()->getTotalSpikeChannels();
 }
@@ -388,5 +388,3 @@ void RecordEngineManager::loadParametersFromXml (XmlElement* xml)
         }
     }
 }
-
-

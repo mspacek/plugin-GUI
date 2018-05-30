@@ -81,10 +81,10 @@ namespace BinaryRecordingEngine
 		OwnedArray<SequentialBlockFile> m_DataFiles;
 		Array<unsigned int> m_channelIndexes;
 		Array<unsigned int> m_fileIndexes;
-		OwnedArray<EventRecording> m_eventFiles;
 		OwnedArray<EventRecording> m_spikeFiles;
 		Array<unsigned int> m_spikeFileIndexes;
 		Array<uint16> m_spikeChannelIndexes;
+		EventRecording* m_dinFile;
 		ScopedPointer<FileOutputStream> m_msgFile;
 
 		int m_recordingNum;
