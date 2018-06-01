@@ -81,7 +81,6 @@ TODO:
 * need to deal with 0 vs 1-based channel IDs in .json and spike.npy - which to use depends on probe type
 * test that enabled chans are written correctly to .json when some chans are disabled
 * handle auxchans, if any, in .json
-* give plugin a version number, add to .json?
 * add git rev to .json/.msg.txt?
 */
 
@@ -146,12 +145,12 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		m_DataFiles.add(nullptr);
 
 	// get start timestamps for all channels (TODO: should be the same for all?):
-	int refts = getTimestamp(0);
+	int nsamples_offset = getTimestamp(0);
 	for (int i = 0; i < nChans; i++)
 	{
 		if (i == 0)
-			std::cout << "Start timestamp: " << refts << std::endl;
-		jassert(getTimestamp(i) == refts);
+			std::cout << "Start timestamp: " << nsamples_offset << std::endl;
+		jassert(getTimestamp(i) == nsamples_offset);
 		m_startTS.add(getTimestamp(i));
 	}
 	Time now = Time::getCurrentTime();
@@ -174,7 +173,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	var auxchans;
 	if (auxchans)
 		json->setProperty("auxchans", auxchans);
-	json->setProperty("nsamples_offset", m_startTS[0]);
+	json->setProperty("nsamples_offset", nsamples_offset);
 	json->setProperty("datetime", datetime);
 	json->setProperty("author", "Open-Ephys, BusseLabBinaryWriter plugin");
 	String version = CoreServices::getGUIVersion() + ", " + BusseLabBinaryWriterPluginVersion;
