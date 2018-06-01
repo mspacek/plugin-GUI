@@ -69,14 +69,13 @@ namespace BinaryRecordingEngine
 	
 		HeapBlock<float> m_scaledBuffer;
 		HeapBlock<int16> m_intBuffer;
-		HeapBlock<int64> m_tsBuffer;
 		int m_bufferSize;
 
 		OwnedArray<SequentialBlockFile> m_DataFiles;
 		Array<unsigned int> m_channelIndexes;
 		Array<unsigned int> m_fileIndexes;
-		EventRecording* m_dinFile;
-		EventRecording* m_spikeFile;
+		ScopedPointer<EventRecording> m_dinFile;
+		ScopedPointer<EventRecording> m_spikeFile;
 		ScopedPointer<FileOutputStream> m_msgFile;
 
 		//int m_recordingNum;

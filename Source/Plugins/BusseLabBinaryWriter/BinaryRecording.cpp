@@ -83,7 +83,6 @@ TODO:
 * handle auxchans, if any, in .json
 * give plugin a version number, add to .json?
 * add git rev to .json/.msg.txt?
-* fix memory leaks reported on exit
 */
 
 void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingNumber)
@@ -230,7 +229,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 				// 2D, each row is [timestamp, word]:
 				NpyType dindtype = NpyType(BaseType::INT64, 2);
 				rec->dataFile = new NpyFile(dinFileName, dindtype);
-				m_dinFile = rec.release(); // store file handle
+				m_dinFile = rec.release(); // store pointer to rec object
 				break;
 			}
 		}
@@ -244,7 +243,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	// 3D, each row is [timestamp, chani, clusteri]:
 	NpyType spikedtype = NpyType(BaseType::INT64, 3);
 	rec->dataFile = new NpyFile(spikeFileName, spikedtype);
-	m_spikeFile = rec.release(); // store file handle
+	m_spikeFile = rec.release(); // store pointer to rec object
 
 	//m_recordingNum = recordingNumber; // don't really need to store this?
 }
@@ -268,7 +267,7 @@ void BinaryRecording::closeFiles()
 
 void BinaryRecording::resetChannels()
 {
-	// dereferencing all file handles closes all files?
+	// dereference all stored objects, including open file handles?
 	m_DataFiles.clear();
 	m_channelIndexes.clear();
 	m_fileIndexes.clear();
