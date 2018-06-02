@@ -303,7 +303,7 @@ void DataChannel::setDefaultNameAndDescription()
 		break;
 	case AUX_CHANNEL: 
 		name = "AUX "; 
-		description = "Auxiliar";
+		description = "Auxiliary";
 		break;
 	case ADC_CHANNEL: 
 		name = "ADC "; 
