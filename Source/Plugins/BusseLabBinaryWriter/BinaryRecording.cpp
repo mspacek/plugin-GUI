@@ -21,6 +21,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+/*
+
+TODO:
+
+* test spike detection and saving
+* check assumption that there's only one spike detector in the signal chain?
+* how does clustering work? does it fill the cluster id field in .spikes.npy properly?
+* get channel map working
+* parse the chanmap to extract probe_name, and also channel ID base
+* make sure chanmap layout doesn't affect chan ordering in .dat file! only for display
+* need to deal with 0 vs 1-based channel IDs in .json and spike.npy - which to use depends on probe type
+* test that enabled chans are written correctly to .json when some chans are disabled
+* add git rev to .json/.msg.txt?
+* get "Error in Rhd2000EvalBoard::readDataBlock: Incorrect header." errors randomly, won't exit
+
+*/
+
+
 #include "BinaryRecording.h"
 
 #define MAX_BUFFER_SIZE 40960
@@ -69,60 +87,58 @@ String BinaryRecording::getRecordingNumberString(int recordingNumber)
 	return s;
 }
 
-/*
-
-TODO:
-
-* test spike detection and saving
-* check assumption that there's only one spike detector in the signal chain?
-* how does clustering work? does it fill the cluster id field in .spikes.npy properly?
-* get channel map working
-* parse the chanmap to extract probe_name
-* need to deal with 0 vs 1-based channel IDs in .json and spike.npy - which to use depends on probe type
-* test that enabled chans are written correctly to .json when some chans are disabled
-* handle auxchans, if any, in .json
-* add git rev to .json/.msg.txt?
-*/
-
 void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingNumber)
 {
 	String basepath = rootFolder.getFullPathName() + rootFolder.separatorString + baseName;
 
-	int nProcessors = getNumRecordedProcessors();
-	if (nProcessors != 1)
-		std::cerr << "ERROR: BusseLabBinaryWriter plugin assumes only 1 processor, found "
-				  << nProcessors << std::endl;
+	int nRecProcessors = getNumRecordedProcessors();
+	if (nRecProcessors != 1)
+		std::cerr << "ERROR: BusseLabBinaryWriter plugin assumes only 1 recorded processor, "
+				  << "found " << nRecProcessors << std::endl;
 
 	// collect some channel parameters:
-	int nChans = getNumRecordedChannels();
-	std::cout << "Number of recorded channels: " << nChans << std::endl;
-	m_channelIndexes.insertMultiple(0, 0, nChans);
-	m_fileIndexes.insertMultiple(0, 0, nChans);
+	int nRecChans = getNumRecordedChannels(); // num recorded channels
+	int nHeadstageChans = getNumHeadstageChannels(); // number of headstage chans
+	std::cout << "getNumRecordedChannels: " << nRecChans << std::endl;
+	std::cout << "getNumHeadstageChannels: " << nHeadstageChans << std::endl;
+	m_channelIndexes.insertMultiple(0, 0, nRecChans);
+	m_fileIndexes.insertMultiple(0, 0, nRecChans);
 
 	const RecordProcessorInfo& pInfo0 = getProcessorInfo(0); // info for processor 0
-	int nRecChans = pInfo0.recordedChannels.size();
 	int recordedChan0 = pInfo0.recordedChannels[0];
 	int realChan0 = getRealChannel(recordedChan0);
-	const DataChannel* channelInfo0 = getDataChannel(realChan0);
+	const DataChannel* datachan0 = getDataChannel(realChan0);
 
 	// compare each chan's sample rate and uV per AD to that of chani 0:
-	int sample_rate = channelInfo0->getSampleRate();
-	double uV_per_AD = channelInfo0->getBitVolts();
+	int sample_rate = datachan0->getSampleRate();
+	double uV_per_AD = datachan0->getBitVolts();
 
-	// iterate over all recorded chans:
-	var chans; // holds enabled chans
+	// iterate over all chans enabled for recording in processor 0:
+	var chans;
+	var chanNames;
 	for (int chani = 0; chani < nRecChans; chani++)
 	{
 		int recordedChan = pInfo0.recordedChannels[chani];
-		chans.append(recordedChan);
-		int realChan = getRealChannel(recordedChan);
-		const DataChannel* channelInfo = getDataChannel(realChan);
+		/// TODO: what's the difference between recordedChan and realChan?
+		//chans.append(recordedChan);
+		int realChan = getRealChannel(recordedChan); // does some kind of dereferencing?
+		const DataChannel* datachan = getDataChannel(realChan);
+		chans.append(realChan);
+		chanNames.append(datachan->getName());
+
+		// some diagnostics:
+		//std::cout << "chan getName: " << datachan->getName() << std::endl;
+		//std::cout << "chan getSourceNodeID: " << datachan->getSourceNodeID() << std::endl;
+		//std::cout << "chan getSubProcessorIdx: " << datachan->getSubProcessorIdx()
+				  //<< std::endl;
+		//std::cout << "chan getSourceIndex: " << datachan->getSourceIndex() << std::endl;
+		//std::cout << "chan getDescription: " << datachan->getDescription() << std::endl;
 
 		// compare to chani 0:
-		if (channelInfo->getSampleRate() != sample_rate)
+		if (datachan->getSampleRate() != sample_rate)
 			std::cerr << "ERROR: sample rate of chan " << realChan << " != " << sample_rate
 					  << std::endl;
-		if (channelInfo->getBitVolts() != uV_per_AD)
+		if (datachan->getBitVolts() != uV_per_AD)
 			std::cerr << "ERROR: uV_per_AD of chan " << realChan << " != " << uV_per_AD
 					  << std::endl;
 
@@ -132,6 +148,8 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		m_channelIndexes.set(recordedChan, chani); // index, value
 		m_fileIndexes.set(recordedChan, 0);
 	}
+	std::cout << "Enabled chans: " << JSON::toString(chans, true) << std::endl;
+	std::cout << "Enabled chanNames: " << JSON::toString(chanNames, true) << std::endl;
 
 	// open .dat file:
 	String datFileName = basepath;
@@ -144,9 +162,9 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	else
 		m_DataFiles.add(nullptr);
 
-	// get start timestamps for all channels (TODO: should be the same for all?):
+	// get start timestamps for all enabled channels - should be the same for all?:
 	int nsamples_offset = getTimestamp(0);
-	for (int i = 0; i < nChans; i++)
+	for (int i = 0; i < nRecChans; i++)
 	{
 		if (i == 0)
 			std::cout << "Start timestamp: " << nsamples_offset << std::endl;
@@ -157,22 +175,21 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	String datetime = now.toISO8601(true);
 	String tz = now.getUTCOffsetString(true);
 	datetime = datetime.upToLastOccurrenceOf(tz, false, false); // strip time zone
-	//datetime = datetime.upToLastOccurrenceOf(".", false, false); // strip subseconds
 
 	// collect .dat metadata in JSON data structure:
 	DynamicObject::Ptr json = new DynamicObject();
 	//json->setProperty("dat_fname", datFileName);
-	json->setProperty("nchans", nRecChans);
+	json->setProperty("nchans", nRecChans); // number of enabled chans
 	json->setProperty("sample_rate", sample_rate);
 	json->setProperty("dtype", "int16");
 	json->setProperty("uV_per_AD", uV_per_AD);
 	/// TODO: parse the chanmap to extract probe_name:
 	json->setProperty("probe_name", "");
 	json->setProperty("chans", chans);
-	/// TODO: handle auxchans, if any
-	var auxchans;
-	if (auxchans)
-		json->setProperty("auxchans", auxchans);
+	// normally don't have any analog input auxchans:
+	//var auxchans;
+	//if (auxchans)
+		//json->setProperty("auxchans", auxchans);
 	json->setProperty("nsamples_offset", nsamples_offset);
 	json->setProperty("datetime", datetime);
 	json->setProperty("author", "Open-Ephys, BusseLabBinaryWriter plugin");
@@ -186,8 +203,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	File jsonf = File(jsonFileName);
 	Result res = jsonf.create();
 	if (res.failed())
-		std::cerr << "Error creating JSON file:" << res.getErrorMessage()
-				  << std::endl;
+		std::cerr << "Error creating JSON file:" << res.getErrorMessage() << std::endl;
 	ScopedPointer<FileOutputStream> jsonFile = jsonf.createOutputStream();
 	String jsonstr = JSON::toString(var(json), false); // JUCE 5.3.2 has maximumDecimalPlaces
 	std::cout << "WRITING FILE: " << jsonFileName << std::endl;
