@@ -364,8 +364,9 @@ String BinaryRecording::getMessageHeader(String datetime)
 					+ ", BusseLabBinaryWriter plugin " + BusseLabBinaryWriterPluginVersion
 					+ "\n";
 	header += "## " + datetime + "\n";
-	header += "## Message log format: samplei <TAB> message\n";
 	header += "## Processor start time is index of first sample in .dat file\n";
+	header += "## Message log format: samplei <TAB> message\n";
+	header += "samplei\tmessage\n"; // column names for loading into Pandas DataFrame
 	return header;
 }
 
