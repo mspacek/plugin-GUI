@@ -25,6 +25,7 @@
 #include "RecordNode.h"
 #include "../ProcessorGraph/ProcessorGraph.h"
 #include "../../AccessClass.h"
+#include "../SourceNode/SourceNode.h"
 
 #include "EngineConfigWindow.h"
 #include "OriginalRecording.h"
@@ -96,6 +97,12 @@ int64 RecordEngine::getTimestamp (int channel) const
 int RecordEngine::getRealChannel (int channel) const
 {
     return channelMap[channel];
+}
+
+int RecordEngine::getNumHeadstageChans() const
+{
+    SourceNode* src = AccessClass::getProcessorGraph()->getSourceNode();
+    return src->getThread()->getNumDataOutputs(DataChannel::HEADSTAGE_CHANNEL, 0);
 }
 
 int RecordEngine::getNumRecordedChannels() const

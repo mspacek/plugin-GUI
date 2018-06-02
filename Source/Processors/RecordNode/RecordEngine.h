@@ -173,6 +173,9 @@ protected:
     /** Gets the actual channel number from a recorded channel index */
     int getRealChannel (int channel) const;
 
+    /** Gets the number of headstage channels */
+    int getNumHeadstageChans() const;
+
     /** Gets the number of recorded channels */
     int getNumRecordedChannels() const;
 
