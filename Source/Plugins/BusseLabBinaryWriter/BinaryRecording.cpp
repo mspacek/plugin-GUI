@@ -185,7 +185,9 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	json->setProperty("uV_per_AD", uV_per_AD);
 	/// TODO: parse the chanmap to extract probe_name:
 	json->setProperty("probe_name", "");
-	json->setProperty("chans", chans);
+	// add chans field only if some chans have been disabled:
+	if (nRecChans != nHeadstageChans)
+		json->setProperty("chans", chans);
 	// normally don't have any analog input auxchans:
 	//var auxchans;
 	//if (auxchans)
