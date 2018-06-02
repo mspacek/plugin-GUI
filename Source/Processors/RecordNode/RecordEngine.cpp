@@ -60,12 +60,12 @@ const DataChannel* RecordEngine::getDataChannel (int index) const
 
 const EventChannel* RecordEngine::getEventChannel(int index) const
 {
-	return AccessClass::getProcessorGraph()->getRecordNode()->getEventChannel(index);
+    return AccessClass::getProcessorGraph()->getRecordNode()->getEventChannel(index);
 }
 
 const SpikeChannel* RecordEngine::getSpikeChannel(int index) const
 {
-	return AccessClass::getProcessorGraph()->getRecordNode()->getSpikeChannel(index);
+    return AccessClass::getProcessorGraph()->getRecordNode()->getSpikeChannel(index);
 }
 
 String RecordEngine::generateDateString() const
@@ -112,12 +112,12 @@ int RecordEngine::getNumRecordedChannels() const
 
 int RecordEngine::getNumRecordedEventChannels() const
 {
-	return AccessClass::getProcessorGraph()->getRecordNode()->getTotalEventChannels();
+    return AccessClass::getProcessorGraph()->getRecordNode()->getTotalEventChannels();
 }
 
 int RecordEngine::getNumRecordedSpikeChannels() const
 {
-	return AccessClass::getProcessorGraph()->getRecordNode()->getTotalSpikeChannels();
+    return AccessClass::getProcessorGraph()->getRecordNode()->getTotalSpikeChannels();
 }
 
 void RecordEngine::registerSpikeSource (const GenericProcessor* processor) {}
@@ -144,7 +144,7 @@ int RecordEngine::getChannelNumInProc (int channel) const
 
 const String& RecordEngine::getLatestSettingsXml() const
 {
-	return AccessClass::getProcessorGraph()->getRecordNode()->getLastSettingsXml();
+    return AccessClass::getProcessorGraph()->getRecordNode()->getLastSettingsXml();
 }
 
 void RecordEngine::startAcquisition() {}
@@ -198,10 +198,10 @@ EngineParameter::EngineParameter (EngineParameter::EngineParameterType paramType
     {
         strParam.value = defaultValue;
     }
-	else if (paramType == MULTI)
-	{
-		multiParam.value = defaultValue;
-	}
+    else if (paramType == MULTI)
+    {
+        multiParam.value = defaultValue;
+    }
 }
 
 
@@ -225,15 +225,15 @@ void EngineParameter::restoreDefault()
             strParam.value = def;
             break;
 
-		case MULTI:
-			multiParam.value = def;
+        case MULTI:
+            multiParam.value = def;
 
         default:
             break;
     }
 }
 
-RecordEngineManager::RecordEngineManager (String engineID, String engineName, EngineCreator creatorFunc) 
+RecordEngineManager::RecordEngineManager (String engineID, String engineName, EngineCreator creatorFunc)
     : creator   (creatorFunc)
     , id        (engineID)
     , name      (engineName)
@@ -348,9 +348,9 @@ void RecordEngineManager::saveParametersToXml (XmlElement* xml)
                 param->setAttribute ("value", parameters[i]->strParam.value);
                 break;
 
-			case EngineParameter::MULTI:
-				param->setAttribute("type", "multi");
-				param->setAttribute("value", parameters[i]->multiParam.value);
+            case EngineParameter::MULTI:
+                param->setAttribute("type", "multi");
+                param->setAttribute("value", parameters[i]->multiParam.value);
 
             default:
                 break;
@@ -386,11 +386,11 @@ void RecordEngineManager::loadParametersFromXml (XmlElement* xml)
                 {
                     parameters[i]->strParam.value = xmlNode->getStringAttribute ("value");
                 }
-				else if ((xmlNode->getStringAttribute("type") == "multi")
-					&& (parameters[i]->type == EngineParameter::MULTI))
-				{
-					parameters[i]->multiParam.value = xmlNode->getIntAttribute("value");
-				}
+                else if ((xmlNode->getStringAttribute("type") == "multi")
+                    && (parameters[i]->type == EngineParameter::MULTI))
+                {
+                    parameters[i]->multiParam.value = xmlNode->getIntAttribute("value");
+                }
             }
         }
     }

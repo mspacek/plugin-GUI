@@ -43,8 +43,8 @@
 
 struct RecordProcessorInfo
 {
-	int processorId; 
-	Array<int> recordedChannels; //Indexes of the recorded channels. From 0-maxRecordChannels, not 0-totalChannels
+    int processorId;
+    Array<int> recordedChannels; //Indexes of the recorded channels. From 0-maxRecordChannels, not 0-totalChannels
 };
 
 struct EngineParameter;
@@ -107,8 +107,8 @@ public:
     /** Write a single event to disk.  */
     virtual void writeEvent (int eventChannel, const MidiMessage& event) = 0;
 
-	/** Handle the timestamp sync text messages*/
-	virtual void writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx, int64 timestamp, float sourceSampleRate, String text) = 0;
+    /** Handle the timestamp sync text messages*/
+    virtual void writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx, int64 timestamp, float sourceSampleRate, String text) = 0;
 
     /** Called when acquisition starts once for each processor that might record continuous data */
     virtual void registerProcessor (const GenericProcessor* processor);
@@ -116,8 +116,8 @@ public:
     /** Called after registerProcessor, once for each output channel of the processor */
     virtual void addDataChannel (int index, const DataChannel* chan);
 
-	/** Called after registerProcessor, once for each output channel of the processor */
-	virtual void addEventChannel(int index, const EventChannel* chan);
+    /** Called after registerProcessor, once for each output channel of the processor */
+    virtual void addEventChannel(int index, const EventChannel* chan);
 
     /** Called when acquisition starts once for each processor that might record spikes */
     virtual void registerSpikeSource (const GenericProcessor* processor);
@@ -158,8 +158,8 @@ protected:
     /** Gets the specified channel from the channel array stored in RecordNode */
     const DataChannel* getDataChannel (int index) const;
 
-	/** Gets the specified event channel from the channel array stored in RecordNode */
-	const EventChannel* getEventChannel(int index) const;
+    /** Gets the specified event channel from the channel array stored in RecordNode */
+    const EventChannel* getEventChannel(int index) const;
 
     /** Gets the specified channel group info structure from the array stored in RecordNode */
     const SpikeChannel* getSpikeChannel (int index) const;
@@ -257,11 +257,11 @@ public:
         {
             bool value;
         } boolParam;
-		
-		struct 
-		{
-			int value;
-		} multiParam;
+
+        struct
+        {
+            int value;
+        } multiParam;
     };
 
     //Strings can't be inside an union. This means wasting a bit of memory, but adds more safety than using char*
