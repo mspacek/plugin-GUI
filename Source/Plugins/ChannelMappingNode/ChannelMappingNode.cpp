@@ -82,9 +82,9 @@ void ChannelMappingNode::updateSettings()
             if ( (enabledChannelArray[channelArray[i]])
                  && (channelArray[i] < oldChannels.size()))
             {
-				DataChannel* oldChan = oldChannels[channelArray[i]];
-				oldChannels.set(channelArray[i], nullptr, false);
-                dataChannelArray.add     (oldChan);
+                DataChannel* oldChan = oldChannels[channelArray[i]];
+                oldChannels.set(channelArray[i], nullptr, false);
+                dataChannelArray.add (oldChan);
                 recordStates.add (oldChan->getRecordState());
                 settings.numOutputs++;
             }
@@ -133,7 +133,7 @@ void ChannelMappingNode::process (AudioSampleBuffer& buffer)
     // use copy constructor to set the data to refer to
     channelBuffer = buffer;
 
-   // buffer.clear();
+    // buffer.clear();
 
     while (j < settings.numOutputs)
     {
@@ -153,19 +153,16 @@ void ChannelMappingNode::process (AudioSampleBuffer& buffer)
                 && (referenceChannels[referenceArray[realChan]] > -1)
                 && (referenceChannels[referenceArray[realChan]] < channelBuffer.getNumChannels()))
             {
-                buffer.addFrom (j,                                                                // destChannel
-                                0,                                                                // destStartSample
-                                channelBuffer,                                                    // source
+                buffer.addFrom (j,                 // destChannel
+                                0,                 // destStartSample
+                                channelBuffer,     // source
                                 channelArray[referenceChannels[referenceArray[realChan]]], // sourceChannel
-                                0,                                                                // sourceStartSample
-                                getNumSamples (j),                                                // numSamples
+                                0,                 // sourceStartSample
+                                getNumSamples (j), // numSamples
                                 -1.0f); // gain to apply to source (negative for reference)
             }
-
             ++j;
         }
-
         ++i;
     }
 }
-
