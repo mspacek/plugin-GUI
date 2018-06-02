@@ -40,7 +40,7 @@ RecordNode::RecordNode()
 
     isProcessing = false;
     isRecording = false;
-	setFirstBlock = false;
+    setFirstBlock = false;
 
     settings.numInputs = 2048;
     settings.numOutputs = 0;
@@ -53,11 +53,11 @@ RecordNode::RecordNode()
 
     // 128 inputs, 0 outputs
     setPlayConfigDetails(getNumInputs(),getNumOutputs(),44100.0,128);
-	m_recordThread = new RecordThread(engineArray);
-	m_dataQueue = new DataQueue(WRITE_BLOCK_LENGTH, DATA_BUFFER_NBLOCKS);
-	m_eventQueue = new EventMsgQueue(EVENT_BUFFER_NEVENTS);
-	m_spikeQueue = new SpikeMsgQueue(SPIKE_BUFFER_NSPIKES);
-	m_recordThread->setQueuePointers(m_dataQueue, m_eventQueue, m_spikeQueue);
+    m_recordThread = new RecordThread(engineArray);
+    m_dataQueue = new DataQueue(WRITE_BLOCK_LENGTH, DATA_BUFFER_NBLOCKS);
+    m_eventQueue = new EventMsgQueue(EVENT_BUFFER_NEVENTS);
+    m_spikeQueue = new SpikeMsgQueue(SPIKE_BUFFER_NSPIKES);
+    m_recordThread->setQueuePointers(m_dataQueue, m_eventQueue, m_spikeQueue);
 }
 
 
@@ -67,7 +67,7 @@ RecordNode::~RecordNode()
 
 void RecordNode::setChannel(const DataChannel* ch)
 {
-	int channelNum = getDataChannelIndex(ch->getSourceIndex(), ch->getSourceNodeID(), ch->getSubProcessorIdx());
+    int channelNum = getDataChannelIndex(ch->getSourceIndex(), ch->getSourceNodeID(), ch->getSubProcessorIdx());
 
     std::cout << "Record node setting channel to " << channelNum << std::endl;
 
@@ -108,7 +108,7 @@ void RecordNode::filenameComponentChanged(FilenameComponent* fnc)
 {
 
     dataDirectory = fnc->getCurrentFile();
-	newDirectoryNeeded = true;
+    newDirectoryNeeded = true;
 
 }
 
@@ -143,9 +143,9 @@ void RecordNode::addInputChannel(const GenericProcessor* sourceNode, int chan)
     {
         int channelIndex = getNextChannel(false);
 
-		const DataChannel* orig = sourceNode->getDataChannel(chan);
-		DataChannel* newChannel = new DataChannel(*orig);
-		newChannel->setRecordState(orig->getRecordState());
+        const DataChannel* orig = sourceNode->getDataChannel(chan);
+        DataChannel* newChannel = new DataChannel(*orig);
+        newChannel->setRecordState(orig->getRecordState());
         dataChannelArray.add(newChannel);
         setPlayConfigDetails(channelIndex+1,0,44100.0,128);
 
@@ -158,10 +158,10 @@ void RecordNode::addInputChannel(const GenericProcessor* sourceNode, int chan)
 
         for (int n = 0; n < sourceNode->getTotalEventChannels(); n++)
         {
-			const EventChannel* orig = sourceNode->getEventChannel(n);
-			//only add to the record node the events originating from this processor, to avoid duplicates
-			if (orig->getSourceNodeID() == sourceNode->getNodeId())
-				eventChannelArray.add(new EventChannel(*orig));
+            const EventChannel* orig = sourceNode->getEventChannel(n);
+            //only add to the record node the events originating from this processor, to avoid duplicates
+            if (orig->getSourceNodeID() == sourceNode->getNodeId())
+                eventChannelArray.add(new EventChannel(*orig));
 
         }
 
@@ -185,47 +185,6 @@ void RecordNode::ensureRootFolderExists()
         rootFolder.createDirectory();
     }
 }
-
-
-/*
-String RecordNode::generateDirectoryName()
-{
-    Time calendar = Time::getCurrentTime();
-
-    Array<int> t;
-    t.add(calendar.getYear());
-    t.add(calendar.getMonth()+1); // January = 0
-    t.add(calendar.getDayOfMonth());
-    t.add(calendar.getHours());
-    t.add(calendar.getMinutes());
-    t.add(calendar.getSeconds());
-
-    String filename = AccessClass::getControlPanel()->getTextToPrepend();
-
-    String datestring = "";
-
-    for (int n = 0; n < t.size(); n++)
-    {
-        if (t[n] < 10)
-            datestring += "0";
-
-        datestring += t[n];
-
-        if (n == 2)
-            datestring += "_";
-        else if (n < 5)
-            datestring += "-";
-    }
-
-    AccessClass::getControlPanel()->setDateText(datestring);
-
-    filename += datestring;
-    filename += AccessClass::getControlPanel()->getTextToAppend();
-
-    return filename;
-
-}
-*/
 
 String RecordNode::generateDateString() const
 {
@@ -321,57 +280,57 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
         String settingsFileName = rootFolder.getFullPathName() + File::separator + baseName;
         settingsFileName += getRecordingNumberString(recordingNumber) + ".settings.xml";
         std::cout << "WRITING FILE: " << settingsFileName << std::endl;
-            AccessClass::getEditorViewport()->saveState(File(settingsFileName), m_lastSettingsText);
+        AccessClass::getEditorViewport()->saveState(File(settingsFileName),
+                                                    m_lastSettingsText);
 
         m_recordThread->setFileComponents(rootFolder, baseName, recordingNumber);
 
-		channelMap.clear();
-		int totChans = dataChannelArray.size();
-		OwnedArray<RecordProcessorInfo> procInfo;
-		Array<int> chanProcessorMap;
-		Array<int> chanOrderinProc;
-		int lastProcessor = -1;
-		int procIndex = -1;
-		int chanProcOrder = 0;
-		for (int ch = 0; ch < totChans; ++ch)
-		{
-			DataChannel* chan = dataChannelArray[ch];
-			if (chan->getRecordState())
-			{
-				channelMap.add(ch);
-				//This is bassed on the assumption that all channels from the same processor are added contiguously
-				//If this behaviour changes, this check should be most thorough
-				if (chan->getCurrentNodeID() != lastProcessor)
-				{
-					lastProcessor = chan->getCurrentNodeID();
-					RecordProcessorInfo* pi = new RecordProcessorInfo();
-					pi->processorId = chan->getCurrentNodeID();
-					procInfo.add(pi);
-					procIndex++;
-					chanProcOrder = 0;
-				}
-				procInfo.getLast()->recordedChannels.add(channelMap.size()-1);
-				chanProcessorMap.add(procIndex);
-				chanOrderinProc.add(chanProcOrder);
-				chanProcOrder++;
-			}
-		}
-		std::cout << "Number of recording processors: " << procInfo.size() << std::endl;
-		int numRecordedChannels = channelMap.size();
+        channelMap.clear();
+        int totChans = dataChannelArray.size(); // across all processors? comes to 201 for me..
+        OwnedArray<RecordProcessorInfo> procInfo;
+        Array<int> chanProcessorMap;
+        Array<int> chanOrderinProc;
+        int lastProcessor = -1;
+        int procIndex = -1;
+        int chanProcOrder = 0;
+        for (int ch = 0; ch < totChans; ++ch)
+        {
+            DataChannel* chan = dataChannelArray[ch];
+            if (chan->getRecordState())
+            {
+                channelMap.add(ch);
+                // this assumes that all chans from the same processor are added contiguously:
+                if (chan->getCurrentNodeID() != lastProcessor)
+                {
+                    lastProcessor = chan->getCurrentNodeID();
+                    RecordProcessorInfo* pi = new RecordProcessorInfo();
+                    pi->processorId = chan->getCurrentNodeID();
+                    procInfo.add(pi);
+                    procIndex++;
+                    chanProcOrder = 0;
+                }
+                procInfo.getLast()->recordedChannels.add(channelMap.size()-1);
+                chanProcessorMap.add(procIndex);
+                chanOrderinProc.add(chanProcOrder);
+                chanProcOrder++;
+            }
+        }
+        std::cout << "Number of recording processors: " << procInfo.size() << std::endl;
+        int numRecordedChannels = channelMap.size();
 
-		//WARNING: If at some point we record at more that one recordEngine at once, we should change this, as using OwnedArrays only works for the first
-		EVERY_ENGINE->setChannelMapping(channelMap, chanProcessorMap, chanOrderinProc, procInfo);
-		m_recordThread->setChannelMap(channelMap);
-		m_dataQueue->setChannels(numRecordedChannels);
-		m_eventQueue->reset();
-		m_spikeQueue->reset();
-		m_recordThread->setFirstBlockFlag(false);
+        //WARNING: If at some point we record at more that one recordEngine at once, we should change this, as using OwnedArrays only works for the first
+        EVERY_ENGINE->setChannelMapping(channelMap, chanProcessorMap, chanOrderinProc, procInfo);
+        m_recordThread->setChannelMap(channelMap);
+        m_dataQueue->setChannels(numRecordedChannels);
+        m_eventQueue->reset();
+        m_spikeQueue->reset();
+        m_recordThread->setFirstBlockFlag(false);
 
-		setFirstBlock = false;
-		m_recordThread->startThread();
+        setFirstBlock = false;
+        m_recordThread->startThread();
 
-		isRecording = true;
-		hasRecorded = true;
+        isRecording = true;
+        hasRecorded = true;
 
     }
     else if (parameterIndex == 0)
@@ -380,27 +339,27 @@ void RecordNode::setParameter(int parameterIndex, float newValue)
 
         if (isRecording)
         {
-			isRecording = false;
+            isRecording = false;
 
             // close the writing thread.
-			m_recordThread->signalThreadShouldExit();
-			m_recordThread->waitForThreadToExit(2000);
-			while (m_recordThread->isThreadRunning())
-			{
-				std::cerr << "RecordEngine timeout" << std::endl;
-				if (AlertWindow::showOkCancelBox(AlertWindow::WarningIcon, "Record Thread timeout",
-					"The recording thread is taking too long to close.\nThis could mean there is still data waiting to be written in the buffer, but it normally "
-					"shouldn't take this long.\nYou can either wait a bit more or forcefully close the thread. Note that data might be lost or corrupted"
-					"if forcibly closing the thread.", "Stop the thread", "Wait a bit more"))
-				{
-					m_recordThread->stopThread(100);
-					m_recordThread->forceCloseFiles();
-				}
-				else
-				{
-					m_recordThread->waitForThreadToExit(2000);
-				}
-			}
+            m_recordThread->signalThreadShouldExit();
+            m_recordThread->waitForThreadToExit(2000);
+            while (m_recordThread->isThreadRunning())
+            {
+                std::cerr << "RecordEngine timeout" << std::endl;
+                if (AlertWindow::showOkCancelBox(AlertWindow::WarningIcon, "Record Thread timeout",
+                    "The recording thread is taking too long to close.\nThis could mean there is still data waiting to be written in the buffer, but it normally "
+                    "shouldn't take this long.\nYou can either wait a bit more or forcefully close the thread. Note that data might be lost or corrupted"
+                    "if forcibly closing the thread.", "Stop the thread", "Wait a bit more"))
+                {
+                    m_recordThread->stopThread(100);
+                    m_recordThread->forceCloseFiles();
+                }
+                else
+                {
+                    m_recordThread->waitForThreadToExit(2000);
+                }
+            }
 
         }
     }
@@ -466,57 +425,57 @@ float RecordNode::getFreeSpace() const
 }
 
 
-void RecordNode::handleEvent(const EventChannel* eventInfo, const MidiMessage& event, int samplePosition)
+void RecordNode::handleEvent(const EventChannel* eventInfo, const MidiMessage& event,
+                             int samplePosition)
 {
     if (isRecording)
     {
-
-            if ((*(event.getRawData()+0) & 0x80) == 0) // saving flag > 0 (i.e., event has not already been processed)
+            if ((*(event.getRawData()+0) & 0x80) == 0)
+            // saving flag > 0 (i.e., event has not already been processed)
             {
-				int64 timestamp = Event::getTimestamp(event);
-				int eventIndex;
-				if (eventInfo)
-					eventIndex = getEventChannelIndex(Event::getSourceIndex(event), Event::getSourceID(event), Event::getSubProcessorIdx(event));
-				else
-					eventIndex = -1;
-				m_eventQueue->addEvent(event, timestamp, eventIndex);
+                int64 timestamp = Event::getTimestamp(event);
+                int eventIndex;
+                if (eventInfo)
+                    eventIndex = getEventChannelIndex(Event::getSourceIndex(event),
+                                                      Event::getSourceID(event),
+                                                      Event::getSubProcessorIdx(event));
+                else
+                    eventIndex = -1;
+                m_eventQueue->addEvent(event, timestamp, eventIndex);
             }
     }
 }
 
 void RecordNode::handleTimestampSyncTexts(const MidiMessage& event)
 {
-	handleEvent(nullptr, event, 0);
+    handleEvent(nullptr, event, 0);
 }
 
 void RecordNode::process(AudioSampleBuffer& buffer)
 {
-	
-	// FIRST: cycle through events -- extract the TTLs and the timestamps
+    // FIRST: cycle through events -- extract the TTLs and the timestamps
     checkForEvents();
 
     if (isRecording)
     {
         // SECOND: write channel data
-		int recordChans = channelMap.size();
-		for (int chan = 0; chan < recordChans; ++chan)
-		{
-			int realChan = channelMap[chan];
-			int nSamples = getNumSamples(realChan);
-			int timestamp = getTimestamp(realChan);
-			m_dataQueue->writeChannel(buffer, chan, realChan, nSamples, timestamp);
-		}
+        int recordChans = channelMap.size();
+        for (int chan = 0; chan < recordChans; ++chan)
+        {
+            int realChan = channelMap[chan];
+            int nSamples = getNumSamples(realChan);
+            int timestamp = getTimestamp(realChan);
+            m_dataQueue->writeChannel(buffer, chan, realChan, nSamples, timestamp);
+        }
 
         //  std::cout << nSamples << " " << samplesWritten << " " << blockIndex << std::endl;
-		if (!setFirstBlock)
-		{
-			m_recordThread->setFirstBlockFlag(true);
-			setFirstBlock = true;
-		}
+        if (!setFirstBlock)
+        {
+            m_recordThread->setFirstBlockFlag(true);
+            setFirstBlock = true;
+        }
         
     }
-
-
 }
 
 void RecordNode::registerProcessor(const GenericProcessor* sourceNode)
@@ -544,12 +503,14 @@ int RecordNode::addSpikeElectrode(const SpikeChannel* elec)
 
 void RecordNode::writeSpike(const SpikeEvent* spike, const SpikeChannel* spikeElectrode)
 {
-	if (isRecording)
-	{
-		int electrodeIndex = getSpikeChannelIndex(spikeElectrode->getSourceIndex(), spikeElectrode->getSourceNodeID(), spikeElectrode->getSubProcessorIdx());
-		if (electrodeIndex >= 0)
-			m_spikeQueue->addEvent(*spike, spike->getTimestamp(), electrodeIndex);
-	}
+    if (isRecording)
+    {
+        int electrodeIndex = getSpikeChannelIndex(spikeElectrode->getSourceIndex(),
+                                                  spikeElectrode->getSourceNodeID(),
+                                                  spikeElectrode->getSubProcessorIdx());
+        if (electrodeIndex >= 0)
+            m_spikeQueue->addEvent(*spike, spike->getTimestamp(), electrodeIndex);
+    }
 }
 
 void RecordNode::clearRecordEngines()
@@ -559,21 +520,21 @@ void RecordNode::clearRecordEngines()
 
 const String& RecordNode::getLastSettingsXml() const
 {
-	return m_lastSettingsText;
+    return m_lastSettingsText;
 }
 
 File RecordNode::getDataDirectory() const
 {
-	return rootFolder;
+    return rootFolder;
 }
 
 void RecordNode::updateRecordChannelIndexes()
 {
-	//Keep the nodeIDs of the original processor from each channel comes from
-	updateChannelIndexes(false);
+    //Keep the nodeIDs of the original processor from each channel comes from
+    updateChannelIndexes(false);
 }
 
 void RecordNode::addSpecialProcessorChannels(Array<EventChannel*>& channels)
 {
-	eventChannelArray.addArray(channels);
+    eventChannelArray.addArray(channels);
 }

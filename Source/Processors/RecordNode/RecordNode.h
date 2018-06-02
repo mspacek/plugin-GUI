@@ -76,8 +76,8 @@ public:
     */
     void setParameter(int parameterIndex, float newValue) override;
 
-	/** returns current recording number */
-	int getRecordingNumber() const;
+    /** returns current recording number */
+    int getRecordingNumber() const;
 
     /** converts current non-zero recording number to 0 padded string */
     String getRecordingNumberString(int recordingNumber);
@@ -132,7 +132,7 @@ public:
     */
     void ensureRootFolderExists();
 
-	File getDataDirectory() const;
+    File getDataDirectory() const;
 
     String getBaseName() const
     {
@@ -169,12 +169,12 @@ public:
     /** Generate a Matlab-compatible datestring */
     String generateDateString() const;
 
-	/** Get the last settings.xml in string form. Since the string will be large, returns a const ref.*/
-	const String& getLastSettingsXml() const;
+    /** Get the last settings.xml in string form. Since the string will be large, returns a const ref.*/
+    const String& getLastSettingsXml() const;
 
-	//Called by ProcessorGraph
-	void updateRecordChannelIndexes();
-	void addSpecialProcessorChannels(Array<EventChannel*>& channels);
+    //Called by ProcessorGraph
+    void updateRecordChannelIndexes();
+    void addSpecialProcessorChannels(Array<EventChannel*>& channels);
 
 private:
 
@@ -206,31 +206,28 @@ private:
     */
     Time timer;
 
-	Array<int> channelMap;
+    Array<int> channelMap;
 
     int spikeElectrodeIndex;
 
     bool hasRecorded;
-	std::atomic<bool> setFirstBlock;
-    /** Generates a default directory name, based on the current date and time */
-    String generateDirectoryName();
+    std::atomic<bool> setFirstBlock;
 
     /** Cycle through the event buffer, looking for data to save */
-	void handleEvent(const EventChannel* eventInfo, const MidiMessage& event, int samplePosition) override;
+    void handleEvent(const EventChannel* eventInfo, const MidiMessage& event, int samplePosition) override;
 
-	virtual void handleTimestampSyncTexts(const MidiMessage& event);
+    virtual void handleTimestampSyncTexts(const MidiMessage& event);
 
     /**RecordEngines loaded**/
     OwnedArray<RecordEngine> engineArray;
 
-	ScopedPointer<RecordThread> m_recordThread;
-	ScopedPointer<DataQueue> m_dataQueue;
-	ScopedPointer<EventMsgQueue> m_eventQueue;
-	ScopedPointer<SpikeMsgQueue> m_spikeQueue;
-	
-	Array<int> m_recordedChannelMap;
+    ScopedPointer<RecordThread> m_recordThread;
+    ScopedPointer<DataQueue> m_dataQueue;
+    ScopedPointer<EventMsgQueue> m_eventQueue;
+    ScopedPointer<SpikeMsgQueue> m_spikeQueue;
+    Array<int> m_recordedChannelMap;
 
-	String m_lastSettingsText;
+    String m_lastSettingsText;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RecordNode);
 
