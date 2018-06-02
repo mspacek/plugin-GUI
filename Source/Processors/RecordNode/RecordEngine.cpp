@@ -99,7 +99,7 @@ int RecordEngine::getRealChannel (int channel) const
     return channelMap[channel];
 }
 
-int RecordEngine::getNumHeadstageChans() const
+int RecordEngine::getNumHeadstageChannels() const
 {
     SourceNode* src = AccessClass::getProcessorGraph()->getSourceNode();
     return src->getThread()->getNumDataOutputs(DataChannel::HEADSTAGE_CHANNEL, 0);

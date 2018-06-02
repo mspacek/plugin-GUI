@@ -174,7 +174,7 @@ protected:
     int getRealChannel (int channel) const;
 
     /** Gets the number of headstage channels */
-    int getNumHeadstageChans() const;
+    int getNumHeadstageChannels() const;
 
     /** Gets the number of recorded channels */
     int getNumRecordedChannels() const;
