@@ -88,47 +88,47 @@ void ProcessorGraph::updatePointers()
 
 void* ProcessorGraph::createNewProcessor(Array<var>& description, int id)//,
 {
-	GenericProcessor* processor = 0;
-	try {// Try/catch block added by Michael Borisov
-		processor = createProcessorFromDescription(description);
-	}
-	catch (std::exception& e) {
-		NativeMessageBox::showMessageBoxAsync(AlertWindow::WarningIcon, "OpenEphys", e.what());
-	}
+    GenericProcessor* processor = 0;
+    try {// Try/catch block added by Michael Borisov
+        processor = createProcessorFromDescription(description);
+    }
+    catch (std::exception& e) {
+        NativeMessageBox::showMessageBoxAsync(AlertWindow::WarningIcon, "OpenEphys", e.what());
+    }
 
-	// int id = currentNodeId++;
+    // int id = currentNodeId++;
 
-	if (processor != 0)
-	{
-		processor->setNodeId(id); // identifier within processor graph
-		std::cout << "  Adding node to graph with ID number " << id << std::endl;
-		std::cout << std::endl;
-		std::cout << std::endl;
-		addNode(processor,id); // have to add it so it can be deleted by the graph
+    if (processor != 0)
+    {
+        processor->setNodeId(id); // identifier within processor graph
+        std::cout << "  Adding node to graph with ID number " << id << std::endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
+        addNode(processor,id); // have to add it so it can be deleted by the graph
 
-		if (processor->isSource())
-		{
-			// by default, all source nodes record automatically
-			processor->setAllChannelsToRecord();
-			if (processor->isGeneratesTimestamps())
-			{ //If there are no source processors and we add one, set it as default for global timestamps and samplerates
-				m_validTimestampSources.add(processor);
-				if (m_timestampSource == nullptr)
-				{
-					m_timestampSource = processor;
-					m_timestampSourceSubIdx = 0;
-				}
-				if (m_timestampWindow)
-					m_timestampWindow->updateProcessorList();
-			}
-		}
-		return processor->createEditor();
-	}
-	else
-	{
-		CoreServices::sendStatusMessage("Not a valid processor type.");
-		return 0;
-	}
+        if (processor->isSource())
+        {
+            // by default, all source nodes record automatically
+            processor->setAllChannelsToRecord();
+            if (processor->isGeneratesTimestamps())
+            { //If there are no source processors and we add one, set it as default for global timestamps and samplerates
+                m_validTimestampSources.add(processor);
+                if (m_timestampSource == nullptr)
+                {
+                    m_timestampSource = processor;
+                    m_timestampSourceSubIdx = 0;
+                }
+                if (m_timestampWindow)
+                    m_timestampWindow->updateProcessorList();
+            }
+        }
+        return processor->createEditor();
+    }
+    else
+    {
+        CoreServices::sendStatusMessage("Not a valid processor type.");
+        return 0;
+    }
 }
 
 void ProcessorGraph::clearSignalChain()
@@ -375,11 +375,11 @@ void ProcessorGraph::updateConnections(Array<SignalChainTabButton*, CriticalSect
 
         } // end while source != 0
     } // end "tabs" for loop
-	
-	//Update RecordNode internal channel mappings
-	Array<EventChannel*> extraChannels;
-	getMessageCenter()->addSpecialProcessorChannels(extraChannels);
-	getRecordNode()->addSpecialProcessorChannels(extraChannels);
+
+    //Update RecordNode internal channel mappings
+    Array<EventChannel*> extraChannels;
+    getMessageCenter()->addSpecialProcessorChannels(extraChannels);
+    getRecordNode()->addSpecialProcessorChannels(extraChannels);
 } // end method
 
 void ProcessorGraph::connectProcessors(GenericProcessor* source, GenericProcessor* dest)
@@ -445,7 +445,7 @@ void ProcessorGraph::connectProcessorToAudioAndRecordNodes(GenericProcessor* sou
         // THIS IS A HACK TO MAKE SURE AUDIO NODE KNOWS WHAT THE SAMPLE RATE SHOULD BE
         // IT CAN CAUSE PROBLEMS IF THE SAMPLE RATE VARIES ACROSS PROCESSORS
 
-		//TODO: See if this causes problems with the newer architectures
+        //TODO: See if this causes problems with the newer architectures
         //getAudioNode()->settings.sampleRate = source->getSampleRate();
 
         addConnection(source->getNodeId(),                   // sourceNodeID
@@ -481,37 +481,37 @@ void ProcessorGraph::connectProcessorToAudioAndRecordNodes(GenericProcessor* sou
 
 GenericProcessor* ProcessorGraph::createProcessorFromDescription(Array<var>& description)
 {
-	GenericProcessor* processor = nullptr;
+    GenericProcessor* processor = nullptr;
 
-	bool fromProcessorList = description[0];
-	String processorName = description[1];
-	int processorType = description[2];
-	int processorIndex = description[3];
+    bool fromProcessorList = description[0];
+    String processorName = description[1];
+    int processorType = description[2];
+    int processorIndex = description[3];
 
-	if (fromProcessorList)
-	{
-		String processorCategory = description[4];
+    if (fromProcessorList)
+    {
+        String processorCategory = description[4];
 
-		std::cout << "Creating from description..." << std::endl;
-		std::cout << processorCategory << "::" << processorName << " (" << processorType << "-" << processorIndex << ")" << std::endl;
+        std::cout << "Creating from description..." << std::endl;
+        std::cout << processorCategory << "::" << processorName << " (" << processorType << "-" << processorIndex << ")" << std::endl;
 
-		processor = ProcessorManager::createProcessor((ProcessorClasses)processorType, processorIndex);
-	}
-	else
-	{
-		String libName = description[4];
-		int libVersion = description[5];
-		bool isSource = description[6];
-		bool isSink = description[7];
+        processor = ProcessorManager::createProcessor((ProcessorClasses)processorType, processorIndex);
+    }
+    else
+    {
+        String libName = description[4];
+        int libVersion = description[5];
+        bool isSource = description[6];
+        bool isSink = description[7];
 
-		std::cout << "Creating from plugin info..." << std::endl;
-		std::cout << libName << "(" << libVersion << ")::" << processorName << std::endl;
+        std::cout << "Creating from plugin info..." << std::endl;
+        std::cout << libName << "(" << libVersion << ")::" << processorName << std::endl;
 
-		processor = ProcessorManager::createProcessorFromPluginInfo((Plugin::PluginType)processorType, processorIndex, processorName, libName, libVersion, isSource, isSink);
-	}
+        processor = ProcessorManager::createProcessorFromPluginInfo((Plugin::PluginType)processorType, processorIndex, processorName, libName, libVersion, isSource, isSink);
+    }
    
-	String msg = "New " + processorName + " created";
-	CoreServices::sendStatusMessage(msg);
+    String msg = "New " + processorName + " created";
+    CoreServices::sendStatusMessage(msg);
 
     return processor;
 }
@@ -543,33 +543,33 @@ void ProcessorGraph::removeProcessor(GenericProcessor* processor)
     disconnectNode(nodeId);
     removeNode(nodeId);
 
-	if (processor->isSource())
-	{
-		m_validTimestampSources.removeAllInstancesOf(processor);
+    if (processor->isSource())
+    {
+        m_validTimestampSources.removeAllInstancesOf(processor);
 
-		if (m_timestampSource == processor)
-		{
-			const GenericProcessor* newProc = 0;
+        if (m_timestampSource == processor)
+        {
+            const GenericProcessor* newProc = 0;
 
-			//Look for the next source node. If none is found, set the sourceid to 0
-			for (int i = 0; i < getNumNodes() && newProc == nullptr; i++)
-			{
-				if (getNode(i)->nodeId != OUTPUT_NODE_ID)
-				{
-					GenericProcessor* p = dynamic_cast<GenericProcessor*>(getNode(i)->getProcessor());
-					//GenericProcessor* p = static_cast<GenericProcessor*>(getNode(i)->getProcessor());
-					if (p && p->isSource() && p->isGeneratesTimestamps())
-					{
-						newProc = p;
-					}
-				}
-			}
-			m_timestampSource = newProc;
-			m_timestampSourceSubIdx = 0;
-		}
-		if (m_timestampWindow)
-			m_timestampWindow->updateProcessorList();
-	}
+            //Look for the next source node. If none is found, set the sourceid to 0
+            for (int i = 0; i < getNumNodes() && newProc == nullptr; i++)
+            {
+                if (getNode(i)->nodeId != OUTPUT_NODE_ID)
+                {
+                    GenericProcessor* p = dynamic_cast<GenericProcessor*>(getNode(i)->getProcessor());
+                    //GenericProcessor* p = static_cast<GenericProcessor*>(getNode(i)->getProcessor());
+                    if (p && p->isSource() && p->isGeneratesTimestamps())
+                    {
+                        newProc = p;
+                    }
+                }
+            }
+            m_timestampSource = newProc;
+            m_timestampSourceSubIdx = 0;
+        }
+        if (m_timestampWindow)
+            m_timestampWindow->updateProcessorList();
+    }
 
 }
 
@@ -601,7 +601,7 @@ bool ProcessorGraph::enableProcessors()
             if (!allClear)
             {
                 std::cout << p->getName() << " said it's not OK." << std::endl;
-                //	sendActionMessage("Could not initialize acquisition.");
+                //  sendActionMessage("Could not initialize acquisition.");
                 AccessClass::getUIComponent()->disableCallbacks();
                 return false;
 
@@ -624,15 +624,15 @@ bool ProcessorGraph::enableProcessors()
 
     AccessClass::getEditorViewport()->signalChainCanBeEdited(false);
 
-	//Update special channels indexes, at the end
-	//To change, as many other things, when the probe system is implemented
-	getRecordNode()->updateRecordChannelIndexes();
-	getAudioNode()->updateRecordChannelIndexes();
+    //Update special channels indexes, at the end
+    //To change, as many other things, when the probe system is implemented
+    getRecordNode()->updateRecordChannelIndexes();
+    getAudioNode()->updateRecordChannelIndexes();
 
-    //	sendActionMessage("Acquisition started.");
-	m_startSoftTimestamp = Time::getHighResolutionTicks();
-	if (m_timestampWindow)
-		m_timestampWindow->setAcquisitionState(true);
+    //  sendActionMessage("Acquisition started.");
+    m_startSoftTimestamp = Time::getHighResolutionTicks();
+    if (m_timestampWindow)
+        m_timestampWindow->setAcquisitionState(true);
     return true;
 }
 
@@ -650,22 +650,22 @@ bool ProcessorGraph::disableProcessors()
         {
             GenericProcessor* p = (GenericProcessor*) node->getProcessor();
             std::cout << "Disabling " << p->getName() << std::endl;
-			if (node->nodeId != MESSAGE_CENTER_ID)
-				p->disableEditor();
+            if (node->nodeId != MESSAGE_CENTER_ID)
+                p->disableEditor();
             allClear = p->disableProcessor();
 
             if (!allClear)
             {
-                //	sendActionMessage("Could not stop acquisition.");
+                //  sendActionMessage("Could not stop acquisition.");
                 return false;
             }
         }
     }
 
     AccessClass::getEditorViewport()->signalChainCanBeEdited(true);
-	if (m_timestampWindow)
-		m_timestampWindow->setAcquisitionState(false);
-    //	sendActionMessage("Acquisition ended.");
+    if (m_timestampWindow)
+        m_timestampWindow->setAcquisitionState(false);
+    //  sendActionMessage("Acquisition ended.");
 
     return true;
 }
@@ -735,58 +735,58 @@ MessageCenter* ProcessorGraph::getMessageCenter()
 
 void ProcessorGraph::setTimestampSource(int sourceIndex, int subIdx)
 {
-	m_timestampSource = m_validTimestampSources[sourceIndex];
-	if (m_timestampSource)
-	{
-		m_timestampSourceSubIdx = subIdx;
-	}
-	else
-	{
-		m_timestampSourceSubIdx = 0;
-	}
+    m_timestampSource = m_validTimestampSources[sourceIndex];
+    if (m_timestampSource)
+    {
+        m_timestampSourceSubIdx = subIdx;
+    }
+    else
+    {
+        m_timestampSourceSubIdx = 0;
+    }
 }
 
 void ProcessorGraph::getTimestampSources(Array<const GenericProcessor*>& validSources, int& selectedSource, int& selectedSubId) const
 {
-	validSources = m_validTimestampSources;
-	getTimestampSources(selectedSource, selectedSubId);
+    validSources = m_validTimestampSources;
+    getTimestampSources(selectedSource, selectedSubId);
 }
 
 void ProcessorGraph::getTimestampSources(int& selectedSource, int& selectedSubId) const
 {
-	if (m_timestampSource)
-		selectedSource = m_validTimestampSources.indexOf(m_timestampSource);
-	else
-		selectedSource = -1;
-	selectedSubId = m_timestampSourceSubIdx;
+    if (m_timestampSource)
+        selectedSource = m_validTimestampSources.indexOf(m_timestampSource);
+    else
+        selectedSource = -1;
+    selectedSubId = m_timestampSourceSubIdx;
 }
 
 int64 ProcessorGraph::getGlobalTimestamp(bool softwareOnly) const
 {
-	if (softwareOnly || !m_timestampSource)
-	{
-		return (Time::getHighResolutionTicks() - m_startSoftTimestamp);
-	}
-	else
-	{
-		return static_cast<int64>((Time::highResolutionTicksToSeconds(Time::getHighResolutionTicks() - m_timestampSource->getLastProcessedsoftwareTime())
-			* m_timestampSource->getSampleRate(m_timestampSourceSubIdx)) + m_timestampSource->getSourceTimestamp(m_timestampSource->getNodeId(), m_timestampSourceSubIdx));
-	}
+    if (softwareOnly || !m_timestampSource)
+    {
+        return (Time::getHighResolutionTicks() - m_startSoftTimestamp);
+    }
+    else
+    {
+        return static_cast<int64>((Time::highResolutionTicksToSeconds(Time::getHighResolutionTicks() - m_timestampSource->getLastProcessedsoftwareTime())
+            * m_timestampSource->getSampleRate(m_timestampSourceSubIdx)) + m_timestampSource->getSourceTimestamp(m_timestampSource->getNodeId(), m_timestampSourceSubIdx));
+    }
 }
 
 float ProcessorGraph::getGlobalSampleRate(bool softwareOnly) const
 {
-	if (softwareOnly || !m_timestampSource)
-	{
-		return Time::getHighResolutionTicksPerSecond();
-	}
-	else
-	{
-		return m_timestampSource->getSampleRate(m_timestampSourceSubIdx);
-	}
+    if (softwareOnly || !m_timestampSource)
+    {
+        return Time::getHighResolutionTicksPerSecond();
+    }
+    else
+    {
+        return m_timestampSource->getSampleRate(m_timestampSourceSubIdx);
+    }
 }
 
 void ProcessorGraph::setTimestampWindow(TimestampSourceSelectionWindow* window)
 {
-	m_timestampWindow = window;
+    m_timestampWindow = window;
 }
