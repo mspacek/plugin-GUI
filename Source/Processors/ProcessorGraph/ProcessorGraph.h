@@ -29,6 +29,7 @@
 #include "../../AccessClass.h"
 
 class GenericProcessor;
+class SourceNode;
 class RecordNode;
 class AudioNode;
 class MessageCenter;
@@ -66,6 +67,7 @@ public:
     bool enableProcessors();
     bool disableProcessors();
 
+    SourceNode* getSourceNode();
     RecordNode* getRecordNode();
     AudioNode* getAudioNode();
     MessageCenter* getMessageCenter();

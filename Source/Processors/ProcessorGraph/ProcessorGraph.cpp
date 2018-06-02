@@ -26,6 +26,7 @@
 #include "ProcessorGraph.h"
 #include "../GenericProcessor/GenericProcessor.h"
 
+#include "../SourceNode/SourceNode.h"
 #include "../AudioNode/AudioNode.h"
 #include "../RecordNode/RecordNode.h"
 #include "../MessageCenter/MessageCenter.h"
@@ -697,6 +698,14 @@ void ProcessorGraph::setRecordState(bool isRecording)
 
 }
 
+SourceNode* ProcessorGraph::getSourceNode()
+{
+    SourceNode* src = (SourceNode*) m_timestampSource; // should be the first source node
+    jassert(src != nullptr);
+    return src;
+    //Node* node = getNodeForId(100);
+    //return (SourceNode*) node->getProcessor();
+}
 
 AudioNode* ProcessorGraph::getAudioNode()
 {
