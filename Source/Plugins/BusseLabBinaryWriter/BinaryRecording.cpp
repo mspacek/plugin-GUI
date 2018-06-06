@@ -29,10 +29,13 @@ TODO:
 * check assumption that there's only one spike detector in the signal chain?
 * how does clustering work? does it fill the cluster id field in .spikes.npy properly?
 * get channel map working
+* make chanmap processor update its title when loading a .prb (JSON) file, maybe store name of file, to use as probe_name
 * parse the chanmap to extract probe_name, and also channel ID base
 * make sure chanmap layout doesn't affect chan ordering in .dat file! only for display
 * need to deal with 0 vs 1-based channel IDs in .json and spike.npy - which to use depends on probe type
+* chan labelling is not preserved between blocks in signal chain, see https://open-ephys.atlassian.net/wiki/spaces/OEW/pages/950421/Channel+Map
 * test that enabled chans are written correctly to .json when some chans are disabled
+* consider overhauling lfpviewer so that channel order and enable/disable status is reflected
 * add git rev to .json/.msg.txt?
 * get "Error in Rhd2000EvalBoard::readDataBlock: Incorrect header." errors randomly, won't exit
 
