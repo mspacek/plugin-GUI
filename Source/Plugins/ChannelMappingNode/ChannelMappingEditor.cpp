@@ -1056,6 +1056,7 @@ String ChannelMappingEditor::loadPrbFile(File filename)
         }
     }
 
+	setDisplayName(filename.getFileNameWithoutExtension());
 	setConfigured(true);
 	CoreServices::updateSignalChain(this);
 
