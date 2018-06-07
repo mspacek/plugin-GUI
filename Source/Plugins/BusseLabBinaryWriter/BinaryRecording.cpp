@@ -25,19 +25,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 TODO:
 
+* handle ADC chans - need to add auxchans field to .dat.json
+	* what does the clock divider ratio do? should change the ADC chan sampling rate, but doesn't seem to? Maybe force it to always be 1 for now?
+	* getBitVolts() for ADC chans is different, and seems ~1000x off?
 * test spike detection and saving
 * check assumption that there's only one spike detector in the signal chain?
 * how does clustering work? does it fill the cluster id field in .spikes.npy properly?
-* get channel map working
 * make chanmap processor update its title when loading a .prb (JSON) file, maybe store name of file, to use as probe_name
-* parse the chanmap to extract probe_name, and also channel ID base
-* make sure chanmap layout doesn't affect chan ordering in .dat file! only for display
-* need to deal with 0 vs 1-based channel IDs in .json and spike.npy - which to use depends on probe type
-* chan labelling is not preserved between blocks in signal chain, see https://open-ephys.atlassian.net/wiki/spaces/OEW/pages/950421/Channel+Map
-* test that enabled chans are written correctly to .json when some chans are disabled
-* consider overhauling lfpviewer so that channel order and enable/disable status is reflected
 * add git rev to .json/.msg.txt?
 * get "Error in Rhd2000EvalBoard::readDataBlock: Incorrect header." errors randomly, won't exit
+* disable debugging for faster runtime????
 
 */
 
@@ -117,16 +114,16 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	double uV_per_AD = datachan0->getBitVolts();
 
 	// iterate over all chans enabled for recording in processor 0:
-	var chans;
+	var chanis;
 	var chanNames;
 	for (int chani = 0; chani < nRecChans; chani++)
 	{
 		int recordedChan = pInfo0.recordedChannels[chani];
 		/// TODO: what's the difference between recordedChan and realChan?
-		//chans.append(recordedChan);
 		int realChan = getRealChannel(recordedChan); // does some kind of dereferencing?
 		const DataChannel* datachan = getDataChannel(realChan);
-		chans.append(realChan);
+		//chanis.append(recordedChan);
+		chanis.append(realChan);
 		chanNames.append(datachan->getName());
 
 		// some diagnostics:
@@ -139,11 +136,11 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 
 		// compare to chani 0:
 		if (datachan->getSampleRate() != sample_rate)
-			std::cerr << "ERROR: sample rate of chan " << realChan << " != " << sample_rate
-					  << std::endl;
+			std::cerr << "ERROR: sample rate of chan " << realChan << " == "
+					  << datachan->getSampleRate() << " != " << sample_rate << std::endl;
 		if (datachan->getBitVolts() != uV_per_AD)
-			std::cerr << "ERROR: uV_per_AD of chan " << realChan << " != " << uV_per_AD
-					  << std::endl;
+			std::cerr << "ERROR: uV_per_AD of chan " << realChan << " == "
+					  << datachan->getBitVolts() << " != " << uV_per_AD << std::endl;
 
 		// fill in m_channelIndexes and m_fileIndexes for use in writeData, though
 		// given the simplified setup assumed, these might not be necessary any more:
@@ -151,8 +148,8 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 		m_channelIndexes.set(recordedChan, chani); // index, value
 		m_fileIndexes.set(recordedChan, 0);
 	}
-	std::cout << "Enabled chans: " << JSON::toString(chans, true) << std::endl;
-	std::cout << "Enabled chanNames: " << JSON::toString(chanNames, true) << std::endl;
+	std::cout << "Recording chanis: " << JSON::toString(chanis, true) << std::endl;
+	std::cout << "Recording chanNames: " << JSON::toString(chanNames, true) << std::endl;
 
 	// open .dat file:
 	String datFileName = basepath;
@@ -179,20 +176,39 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	String tz = now.getUTCOffsetString(true);
 	datetime = datetime.upToLastOccurrenceOf(tz, false, false); // strip time zone
 
+	// parse the chanmap to extract probe_name:
+	var chanmapnames = CoreServices::getChannelMapNames();
+	if (chanmapnames.size() != 1)
+	{
+		std::cerr << "ERROR: Need exactly 1 channel map, found: "
+				  << JSON::toString(chanmapnames, true) << std::endl;
+		JUCEApplication::quit();
+	}
+	String probe_name = chanmapnames[0];
+	std::cout << "Storing channel map name '" << probe_name << "' as probe_name" << std::endl;
+	std::cout << "Assuming '" << probe_name
+			  << "' chans are 1-based and map 1:1 to headstage chans" << std::endl;
+	int chanbase = 1;
+	var chans;
+	for (int i = 0; i < nRecChans; i++)
+		chans.append((int)chanis[i] + chanbase); // convert to chanbase-based chans
+	std::cout << "Saving headstage chans: " << JSON::toString(chans, true) << std::endl;
+
+	// Handle auxchans here
+	//var auxchans;
+
 	// collect .dat metadata in JSON data structure:
 	DynamicObject::Ptr json = new DynamicObject();
 	//json->setProperty("dat_fname", datFileName);
-	json->setProperty("nchans", nRecChans); // number of enabled chans
+	json->setProperty("nchans", nRecChans); // number of enabled headstage (?) chans
 	json->setProperty("sample_rate", sample_rate);
 	json->setProperty("dtype", "int16");
 	json->setProperty("uV_per_AD", uV_per_AD);
-	/// TODO: parse the chanmap to extract probe_name:
-	json->setProperty("probe_name", "");
+	json->setProperty("probe_name", probe_name);
 	// add chans field only if some chans have been disabled:
 	if (nRecChans != nHeadstageChans)
 		json->setProperty("chans", chans);
 	// normally don't have any analog input auxchans:
-	//var auxchans;
 	//if (auxchans)
 		//json->setProperty("auxchans", auxchans);
 	json->setProperty("nsamples_offset", nsamples_offset);
@@ -202,6 +218,10 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	json->setProperty("version", version);
 	json->setProperty("notes", "");
 
+	std::cout << "METADATA:" << std::endl;
+	String jsonstr = JSON::toString(var(json), false); // JUCE 5.3.2 has maximumDecimalPlaces
+	std::cout << jsonstr << std::endl;
+
 	// write .dat metadata to .dat.json file:
 	String jsonFileName = basepath;
 	jsonFileName += getRecordingNumberString(recordingNumber) + ".dat.json";
@@ -210,7 +230,6 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
 	if (res.failed())
 		std::cerr << "Error creating JSON file:" << res.getErrorMessage() << std::endl;
 	ScopedPointer<FileOutputStream> jsonFile = jsonf.createOutputStream();
-	String jsonstr = JSON::toString(var(json), false); // JUCE 5.3.2 has maximumDecimalPlaces
 	std::cout << "WRITING FILE: " << jsonFileName << std::endl;
 	jsonFile->writeText(jsonstr, false, false, nullptr);
 	jsonFile->flush();
