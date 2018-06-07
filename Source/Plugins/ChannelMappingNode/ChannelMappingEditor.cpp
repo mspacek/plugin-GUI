@@ -552,7 +552,7 @@ void ChannelMappingEditor::buttonEvent(Button* button)
                 if (reorderActive)
                     modifyButton->setToggleState(false,sendNotificationSync);
                 File fileToOpen = fc.getResult();
-                std::cout << fileToOpen.getFileName() << std::endl;
+                std::cout << "Loading channel map: " << fileToOpen.getFileName() << std::endl;
 				CoreServices::sendStatusMessage(loadPrbFile(fileToOpen));
             }
         } else {
@@ -1003,7 +1003,7 @@ String ChannelMappingEditor::loadPrbFile(File filename)
     var enabled = channelGroup[Identifier("enabled")];
     Array<var>* enbl = enabled.getArray();
 
-    std::cout << "We found this many: " << map->size() << std::endl;
+    std::cout << "Found " << map->size() << " channels in channel map" << std::endl;
 
 	if (map->size() > previousChannelCount)
 		createElectrodeButtons(map->size(), false);
@@ -1070,6 +1070,6 @@ String ChannelMappingEditor::loadPrbFile(File filename)
 		channelSelector->setRecordStatus(i,recEnabled);
 	}
 
-    return "Loaded " + filename.getFileName();
+    return "Loaded channel map: " + filename.getFileName();
 
 }
