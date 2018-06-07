@@ -98,6 +98,20 @@ float getSoftwareSampleRate()
 	return getProcessorGraph()->getGlobalSampleRate(true);
 }
 
+var getChannelMapNames()
+{
+	Array<GenericProcessor*> procs = getProcessorGraph()->getListOfProcessors();
+	int nprocs = procs.size();
+	var chanmapnames;
+	for (int proci=0; proci < nprocs; proci++)
+	{
+		GenericProcessor* proc = procs[proci];
+		if (proc->getName() == "Channel Map")
+			chanmapnames.append(proc->getEditor()->getDisplayName());
+	}
+	return chanmapnames;
+}
+
 void setRecordingDirectory(String dir)
 {
     getControlPanel()->setRecordingDirectory(dir);

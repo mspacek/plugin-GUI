@@ -71,6 +71,9 @@ PLUGIN_API float getGlobalSampleRate();
 /** Gets the software timestamp based on a high resolution timer aligned to the start of each processing block */
 PLUGIN_API int64 getSoftwareTimestamp();
 
+/** Returns a list of display names of all channel map editors in the signal chain **/
+PLUGIN_API var getChannelMapNames();
+
 /** Gets the ticker frequency of the software timestamp clock*/
 PLUGIN_API float getSoftwareSampleRate();
 
