@@ -30,62 +30,62 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace BinaryRecordingEngine
 {
 
-	class BinaryRecording : public RecordEngine
-	{
-	public:
-		BinaryRecording();
-		~BinaryRecording();
+    class BinaryRecording : public RecordEngine
+    {
+    public:
+        BinaryRecording();
+        ~BinaryRecording();
 
-		String getEngineID() const override;
-		void openFiles(File rootFolder, String baseName, int recordingNumber) override;
-		void closeFiles() override;
-		void writeData(int writeChannel, int realChannel, const float* buffer, int size) override;
-		void writeEvent(int eventIndex, const MidiMessage& event) override;
-		void resetChannels() override;
-		void addSpikeElectrode(int index, const SpikeChannel* elec) override;
-		void writeSpike(int electrodeIndex, const SpikeEvent* spike) override;
-		void writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx, int64 timestamp, float, String text) override;
-		String getMessageHeader(String datetime);
-		void setParameter(EngineParameter& parameter) override;
+        String getEngineID() const override;
+        void openFiles(File rootFolder, String baseName, int recordingNumber) override;
+        void closeFiles() override;
+        void writeData(int writeChannel, int realChannel, const float* buffer, int size) override;
+        void writeEvent(int eventIndex, const MidiMessage& event) override;
+        void resetChannels() override;
+        void addSpikeElectrode(int index, const SpikeChannel* elec) override;
+        void writeSpike(int electrodeIndex, const SpikeEvent* spike) override;
+        void writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx, int64 timestamp, float, String text) override;
+        String getMessageHeader(String datetime);
+        void setParameter(EngineParameter& parameter) override;
 
-		static RecordEngineManager* getEngineManager();
+        static RecordEngineManager* getEngineManager();
 
-	private:
+    private:
 
-		class EventRecording
-		{
-		public:
-			ScopedPointer<NpyFile> dataFile;
-			//ScopedPointer<NpyFile> tsFile;
-			//ScopedPointer<NpyFile> chanFile;
-			//ScopedPointer<NpyFile> extraFile;
-		};
+        class EventRecording
+        {
+        public:
+            ScopedPointer<NpyFile> dataFile;
+            //ScopedPointer<NpyFile> tsFile;
+            //ScopedPointer<NpyFile> chanFile;
+            //ScopedPointer<NpyFile> extraFile;
+        };
 
-		void increaseEventCounts(EventRecording* rec);
-		static String getProcessorString(const InfoObjectCommon* channelInfo);
-		String getRecordingNumberString(int recordingNumber);
+        void increaseEventCounts(EventRecording* rec);
+        static String getProcessorString(const InfoObjectCommon* channelInfo);
+        String getRecordingNumberString(int recordingNumber);
 
-		bool m_saveTTLWords{ true };
-	
-		HeapBlock<float> m_scaledBuffer;
-		HeapBlock<int16> m_intBuffer;
-		int m_bufferSize;
+        bool m_saveTTLWords{ true };
 
-		OwnedArray<SequentialBlockFile> m_DataFiles;
-		Array<unsigned int> m_channelIndexes;
-		Array<unsigned int> m_fileIndexes;
-		ScopedPointer<EventRecording> m_dinFile;
-		ScopedPointer<EventRecording> m_spikeFile;
-		ScopedPointer<FileOutputStream> m_msgFile;
+        HeapBlock<float> m_scaledBuffer;
+        HeapBlock<int16> m_intBuffer;
+        int m_bufferSize;
 
-		//int m_recordingNum;
-		Array<int64> m_startTS;
+        OwnedArray<SequentialBlockFile> m_DataFiles;
+        Array<unsigned int> m_channelIndexes;
+        Array<unsigned int> m_fileIndexes;
+        ScopedPointer<EventRecording> m_dinFile;
+        ScopedPointer<EventRecording> m_spikeFile;
+        ScopedPointer<FileOutputStream> m_msgFile;
 
-		//Compile-time constants
-		const int samplesPerBlock{ 4096 };
-		const String BusseLabBinaryWriterPluginVersion = "0.1";
+        //int m_recordingNum;
+        Array<int64> m_startTS;
 
-	};
+        //Compile-time constants
+        const int samplesPerBlock{ 4096 };
+        const String BusseLabBinaryWriterPluginVersion = "0.1";
+
+    };
 
 }
 
