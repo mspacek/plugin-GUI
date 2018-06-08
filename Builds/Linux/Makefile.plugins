@@ -7,6 +7,8 @@ DEPFLAGS := $(if $(word 2, $(TARGET_ARCH)), , -MMD)
 PLUGIN_DIR := ../../Source/Plugins
 COMMON_DIR := ../../Source/Plugins/CommonLibs
 
+CONFIG=Release
+
 ifndef CONFIG
   CONFIG=Debug
 endif
