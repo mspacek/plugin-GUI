@@ -78,8 +78,8 @@ RHD2000Thread::RHD2000Thread(SourceNode* sn) : DataThread(sn),
     deviceFound(false),
     isTransmitting(false),
     dacOutputShouldChange(false),
+    acquireAuxChannels(false),
     acquireAdcChannels(false),
-    acquireAuxChannels(true),
     fastSettleEnabled(false),
     fastTTLSettleEnabled(false),
     fastSettleTTLChannel(-1),
@@ -816,6 +816,7 @@ void RHD2000Thread::setDefaultChannelNames()
     stream_prefix.add("D1");
     stream_prefix.add("D2");
 
+    // headstage channels
     for (int i = 0; i < MAX_NUM_HEADSTAGES; i++)
     {
         if (headstagesArray[i]->isPlugged())
@@ -837,32 +838,33 @@ void RHD2000Thread::setDefaultChannelNames()
             }
         }
     }
-    //Aux channels
-    for (int i = 0; i < MAX_NUM_HEADSTAGES; i++)
+    // AUX channels
+    if (acquireAuxChannels)
     {
-        if (headstagesArray[i]->isPlugged())
+        for (int i = 0; i < MAX_NUM_HEADSTAGES; i++)
         {
-            for (int k = 0; k < 3; k++)
+            if (headstagesArray[i]->isPlugged())
             {
-                int chn = channelNumber - 1;
-
-                if (newScan || !channelInfo[chn].modified)
+                for (int k = 0; k < 3; k++)
                 {
-                    ChannelCustomInfo in;
-                    if (numberingScheme == 1)
-                        in.name = "AUX" + String(aux_counter);
-                    else
-                        in.name = "AUX_" + stream_prefix[i] + "_" + String(1 + k);
-                    in.gain = getBitVolts(sn->getDataChannel(chn));
-                    channelInfo.set(chn, in);
-
+                    int chn = channelNumber - 1;
+                    if (newScan || !channelInfo[chn].modified)
+                    {
+                        ChannelCustomInfo in;
+                        if (numberingScheme == 1)
+                            in.name = "AUX" + String(aux_counter);
+                        else
+                            in.name = "AUX_" + stream_prefix[i] + "_" + String(1 + k);
+                        in.gain = getBitVolts(sn->getDataChannel(chn));
+                        channelInfo.set(chn, in);
+                    }
+                    channelNumber++;
+                    aux_counter++;
                 }
-                channelNumber++;
-                aux_counter++;
             }
         }
     }
-    //ADC channels
+    // ADC channels
     if (acquireAdcChannels)
     {
         for (int k = 0; k < 8; k++)
@@ -904,17 +906,22 @@ int RHD2000Thread::getNumDataOutputs(DataChannel::DataChannelTypes type, int sub
 	}
 	if (type == DataChannel::AUX_CHANNEL)
 	{
-		int numAuxOutputs = 0;
-
-		for (int i = 0; i < MAX_NUM_HEADSTAGES; ++i)
+		if (acquireAuxChannels)
 		{
-			if (headstagesArray[i]->isPlugged() > 0)
+			int numAuxOutputs = 0;
+			for (int i = 0; i < MAX_NUM_HEADSTAGES; ++i)
 			{
-				numAuxOutputs += 3;
+				if (headstagesArray[i]->isPlugged() > 0)
+				{
+					numAuxOutputs += 3;
+				}
 			}
+			return numAuxOutputs;
 		}
-
-		return numAuxOutputs;
+		else
+		{
+			return 0;
+		}
 	}
 	if (type == DataChannel::ADC_CHANNEL)
 	{
@@ -1161,13 +1168,23 @@ int RHD2000Thread::getChannelsInHeadstage (int hsNum) const
 
 }*/
 
+void RHD2000Thread::enableAuxs(bool t)
+{
+    acquireAuxChannels = t;
+    sourceBuffers[0]->resize(getNumChannels(), 10000);
+    updateRegisters();
+}
+
 void RHD2000Thread::enableAdcs(bool t)
 {
     acquireAdcChannels = t;
-
-    sourceBuffers[0]->resize (getNumChannels(), 10000);
+    sourceBuffers[0]->resize(getNumChannels(), 10000);
 }
 
+bool RHD2000Thread::isAuxEnabled()
+{
+    return acquireAuxChannels;
+}
 
 void RHD2000Thread::setSampleRate(int sampleRateIndex, bool isTemporary)
 {
@@ -1319,8 +1336,8 @@ void RHD2000Thread::updateRegisters()
     evalBoard->selectAuxCommandBank(Rhd2000EvalBoard::PortC, Rhd2000EvalBoard::AuxCmd1, 0);
     evalBoard->selectAuxCommandBank(Rhd2000EvalBoard::PortD, Rhd2000EvalBoard::AuxCmd1, 0);
 
-    // // Next, we'll create a command list for the AuxCmd2 slot.  This command sequence
-    // // will sample the temperature sensor and other auxiliary ADC inputs.
+    // Next, we'll create a command list for the AuxCmd2 slot.  This command sequence
+    // will sample the temperature sensor and other auxiliary ADC inputs.
     commandSequenceLength = chipRegisters.createCommandListTempSensor(commandList);
     evalBoard->uploadCommandList(commandList, Rhd2000EvalBoard::AuxCmd2, 0);
     evalBoard->selectAuxCommandLength(Rhd2000EvalBoard::AuxCmd2, 0, commandSequenceLength - 1);
@@ -1338,10 +1355,10 @@ void RHD2000Thread::updateRegisters()
     chipRegisters.enableDsp(dspEnabled);
     //std::cout << "DSP Offset Status " << dspEnabled << std::endl;
 
-    // turn on aux inputs
-    chipRegisters.enableAux1(true);
-    chipRegisters.enableAux2(true);
-    chipRegisters.enableAux3(true);
+    // enable/disable aux inputs:
+    chipRegisters.enableAux1(acquireAuxChannels);
+    chipRegisters.enableAux2(acquireAuxChannels);
+    chipRegisters.enableAux3(acquireAuxChannels);
 
     chipRegisters.createCommandListRegisterConfig(commandList, true);
     // Upload version with ADC calibration to AuxCmd3 RAM Bank 0.
@@ -1524,13 +1541,13 @@ bool RHD2000Thread::updateBuffer()
 				break;
 			}
 
-			index += 8;
-			timestamps.set(0,Rhd2000DataBlock::convertUsbTimeStamp(bufferPtr,index));
-			index += 4;
-			auxIndex = index;
-			//skip the aux channels
-			index += numStreams * 6;
-			// do the neural data channels first
+			index += 8; // header width
+			timestamps.set(0, Rhd2000DataBlock::convertUsbTimeStamp(bufferPtr, index));
+			index += 4; // timestamp width
+			auxIndex = index; // aux chans offset
+			// skip aux channels for now
+			index += numStreams * 6; // aux chans width
+			// parse neural data channels
 			for (int dataStream = 0; dataStream < numStreams; dataStream++)
 			{
 				int nChans = numChannelsPerDataStream[dataStream];
@@ -1546,9 +1563,9 @@ bool RHD2000Thread::updateBuffer()
 					chanIndex += 2*numStreams;
 				}
 			}
-			index += 64 * numStreams;
-			//now we can do the aux channels
-			auxIndex += 2*numStreams;
+			index += 64 * numStreams; // neural data width
+			auxIndex += 2*numStreams; // skip over something? 2 byte stream indices?
+			// parse the aux channels
 			for (int dataStream = 0; dataStream < numStreams; dataStream++)
 			{
 				if (chipId[dataStream] != CHIP_ID_RHD2164_B)
@@ -1568,10 +1585,9 @@ bool RHD2000Thread::updateBuffer()
 						thisSample[channel] = auxBuffer[channel];
 					}
 				}
-				auxIndex += 2;
-
+				auxIndex += 2; // single chan width (2 bytes)
 			}
-			index += 2 * numStreams;
+			index += 2 * numStreams; // skip over something?
 			if (acquireAdcChannels)
 			{
 				for (int adcChan = 0; adcChan < 8; ++adcChan)
@@ -1582,12 +1598,12 @@ bool RHD2000Thread::updateBuffer()
 					thisSample[channel] =
 						//0.000050354 * float(dataBlock->boardAdcData[adcChan][samp]);
 						0.00015258789 * float(*(uint16*)(bufferPtr + index)) - 5 - 0.4096; // account for +/-5V input range and DC offset
-					index += 2;
+					index += 2; // single chan width (2 bytes)
 				}
 			}
 			else
 			{
-				index += 16;
+				index += 16; // ADC chans width (8 * 2 bytes)
 			}
 			ttlEventWords.set(0, *(uint16*)(bufferPtr + index));
 			index += 4;

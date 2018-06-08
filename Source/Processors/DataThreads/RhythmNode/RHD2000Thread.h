@@ -107,7 +107,10 @@ public:
     void setDAChpf (float cutoff, bool enabled);
 
     void scanPorts();
+    void enableAuxs (bool);
     void enableAdcs (bool);
+
+    bool isAuxEnabled();
 
     bool isReady() override;
 
@@ -175,8 +178,8 @@ private:
     bool isTransmitting;
 
     bool dacOutputShouldChange;
-    bool acquireAdcChannels;
     bool acquireAuxChannels;
+    bool acquireAdcChannels;
 
     bool fastSettleEnabled;
     bool fastTTLSettleEnabled;

@@ -131,7 +131,6 @@ void FPGAchannelList::update()
 
     // find out which streams are active.
     bool hsActive[MAX_NUM_HEADSTAGES+1];
-    //bool adcActive = false;
     int numActiveHeadstages = 0;
     int hsColumn[MAX_NUM_HEADSTAGES + 1];
     int numChannelsPerHeadstage[MAX_NUM_HEADSTAGES + 1];
@@ -195,11 +194,14 @@ void FPGAchannelList::update()
 
     }
 
-    for (int k = 0; k < MAX_NUM_HEADSTAGES + 1; k++)
+    for (int k = 0; k < MAX_NUM_HEADSTAGES + 1; k++) // +1 is for the ADC "headstage"
     {
         if (hsActive[k])
         {
-            for (int ch = 0; ch < numChannelsPerHeadstage[k]+ (k < MAX_NUM_HEADSTAGES ? 3 : 0); ch++)
+            int nchans = numChannelsPerHeadstage[k];
+            if (k < MAX_NUM_HEADSTAGES && thread->isAuxEnabled())
+                nchans += 3;
+            for (int ch = 0; ch < nchans; ch++)
             {
                 int channelGainIndex = 1;
                 int realChan = thread->getChannelFromHeadstage(k, ch);
@@ -217,7 +219,7 @@ void FPGAchannelList::update()
                 else
                     type = DataChannel::ADC_CHANNEL;
 
-                FPGAchannelComponent* comp = new FPGAchannelComponent(this, realChan, channelGainIndex + 1, thread->getChannelName(realChan), gains,type);
+                FPGAchannelComponent* comp = new FPGAchannelComponent(this, realChan, channelGainIndex + 1, thread->getChannelName(realChan), gains, type);
                 comp->setBounds(10 + hsColumn[k], 70 + ch * 22, columnWidth, 22);
                 comp->setUserDefinedData(k);
                 addAndMakeVisible(comp);
@@ -599,6 +601,15 @@ RHD2000Editor::RHD2000Editor(GenericProcessor* parentNode,
     rescanButton->setTooltip("Check for connected headstages");
     addAndMakeVisible(rescanButton);
 
+
+    auxButton = new UtilityButton("AUX", Font("Small Text", 13, Font::plain));
+    auxButton->setRadius(3.0f);
+    auxButton->setBounds(80, 108, 32, 18);
+    auxButton->addListener(this);
+    auxButton->setClickingTogglesState(true);
+    auxButton->setTooltip("Toggle AUX channels (3 per headstage)");
+    addAndMakeVisible(auxButton);
+
     for (int i = 0; i < 2; i++)
     {
         ElectrodeButton* button = new ElectrodeButton(-1);
@@ -756,7 +767,7 @@ void RHD2000Editor::handleAsyncUpdate()
 		for (int i = 0; i < impedanceData->channels.size(); i++)
         {
             XmlElement* chan = new XmlElement("CHANNEL");
-            chan->setAttribute("name",board->getChannelName(i));
+            chan->setAttribute("name", board->getChannelName(i));
 			chan->setAttribute("stream", impedanceData->streams[i]);
 			chan->setAttribute("channel_number", impedanceData->channels[i]);
 			chan->setAttribute("magnitude", impedanceData->magnitudes[i]);
@@ -828,8 +839,7 @@ void RHD2000Editor::buttonEvent(Button* button)
         {
             headstageOptionsInterfaces[i]->checkEnabledState();
         }
-        // board->updateChannelNames();
-		CoreServices::updateSignalChain(this);
+        CoreServices::updateSignalChain(this);
     }
     else if (button == electrodeButtons[0])
     {
@@ -839,13 +849,18 @@ void RHD2000Editor::buttonEvent(Button* button)
     {
         channelSelector->setRadioStatus(true);
     }
+    else if (button == auxButton && !acquisitionIsActive)
+    {
+        board->enableAuxs(button->getToggleState());
+        std::cout << "AUX Button toggled" << "\n";
+        CoreServices::updateSignalChain(this);
+    }
     else if (button == adcButton && !acquisitionIsActive)
     {
         board->enableAdcs(button->getToggleState());
-        //        board->updateChannelNames();
         std::cout << "ADC Button toggled" << "\n";
-		CoreServices::updateSignalChain(this);
-        std::cout << "Editor visible." << "\n";
+        CoreServices::updateSignalChain(this);
+
     }
     else if (button == dacTTLButton)
     {
@@ -891,12 +906,12 @@ void RHD2000Editor::startAcquisition()
     channelSelector->startAcquisition();
 
     rescanButton->setEnabledState(false);
+    auxButton->setEnabledState(false);
     adcButton->setEnabledState(false);
     dspoffsetButton-> setEnabledState(false);
     acquisitionIsActive = true;
-	if (canvas != nullptr)
-		canvas->channelList->disableAll();
-        //canvas->channelList->setEnabled(false);
+    if (canvas != nullptr)
+        canvas->channelList->disableAll();
 }
 
 void RHD2000Editor::stopAcquisition()
@@ -905,13 +920,13 @@ void RHD2000Editor::stopAcquisition()
     channelSelector->stopAcquisition();
 
     rescanButton->setEnabledState(true);
+    auxButton->setEnabledState(true);
     adcButton->setEnabledState(true);
     dspoffsetButton-> setEnabledState(true);
 
     acquisitionIsActive = false;
-	if (canvas != nullptr)
-		canvas->channelList->enableAll();
-    //  canvas->channelList->setEnabled(true);
+    if (canvas != nullptr)
+        canvas->channelList->enableAll();
 }
 
 void RHD2000Editor::saveCustomParameters(XmlElement* xml)
@@ -919,10 +934,7 @@ void RHD2000Editor::saveCustomParameters(XmlElement* xml)
     xml->setAttribute("SampleRate", sampleRateInterface->getSelectedId());
     xml->setAttribute("LowCut", bandwidthInterface->getLowerBandwidth());
     xml->setAttribute("HighCut", bandwidthInterface->getUpperBandwidth());
-    xml->setAttribute("ADCsOn", adcButton->getToggleState());
-    xml->setAttribute("SampleRate", sampleRateInterface->getSelectedId());
-    xml->setAttribute("LowCut", bandwidthInterface->getLowerBandwidth());
-    xml->setAttribute("HighCut", bandwidthInterface->getUpperBandwidth());
+    xml->setAttribute("AUXsOn", auxButton->getToggleState());
     xml->setAttribute("ADCsOn", adcButton->getToggleState());
     xml->setAttribute("AudioOutputL", electrodeButtons[0]->getChannelNum());
     xml->setAttribute("AudioOutputR", electrodeButtons[1]->getChannelNum());
@@ -944,6 +956,7 @@ void RHD2000Editor::loadCustomParameters(XmlElement* xml)
     sampleRateInterface->setSelectedId(xml->getIntAttribute("SampleRate"));
     bandwidthInterface->setLowerBandwidth(xml->getDoubleAttribute("LowCut"));
     bandwidthInterface->setUpperBandwidth(xml->getDoubleAttribute("HighCut"));
+    auxButton->setToggleState(xml->getBoolAttribute("AUXsOn"), sendNotification);
     adcButton->setToggleState(xml->getBoolAttribute("ADCsOn"), sendNotification);
     //electrodeButtons[0]->setChannelNum(xml->getIntAttribute("AudioOutputL"));
     //board->assignAudioOut(0, xml->getIntAttribute("AudioOutputL"));
@@ -977,7 +990,6 @@ BandwidthInterface::BandwidthInterface(RHD2000Thread* board_,
                                        RHD2000Editor* editor_) :
     board(board_), editor(editor_)
 {
-
     name = "Bandwidth";
 
     lastHighCutString = "7500";
