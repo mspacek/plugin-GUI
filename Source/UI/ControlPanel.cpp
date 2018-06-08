@@ -704,26 +704,27 @@ void ControlPanel::resized()
 
 
     if (open)
-        cpb->setBounds (w - 28, getHeight() - 5 - h * 2 + 10, h - 10, h - 10);
+        cpb->setBounds (w - 28, getHeight() - 5 - h * 2 + 10, controlButtonHeight, controlButtonHeight);
     else
-        cpb->setBounds (w - 28, getHeight() - 5 - h + 10, h - 10, h - 10);
+        cpb->setBounds (w - 28, getHeight() - 5 - h + 10, controlButtonHeight, controlButtonHeight);
 
     createPaths();
 
     if (open)
     {
         int topBound = getHeight() - h + 10 - 5;
+        int rh = controlButtonHeight; // row height
 
-        recordSelector->setBounds ( (w - 435) > 40 ? 35 : w - 450, topBound, 100, h - 10);
+        recordSelector->setBounds ( (w - 435) > 40 ? 35 : w - 450, topBound, 150, h - 10);
         recordSelector->setVisible (true);
 
-        recordOptionsButton->setBounds ( (w - 435) > 40 ? 140 : w - 350, topBound, h - 10, h - 10);
+        recordOptionsButton->setBounds ( (w - 435) > 40 ? 190 : w - 350, topBound, rh, rh);
         recordOptionsButton->setVisible (true);
 
-        filenameComponent->setBounds (165, topBound, w - 500, h - 10);
+        filenameComponent->setBounds (215, topBound, w - 500, rh);
         filenameComponent->setVisible (true);
 
-        baseNameText->setBounds (165 + w - 490, topBound, 315, h - 10);
+        baseNameText->setBounds (215 + w - 490, topBound, 315, rh);
         baseNameText->setVisible (true);
 
     }
