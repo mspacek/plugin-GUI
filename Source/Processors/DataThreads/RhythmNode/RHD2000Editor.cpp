@@ -1507,8 +1507,7 @@ DSPInterface::DSPInterface(RHD2000Thread* board_,
 {
     name = "DSP";
 
-    dspOffsetSelection = new Label("DspOffsetSelection",
-                                   String(round(board->getDspCutoffFreq()*10.f)/10.f));
+    dspOffsetSelection = new Label("DspOffsetSelection", round10(board->getDspCutoffFreq()));
     dspOffsetSelection->setEditable(true, false, false);
     dspOffsetSelection->addListener(this);
     dspOffsetSelection->setBounds(0, 0, 35, 20);
@@ -1523,37 +1522,34 @@ DSPInterface::~DSPInterface()
 
 void DSPInterface::labelTextChanged(Label* label)
 {
-
     if (!(editor->acquisitionIsActive) && board->foundInputSource())
     {
         if (label == dspOffsetSelection)
         {
             Value val = label->getTextValue();
             double requestedValue = double(val.getValue());
-
-            actualDspCutoffFreq = board->setDspCutoffFreq(requestedValue);
-
-            std::cout << "Setting DSP Cutoff Freq to " << requestedValue << "\n";
-            std::cout << "Actual DSP Cutoff Freq:  " <<  actualDspCutoffFreq  << "\n";
-            label->setText(String(round(actualDspCutoffFreq*10.f)/10.f), dontSendNotification);
+            board->setDspCutoffFreq(requestedValue);
+            std::cout << "Setting DSP Cutoff Freq to: " << requestedValue << endl;
+            std::cout << "Actual DSP Cutoff Freq: " << board->getDspCutoffFreq() << endl;
+            label->setText(round10(board->getDspCutoffFreq()), dontSendNotification);
         }
     }
     else if (editor->acquisitionIsActive)
     {
         CoreServices::sendStatusMessage("Can't change DSP cutoff while acquisition is active!");
+        label->setText(round10(board->getDspCutoffFreq()), dontSendNotification);
     }
-
 }
 
 void DSPInterface::setDspCutoffFreq(double value)
 {
-    actualDspCutoffFreq = board->setDspCutoffFreq(value);
-    dspOffsetSelection->setText(String(round(actualDspCutoffFreq*10.f)/10.f), dontSendNotification);
+    board->setDspCutoffFreq(value);
+    dspOffsetSelection->setText(round10(board->getDspCutoffFreq()), dontSendNotification);
 }
 
 double DSPInterface::getDspCutoffFreq()
 {
-    return actualDspCutoffFreq;
+    return board->getDspCutoffFreq();
 }
 
 void DSPInterface::paint(Graphics& g)

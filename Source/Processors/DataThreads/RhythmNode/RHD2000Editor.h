@@ -308,8 +308,6 @@ private:
 
     ScopedPointer<Label> dspOffsetSelection;
 
-    double actualDspCutoffFreq;
-
 };
 
 
