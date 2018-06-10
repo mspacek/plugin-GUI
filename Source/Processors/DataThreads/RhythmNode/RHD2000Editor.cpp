@@ -924,6 +924,7 @@ void RHD2000Editor::stopAcquisition()
 void RHD2000Editor::saveCustomParameters(XmlElement* xml)
 {
     xml->setAttribute("SampleRate", sampleRateInterface->getSelectedId());
+    xml->setAttribute("SampleRateString", sampleRateInterface->getText());
     xml->setAttribute("LowCut", bandwidthInterface->getLowerBandwidth());
     xml->setAttribute("HighCut", bandwidthInterface->getUpperBandwidth());
     xml->setAttribute("AUXsOn", auxButton->getToggleState());
@@ -938,8 +939,8 @@ void RHD2000Editor::saveCustomParameters(XmlElement* xml)
     xml->setAttribute("DSPCutoffFreq", dspInterface->getDspCutoffFreq());
     xml->setAttribute("save_impedance_measurements",saveImpedances);
     xml->setAttribute("auto_measure_impedances",measureWhenRecording);
-	xml->setAttribute("LEDs", ledButton->getToggleState());
-	xml->setAttribute("ClockDivideRatio", clockInterface->getClockDivideRatio());
+    xml->setAttribute("LEDs", ledButton->getToggleState());
+    xml->setAttribute("ClockDivideRatio", clockInterface->getClockDivideRatio());
 }
 
 void RHD2000Editor::loadCustomParameters(XmlElement* xml)
@@ -1176,6 +1177,11 @@ int SampleRateInterface::getSelectedId()
 void SampleRateInterface::setSelectedId(int id)
 {
     rateSelection->setSelectedId(id);
+}
+
+String SampleRateInterface::getText()
+{
+    return rateSelection->getText();
 }
 
 
