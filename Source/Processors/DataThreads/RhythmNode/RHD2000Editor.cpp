@@ -121,7 +121,7 @@ void FPGAchannelList::buttonClicked(Button* btn)
 void FPGAchannelList::update()
 {
    // const int columnWidth = 330;
-	const int columnWidth = 250;
+    const int columnWidth = 250;
     // Query processor for number of channels, types, gains, etc... and update the UI
     channelComponents.clear();
     staticLabels.clear();
@@ -155,7 +155,7 @@ void FPGAchannelList::update()
 
     if (thread->getNumDataOutputs(DataChannel::ADC_CHANNEL,0) > 0)
     {
-		numChannelsPerHeadstage[MAX_NUM_HEADSTAGES] = thread->getNumDataOutputs(DataChannel::ADC_CHANNEL, 0);
+        numChannelsPerHeadstage[MAX_NUM_HEADSTAGES] = thread->getNumDataOutputs(DataChannel::ADC_CHANNEL, 0);
         hsActive[MAX_NUM_HEADSTAGES] = true;
         hsColumn[MAX_NUM_HEADSTAGES] = numActiveHeadstages*columnWidth;
         numActiveHeadstages++;
@@ -258,10 +258,10 @@ void FPGAchannelList::disableAll()
     {
         channelComponents[k]->disableEdit();
     }
-	impedanceButton->setEnabled(false);
-	saveImpedanceButton->setEnabled(false);
-	autoMeasureButton->setEnabled(false);
-	numberingScheme->setEnabled(false);
+    impedanceButton->setEnabled(false);
+    saveImpedanceButton->setEnabled(false);
+    autoMeasureButton->setEnabled(false);
+    numberingScheme->setEnabled(false);
 }
 
 void FPGAchannelList::enableAll()
@@ -270,10 +270,10 @@ void FPGAchannelList::enableAll()
     {
         channelComponents[k]->enableEdit();
     }
-	impedanceButton->setEnabled(true);
-	saveImpedanceButton->setEnabled(true);
-	autoMeasureButton->setEnabled(true);
-	numberingScheme->setEnabled(true);
+    impedanceButton->setEnabled(true);
+    saveImpedanceButton->setEnabled(true);
+    autoMeasureButton->setEnabled(true);
+    numberingScheme->setEnabled(true);
 }
 
 void FPGAchannelList::setNewGain(int channel, float gain)
@@ -316,21 +316,21 @@ void FPGAchannelList::comboBoxChanged(ComboBox* b)
 
 void FPGAchannelList::updateImpedance(Array<int> streams, Array<int> channels, Array<float> magnitude, Array<float> phase)
 {
-	int i = 0;
+    int i = 0;
     for (int k = 0; k < streams.size(); k++)
     {
-		if (i >= channelComponents.size())
-			break; //little safety
+        if (i >= channelComponents.size())
+            break; //little safety
 
-		if (channelComponents[i]->type != DataChannel::HEADSTAGE_CHANNEL)
-		{
-			k--;
-		}
-		else
-		{
-			channelComponents[i]->setImpedanceValues(magnitude[k], phase[k]);
-		}
-		i++;
+        if (channelComponents[i]->type != DataChannel::HEADSTAGE_CHANNEL)
+        {
+            k--;
+        }
+        else
+        {
+            channelComponents[i]->setImpedanceValues(magnitude[k], phase[k]);
+        }
+        i++;
     }
 
 }
@@ -461,7 +461,7 @@ void FPGAchannelComponent::resized()
     if (impedance != nullptr)
     {
        // impedance->setBounds(180,0,130,20);
-		impedance->setBounds(100, 0, 130, 20);
+        impedance->setBounds(100, 0, 130, 20);
     }
 
 }
@@ -525,10 +525,10 @@ void FPGAcanvas::update()
 {
     // create channel buttons (name, gain, recording, impedance, ... ?)
     channelList->update();
-	if (static_cast<RHD2000Thread*>(processor->getThread())->isAcquisitionActive())
-	{
-		channelList->disableAll();
-	}
+    if (static_cast<RHD2000Thread*>(processor->getThread())->isAcquisitionActive())
+    {
+        channelList->disableAll();
+    }
 }
 
 void FPGAcanvas::resized()
@@ -566,8 +566,8 @@ RHD2000Editor::RHD2000Editor(GenericProcessor* parentNode,
     measureWhenRecording = false;
     saveImpedances = false;
 
-	impedanceData = new ImpedanceData();
-	impedanceData->valid = false;
+    impedanceData = new ImpedanceData();
+    impedanceData->valid = false;
 
     // add headstage-specific controls (currently just a toggle button)
     for (int i = 0; i < 4; i++)
@@ -730,23 +730,23 @@ void RHD2000Editor::scanPorts()
 
 void RHD2000Editor::measureImpedance()
 {
-	impedanceData->valid = false;
-	board->runImpedanceTest(impedanceData);
+    impedanceData->valid = false;
+    board->runImpedanceTest(impedanceData);
 }
 
 void RHD2000Editor::handleAsyncUpdate()
 {
-	if (!impedanceData->valid)
-		return;
+    if (!impedanceData->valid)
+        return;
     if (canvas == nullptr)
         VisualizerEditor::canvas = createNewCanvas();
     // update components...
-	canvas->updateImpedance(impedanceData->streams, impedanceData->channels, impedanceData->magnitudes, impedanceData->phases);
+    canvas->updateImpedance(impedanceData->streams, impedanceData->channels, impedanceData->magnitudes, impedanceData->phases);
     if (saveImpedances)
     {
-		CoreServices::RecordNode::createNewrecordingDir();
+        CoreServices::RecordNode::createNewrecordingDir();
 
-		String path(CoreServices::RecordNode::getRecordingPath().getFullPathName()
+        String path(CoreServices::RecordNode::getRecordingPath().getFullPathName()
                     + File::separatorString + "impedance_measurement.xml");
         std::cout << "Saving impedance measurements in " << path << "\n";
         File file(path);
@@ -756,14 +756,14 @@ void RHD2000Editor::handleAsyncUpdate()
 
         XmlDocument doc(file);
         ScopedPointer<XmlElement> xml = new XmlElement("CHANNEL_IMPEDANCES");
-		for (int i = 0; i < impedanceData->channels.size(); i++)
+        for (int i = 0; i < impedanceData->channels.size(); i++)
         {
             XmlElement* chan = new XmlElement("CHANNEL");
             chan->setAttribute("name", board->getChannelName(i));
-			chan->setAttribute("stream", impedanceData->streams[i]);
-			chan->setAttribute("channel_number", impedanceData->channels[i]);
-			chan->setAttribute("magnitude", impedanceData->magnitudes[i]);
-			chan->setAttribute("phase", impedanceData->phases[i]);
+            chan->setAttribute("stream", impedanceData->streams[i]);
+            chan->setAttribute("channel_number", impedanceData->channels[i]);
+            chan->setAttribute("magnitude", impedanceData->magnitudes[i]);
+            chan->setAttribute("phase", impedanceData->phases[i]);
             xml->addChildElement(chan);
         }
         xml->writeToFile(file,String::empty);
@@ -863,15 +863,15 @@ void RHD2000Editor::buttonEvent(Button* button)
         std::cout << "DSP offset " << button->getToggleState() << "\n";
         board->setDSPOffset(button->getToggleState());
     }
-	else if (button == ledButton)
-	{
-		board->enableBoardLeds(button->getToggleState());
-	}
+    else if (button == ledButton)
+    {
+        board->enableBoardLeds(button->getToggleState());
+    }
     /*
-	else
-	{
-		VisualizerEditor::buttonEvent(button);
-	}
+    else
+    {
+        VisualizerEditor::buttonEvent(button);
+    }
     */
 
 }
@@ -963,8 +963,8 @@ void RHD2000Editor::loadCustomParameters(XmlElement* xml)
     dspInterface->setDspCutoffFreq(xml->getDoubleAttribute("DSPCutoffFreq"));
     saveImpedances = xml->getBoolAttribute("save_impedance_measurements");
     measureWhenRecording = xml->getBoolAttribute("auto_measure_impedances");
-	ledButton->setToggleState(xml->getBoolAttribute("LEDs", true),sendNotification);
-    clockInterface->setClockDivideRatio(xml->getIntAttribute("ClockDivideRatio")); 
+    ledButton->setToggleState(xml->getBoolAttribute("LEDs", true),sendNotification);
+    clockInterface->setClockDivideRatio(xml->getIntAttribute("ClockDivideRatio"));
 }
 
 
@@ -1048,7 +1048,7 @@ void BandwidthInterface::labelTextChanged(Label* label)
 
             if (requestedValue < 0.1 || requestedValue > 500.0 || requestedValue > lastHighCutString.getFloatValue())
             {
-				CoreServices::sendStatusMessage("Value out of range.");
+                CoreServices::sendStatusMessage("Value out of range.");
 
                 label->setText(lastLowCutString, dontSendNotification);
 
@@ -1065,7 +1065,7 @@ void BandwidthInterface::labelTextChanged(Label* label)
     }
     else if (editor->acquisitionIsActive)
     {
-		CoreServices::sendStatusMessage("Can't change bandwidth while acquisition is active!");
+        CoreServices::sendStatusMessage("Can't change bandwidth while acquisition is active!");
         if (label == upperBandwidthSelection)
             label->setText(lastHighCutString, dontSendNotification);
         else
@@ -1164,7 +1164,7 @@ void SampleRateInterface::comboBoxChanged(ComboBox* cb)
 
             std::cout << "Setting sample rate to index " << cb->getSelectedId()-1 << "\n";
 
-			CoreServices::updateSignalChain(editor);
+            CoreServices::updateSignalChain(editor);
         }
     }
 }
@@ -1326,7 +1326,7 @@ void HeadstageOptionsInterface::buttonClicked(Button* button)
             editor->updateSettings();
         }
 
-		CoreServices::updateSignalChain(editor);
+        CoreServices::updateSignalChain(editor);
     }
 
 }
@@ -1391,7 +1391,7 @@ void AudioInterface::labelTextChanged(Label* label)
 
             if (requestedValue < 0 || requestedValue > 127)
             {
-				CoreServices::sendStatusMessage("Value out of range.");
+                CoreServices::sendStatusMessage("Value out of range.");
 
                 label->setText(lastNoiseSlicerString, dontSendNotification);
 
@@ -1411,7 +1411,7 @@ void AudioInterface::labelTextChanged(Label* label)
         int requestedValue = int(val.getValue()); // Note that it might be nice to translate to actual uV levels (16*value)
         if (requestedValue < 0 || requestedValue > 127)
         {
-			CoreServices::sendStatusMessage("Value out of range.");
+            CoreServices::sendStatusMessage("Value out of range.");
             label->setText(lastNoiseSlicerString, dontSendNotification);
             return;
         }
@@ -1448,7 +1448,7 @@ ClockDivideInterface::ClockDivideInterface(RHD2000Thread* board_,
  , board(board_)
  , editor(editor_)
  , actualDivideRatio(1)
- 
+
 {
     divideRatioSelection = new Label("Clock Divider", lastDivideRatioString);
     divideRatioSelection->setEditable(true, false, false);
@@ -1465,11 +1465,11 @@ void ClockDivideInterface::labelTextChanged(Label* label)
         if (label == divideRatioSelection)
         {
             Value val = label->getTextValue();
-            int requestedValue = int(val.getValue()); 
+            int requestedValue = int(val.getValue());
 
             if (requestedValue < 1 || requestedValue > 65534)
             {
-				CoreServices::sendStatusMessage("Value must be between 1 and 65534.");
+                CoreServices::sendStatusMessage("Value must be between 1 and 65534.");
                 label->setText(lastDivideRatioString, dontSendNotification);
                 return;
             }
@@ -1539,7 +1539,7 @@ void DSPInterface::labelTextChanged(Label* label)
     }
     else if (editor->acquisitionIsActive)
     {
-		CoreServices::sendStatusMessage("Can't change DSP cutoff while acquisition is active!");
+        CoreServices::sendStatusMessage("Can't change DSP cutoff while acquisition is active!");
     }
 
 }

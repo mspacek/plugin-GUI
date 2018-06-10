@@ -75,12 +75,12 @@ public:
     // for communication with SourceNode processors:
     bool foundInputSource() override;
 
-	int getNumDataOutputs(DataChannel::DataChannelTypes type, int subProcessor) const override;
+    int getNumDataOutputs(DataChannel::DataChannelTypes type, int subProcessor) const override;
 
-	unsigned int getNumSubProcessors() const override;
+    unsigned int getNumSubProcessors() const override;
 
-	int getNumTTLOutputs(int subprocessor) const override;
-    
+    int getNumTTLOutputs(int subprocessor) const override;
+
     bool usesCustomNames() const override;
 
     float getSampleRate(int subprocessor) const override;
@@ -129,7 +129,7 @@ public:
     String getChannelName (int ch) const;
     void setNumChannels (int hsNum, int nChannels);
 
-	String getChannelUnits(int chanIndex) const override;
+    String getChannelUnits(int chanIndex) const override;
 
     int getHeadstageChannels         (int hsNum) const;
     int getActiveChannelsInHeadstage (int hsNum) const;
@@ -237,7 +237,7 @@ public:
     RHDHeadstage (Rhd2000EvalBoard::BoardDataSource stream);
     ~RHDHeadstage();
 
-	int getStreamIndex (int index)  const;
+    int getStreamIndex (int index)  const;
     int getNumChannels()            const;
     int getNumStreams()             const;
     int getNumActiveChannels()      const;
