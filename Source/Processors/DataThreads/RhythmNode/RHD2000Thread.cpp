@@ -155,7 +155,7 @@ RHD2000Thread::RHD2000Thread(SourceNode* sn) : DataThread(sn),
 
         // evalBoard->getDacInformation(dacChannels,dacThresholds);
 
-        //  setDefaultNamingScheme(numberingScheme);
+        // setDefaultNamingScheme(numberingScheme);
         //setDefaultChannelNamesAndType();
     }
 }
@@ -1524,6 +1524,7 @@ bool RHD2000Thread::updateBuffer()
         bool return_code;
 
         return_code = evalBoard->readRawDataBlock(&bufferPtr);
+        // see Rhd2000DataBlock::fillFromUsbBuffer() for an idea of data order in bufferPtr
 
         int index = 0;
         int auxIndex, chanIndex;
@@ -1541,13 +1542,13 @@ bool RHD2000Thread::updateBuffer()
                 break;
             }
 
-            index += 8; // header width
+            index += 8; // magic number header width (bytes)
             timestamps.set(0, Rhd2000DataBlock::convertUsbTimeStamp(bufferPtr, index));
             index += 4; // timestamp width
-            auxIndex = index; // aux chans offset
+            auxIndex = index; // aux chans start at this offset
             // skip aux channels for now
-            index += numStreams * 6; // aux chans width
-            // parse neural data channels
+            index += 6 * numStreams; // width of the 3 aux chans
+            // copy 64 neural data channels
             for (int dataStream = 0; dataStream < numStreams; dataStream++)
             {
                 int nChans = numChannelsPerDataStream[dataStream];
@@ -1560,34 +1561,38 @@ bool RHD2000Thread::updateBuffer()
                 {
                     channel++;
                     thisSample[channel] = float(*(uint16*)(bufferPtr + chanIndex) - 32768)*0.195f;
-                    chanIndex += 2*numStreams;
+                    chanIndex += 2*numStreams; // single chan width (2 bytes)
                 }
             }
             index += 64 * numStreams; // neural data width
-            auxIndex += 2*numStreams; // skip over something? 2 byte stream indices?
-            // parse the aux channels
-            for (int dataStream = 0; dataStream < numStreams; dataStream++)
+            auxIndex += 2 * numStreams; // mspacek: not clear why this is here
+            // copy the 3 aux channels
+            if (acquireAuxChannels)
             {
-                if (chipId[dataStream] != CHIP_ID_RHD2164_B)
+                for (int dataStream = 0; dataStream < numStreams; dataStream++)
                 {
-                    int auxNum = (samp+3) % 4;
-                    if (auxNum < 3)
+                    if (chipId[dataStream] != CHIP_ID_RHD2164_B)
                     {
-                        auxSamples[dataStream][auxNum] = float(*(uint16*)(bufferPtr + auxIndex) - 32768)*0.0000374;
-                    }
-                    for (int chan = 0; chan < 3; chan++)
-                    {
-                        channel++;
-                        if (auxNum == 3)
+                        int auxNum = (samp+3) % 4;
+                        if (auxNum < 3)
                         {
-                            auxBuffer[channel] = auxSamples[dataStream][chan];
+                            auxSamples[dataStream][auxNum] = float(*(uint16*)(bufferPtr + auxIndex) - 32768)*0.0000374;
                         }
-                        thisSample[channel] = auxBuffer[channel];
+                        for (int chan = 0; chan < 3; chan++)
+                        {
+                            channel++;
+                            if (auxNum == 3)
+                            {
+                                auxBuffer[channel] = auxSamples[dataStream][chan];
+                            }
+                            thisSample[channel] = auxBuffer[channel];
+                        }
                     }
+                    auxIndex += 2; // single chan width (2 bytes)
                 }
-                auxIndex += 2; // single chan width (2 bytes)
             }
-            index += 2 * numStreams; // skip over something?
+            index += 2 * numStreams; // skip over filler word at the end of each data stream
+            // copy the 8 ADC channels
             if (acquireAdcChannels)
             {
                 for (int adcChan = 0; adcChan < 8; ++adcChan)
@@ -1603,7 +1608,7 @@ bool RHD2000Thread::updateBuffer()
             }
             else
             {
-                index += 16; // ADC chans width (8 * 2 bytes)
+                index += 16; // skip ADC chans (8 * 2 bytes)
             }
             ttlEventWords.set(0, *(uint16*)(bufferPtr + index));
             index += 4;
