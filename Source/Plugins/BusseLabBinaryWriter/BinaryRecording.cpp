@@ -28,12 +28,27 @@ TODO:
 * handle ADC chans - need to add auxchans field to .dat.json
     * what does the clock divider ratio do? should change the ADC chan sampling rate, but doesn't seem to? Maybe force it to always be 1 for now?
     * getBitVolts() for ADC chans is different, and seems ~1000x off?
+    * yes:  case DataChannel::AUX_CHANNEL: return "mV";
+            case DataChannel::ADC_CHANNEL: return "V";
+            default: return "uV";
+        * from RHD2000Thread::getChannelUnits
+        * also, see RHD2000Thread::setDefaultChannelNames() for in.gain
+        * also see getAdcBitVolts
+* RhythmNode editor could use more tooltips for some of the text edit fields
+* low and high BW of Rhythm FPGA node seem to mysteriously change over program relaunch, until signal chain is cleared and a new one is added...
+    * same goes for DSP offset removal value...
+    * 1, 7500, 0.6 are the defaults for these 3 values - these might be accumulating float roundoff errors
+* test audio monitor
+* test CAR before spike detector
 * test spike detection and saving
+    * fix spike detection window labels
+    * get polytrode electrodes working
+    * what channel numbers are saved to .spike.npy file? does chanmap affect them?
 * check assumption that there's only one spike detector in the signal chain?
 * how does clustering work? does it fill the cluster id field in .spikes.npy properly?
 * add git rev to .json/.msg.txt?
-* get "Error in Rhd2000EvalBoard::readDataBlock: Incorrect header." errors randomly, won't exit
-* disable debugging for faster runtime????
+* get "Error in Rhd2000EvalBoard::readDataBlock: Incorrect header." randomly, won't exit
+
 
 */
 
