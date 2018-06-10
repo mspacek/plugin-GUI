@@ -269,6 +269,8 @@ public:
     void setUpperBandwidth(double value);
     double getLowerBandwidth();
     double getUpperBandwidth();
+    double getLowerBandwidthRequested();
+    double getUpperBandwidthRequested();
 
 private:
 
@@ -281,9 +283,6 @@ private:
 
     ScopedPointer<Label> upperBandwidthSelection;
     ScopedPointer<Label> lowerBandwidthSelection;
-
-    double actualUpperBandwidth;
-    double actualLowerBandwidth;
 
 };
 

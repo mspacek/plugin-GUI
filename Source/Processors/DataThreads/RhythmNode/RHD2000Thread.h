@@ -93,7 +93,11 @@ public:
 
     void setSampleRate (int index, bool temporary = false);
 
+    double getUpperBandwidth() const;
+    double getDesiredUpperBandwidth() const;
     double setUpperBandwidth (double upper); // set desired BW, returns actual BW
+    double getLowerBandwidth() const;
+    double getDesiredLowerBandwidth() const;
     double setLowerBandwidth (double lower);
 
     double setDspCutoffFreq (double freq);

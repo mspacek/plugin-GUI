@@ -37,6 +37,12 @@ inline double round(double x)
 #endif
 #endif
 
+String round10(double x)
+// round to nearest 0.1 and return as String
+{
+    return String(round(x * 10.f) / 10.f);
+}
+
 FPGAchannelList::FPGAchannelList(GenericProcessor* proc_, Viewport* p, FPGAcanvas* c) : chainUpdate(false), viewport(p), canvas(c)
 {
     proc = (SourceNode*)proc_;
@@ -120,7 +126,7 @@ void FPGAchannelList::buttonClicked(Button* btn)
 
 void FPGAchannelList::update()
 {
-   // const int columnWidth = 330;
+    // const int columnWidth = 330;
     const int columnWidth = 250;
     // Query processor for number of channels, types, gains, etc... and update the UI
     channelComponents.clear();
@@ -927,6 +933,9 @@ void RHD2000Editor::saveCustomParameters(XmlElement* xml)
     xml->setAttribute("SampleRateString", sampleRateInterface->getText());
     xml->setAttribute("LowCut", bandwidthInterface->getLowerBandwidth());
     xml->setAttribute("HighCut", bandwidthInterface->getUpperBandwidth());
+    // also save requested bandwidths: board values often diverge from requested ones:
+    xml->setAttribute("LowCutRequested", bandwidthInterface->getLowerBandwidthRequested());
+    xml->setAttribute("HighCutRequested", bandwidthInterface->getUpperBandwidthRequested());
     xml->setAttribute("AUXsOn", auxButton->getToggleState());
     xml->setAttribute("ADCsOn", adcButton->getToggleState());
     xml->setAttribute("AudioOutputL", electrodeButtons[0]->getChannelNum());
@@ -947,8 +956,9 @@ void RHD2000Editor::loadCustomParameters(XmlElement* xml)
 {
 
     sampleRateInterface->setSelectedId(xml->getIntAttribute("SampleRate"));
-    bandwidthInterface->setLowerBandwidth(xml->getDoubleAttribute("LowCut"));
-    bandwidthInterface->setUpperBandwidth(xml->getDoubleAttribute("HighCut"));
+    // request the same bandwidth values as before to get the same board values:
+    bandwidthInterface->setLowerBandwidth(xml->getDoubleAttribute("LowCutRequested"));
+    bandwidthInterface->setUpperBandwidth(xml->getDoubleAttribute("HighCutRequested"));
     auxButton->setToggleState(xml->getBoolAttribute("AUXsOn"), sendNotification);
     adcButton->setToggleState(xml->getBoolAttribute("ADCsOn"), sendNotification);
     //electrodeButtons[0]->setChannelNum(xml->getIntAttribute("AudioOutputL"));
@@ -985,20 +995,14 @@ BandwidthInterface::BandwidthInterface(RHD2000Thread* board_,
 {
     name = "Bandwidth";
 
-    lastHighCutString = "7500";
-    lastLowCutString = "1";
-
-    actualUpperBandwidth = 7500.0f;
-    actualLowerBandwidth = 1.0f;
-
-    upperBandwidthSelection = new Label("UpperBandwidth", lastHighCutString); // this is currently set in RHD2000Thread, the cleaner way would be to set it here again
+    upperBandwidthSelection = new Label("UpperBandwidth", round10(board->getUpperBandwidth()));
     upperBandwidthSelection->setEditable(true, false, false);
     upperBandwidthSelection->addListener(this);
     upperBandwidthSelection->setBounds(30, 25, 60, 20);
     upperBandwidthSelection->setColour(Label::textColourId, Colours::darkgrey);
     addAndMakeVisible(upperBandwidthSelection);
 
-    lowerBandwidthSelection = new Label("LowerBandwidth", lastLowCutString);
+    lowerBandwidthSelection = new Label("LowerBandwidth", round10(board->getLowerBandwidth()));
     lowerBandwidthSelection->setEditable(true, false, false);
     lowerBandwidthSelection->addListener(this);
     lowerBandwidthSelection->setBounds(30, 10, 60, 20);
@@ -1015,88 +1019,87 @@ BandwidthInterface::~BandwidthInterface()
 
 void BandwidthInterface::labelTextChanged(Label* label)
 {
-
     if (!(editor->acquisitionIsActive) && board->foundInputSource())
     {
         if (label == upperBandwidthSelection)
         {
-
             Value val = label->getTextValue();
             double requestedValue = double(val.getValue());
 
-            if (requestedValue < 100.0 || requestedValue > 20000.0 || requestedValue < lastLowCutString.getFloatValue())
+            if (requestedValue < 100.0 || requestedValue > 20000.0 ||
+                requestedValue < board->getLowerBandwidth())
             {
                 CoreServices::sendStatusMessage("Value out of range.");
-
-                label->setText(lastHighCutString, dontSendNotification);
-
+                label->setText(round10(board->getUpperBandwidth()), dontSendNotification);
                 return;
             }
 
-            actualUpperBandwidth = board->setUpperBandwidth(requestedValue);
-
-            std::cout << "Setting Upper Bandwidth to " << requestedValue << "\n";
-            std::cout << "Actual Upper Bandwidth:  " <<  actualUpperBandwidth  << "\n";
-            label->setText(String(round(actualUpperBandwidth*10.f)/10.f), dontSendNotification);
-
+            board->setUpperBandwidth(requestedValue);
+            std::cout << "Setting Upper Bandwidth to: " << requestedValue << endl;
+            std::cout << "Actual Upper Bandwidth: " << board->getUpperBandwidth() << endl;
+            label->setText(round10(board->getUpperBandwidth()), dontSendNotification);
         }
         else
         {
-
             Value val = label->getTextValue();
             double requestedValue = double(val.getValue());
 
-            if (requestedValue < 0.1 || requestedValue > 500.0 || requestedValue > lastHighCutString.getFloatValue())
+            if (requestedValue < 0.1 || requestedValue > 500.0 ||
+                requestedValue > board->getUpperBandwidth())
             {
                 CoreServices::sendStatusMessage("Value out of range.");
-
-                label->setText(lastLowCutString, dontSendNotification);
-
+                label->setText(round10(board->getLowerBandwidth()), dontSendNotification);
                 return;
             }
 
-            actualLowerBandwidth = board->setLowerBandwidth(requestedValue);
-
-            std::cout << "Setting Lower Bandwidth to " << requestedValue << "\n";
-            std::cout << "Actual Lower Bandwidth:  " <<  actualLowerBandwidth  << "\n";
-
-            label->setText(String(round(actualLowerBandwidth*10.f)/10.f), dontSendNotification);
+            board->setLowerBandwidth(requestedValue);
+            std::cout << "Setting Lower Bandwidth to: " << requestedValue << endl;
+            std::cout << "Actual Lower Bandwidth: " << board->getLowerBandwidth() << endl;
+            label->setText(round10(board->getLowerBandwidth()), dontSendNotification);
         }
     }
     else if (editor->acquisitionIsActive)
     {
         CoreServices::sendStatusMessage("Can't change bandwidth while acquisition is active!");
         if (label == upperBandwidthSelection)
-            label->setText(lastHighCutString, dontSendNotification);
+            label->setText(round10(board->getUpperBandwidth()), dontSendNotification);
         else
-            label->setText(lastLowCutString, dontSendNotification);
+            label->setText(round10(board->getLowerBandwidth()), dontSendNotification);
         return;
     }
-
 }
 
 void BandwidthInterface::setLowerBandwidth(double value)
 {
-    actualLowerBandwidth = board->setLowerBandwidth(value);
-    lowerBandwidthSelection->setText(String(round(actualLowerBandwidth*10.f)/10.f), dontSendNotification);
+    board->setLowerBandwidth(value);
+    lowerBandwidthSelection->setText(round10(board->getLowerBandwidth()), dontSendNotification);
 }
 
 void BandwidthInterface::setUpperBandwidth(double value)
 {
-    actualUpperBandwidth = board->setUpperBandwidth(value);
-    upperBandwidthSelection->setText(String(round(actualUpperBandwidth*10.f)/10.f), dontSendNotification);
+    board->setUpperBandwidth(value);
+    upperBandwidthSelection->setText(round10(board->getUpperBandwidth()), dontSendNotification);
 }
 
 double BandwidthInterface::getLowerBandwidth()
 {
-    return actualLowerBandwidth;
+    return board->getLowerBandwidth();
+}
+
+double BandwidthInterface::getLowerBandwidthRequested()
+{
+    return board->getDesiredLowerBandwidth();
 }
 
 double BandwidthInterface::getUpperBandwidth()
 {
-    return actualUpperBandwidth;
+    return board->getUpperBandwidth();
 }
 
+double BandwidthInterface::getUpperBandwidthRequested()
+{
+    return board->getDesiredUpperBandwidth();
+}
 
 void BandwidthInterface::paint(Graphics& g)
 {
@@ -1369,8 +1372,6 @@ AudioInterface::AudioInterface(RHD2000Thread* board_,
     noiseSlicerLevelSelection->setBounds(45, 6, 35, 20);
     noiseSlicerLevelSelection->setColour(Label::textColourId, Colours::darkgrey);
     addAndMakeVisible(noiseSlicerLevelSelection);
-
-
 }
 
 AudioInterface::~AudioInterface()

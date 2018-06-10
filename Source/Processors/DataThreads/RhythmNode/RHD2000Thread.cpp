@@ -980,6 +980,16 @@ float RHD2000Thread::getAdcBitVolts (int chan) const
         return 0.00015258789;
 }
 
+double RHD2000Thread::getUpperBandwidth() const
+{
+    return actualUpperBandwidth;
+}
+
+double RHD2000Thread::getDesiredUpperBandwidth() const
+{
+    return desiredUpperBandwidth;
+}
+
 double RHD2000Thread::setUpperBandwidth(double upper)
 {
     impedanceThread->stopThreadSafely();
@@ -990,6 +1000,15 @@ double RHD2000Thread::setUpperBandwidth(double upper)
     return actualUpperBandwidth;
 }
 
+double RHD2000Thread::getLowerBandwidth() const
+{
+    return actualLowerBandwidth;
+}
+
+double RHD2000Thread::getDesiredLowerBandwidth() const
+{
+    return desiredLowerBandwidth;
+}
 
 double RHD2000Thread::setLowerBandwidth(double lower)
 {
