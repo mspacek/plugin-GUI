@@ -86,6 +86,7 @@ RHD2000Thread::RHD2000Thread(SourceNode* sn) : DataThread(sn),
     ttlMode(false),
     dspEnabled(true),
     actualNoiseSlicerLevel(0),
+    actualClockDivideRatio(1),
     desiredDspCutoffFreq(0.5f),
     desiredUpperBandwidth(7500.0f),
     desiredLowerBandwidth(1.0f),
@@ -1787,31 +1788,38 @@ void RHD2000Thread::enableBoardLeds(bool enable)
         evalBoard->enableBoardLeds(enable);
 }
 
-int RHD2000Thread::setClockDivider(int divide_ratio)
+int RHD2000Thread::getClockDivideRatio() const
+{
+    return actualClockDivideRatio;
+}
+
+int RHD2000Thread::setClockDivideRatio(int divideRatio)
 {
     if (!deviceFound)
         return 1;
 
     // Divide ratio should be 1 or an even number
-    if (divide_ratio != 1 && divide_ratio % 2)
-        divide_ratio--;
+    if (divideRatio != 1 && divideRatio % 2)
+        divideRatio--;
+
+    actualClockDivideRatio = divideRatio;
 
     // Format the divide ratio from its true value to the
     // format required by the firmware
     // Ratio    N
     // 1        0
     // >=2      Ratio/2
-    if (divide_ratio == 1)
+    if (divideRatio == 1)
         clockDivideFactor = 0;
     else
-        clockDivideFactor = static_cast<uint16>(divide_ratio/2);
+        clockDivideFactor = static_cast<uint16>(divideRatio/2);
 
     if (isAcquisitionActive())
         dacOutputShouldChange = true;
     else
         evalBoard->setClockDivider(clockDivideFactor);
 
-    return divide_ratio;
+    return actualClockDivideRatio;
 }
 
 void RHD2000Thread::runImpedanceTest(ImpedanceData* data)

@@ -371,23 +371,22 @@ class ClockDivideInterface : public Component,
 {
 public:
     ClockDivideInterface(RHD2000Thread*, RHD2000Editor*);
+    ~ClockDivideInterface();
 
     void paint(Graphics& g);
     void labelTextChanged(Label* te);
 
     void setClockDivideRatio(int value);
-    int getClockDivideRatio() const { return actualDivideRatio; };
+    int getClockDivideRatio() const;
 
 private:
 
     String name;
-    String lastDivideRatioString;
 
     RHD2000Thread * board;
     RHD2000Editor * editor;
 
     ScopedPointer<Label> divideRatioSelection;
-    int actualDivideRatio;
 
 };
 #endif  // __RHD2000EDITOR_H_2AD3C591__

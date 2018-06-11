@@ -1429,19 +1429,24 @@ void AudioInterface::paint(Graphics& g)
 // Clock Divider options
 ClockDivideInterface::ClockDivideInterface(RHD2000Thread* board_,
                                            RHD2000Editor* editor_) :
-   name("Clock")
- , lastDivideRatioString("1")
- , board(board_)
- , editor(editor_)
- , actualDivideRatio(1)
-
+    board(board_), editor(editor_)
 {
-    divideRatioSelection = new Label("Clock Divider", lastDivideRatioString);
+
+    name = "Clock";
+
+    board->setClockDivideRatio(board->getClockDivideRatio()); // init board to default value
+
+    divideRatioSelection = new Label("Clock Divider", String(board->getClockDivideRatio()));
     divideRatioSelection->setEditable(true, false, false);
     divideRatioSelection->addListener(this);
     divideRatioSelection->setBounds(45, 6, 35, 20);
     divideRatioSelection->setColour(Label::textColourId, Colours::darkgrey);
     addAndMakeVisible(divideRatioSelection);
+}
+
+ClockDivideInterface::~ClockDivideInterface()
+{
+
 }
 
 void ClockDivideInterface::labelTextChanged(Label* label)
@@ -1451,28 +1456,31 @@ void ClockDivideInterface::labelTextChanged(Label* label)
         if (label == divideRatioSelection)
         {
             Value val = label->getTextValue();
-            int requestedValue = int(val.getValue());
+            int requestedValue = roundToInt(val.getValue());
 
             if (requestedValue < 1 || requestedValue > 65534)
             {
                 CoreServices::sendStatusMessage("Value must be between 1 and 65534.");
-                label->setText(lastDivideRatioString, dontSendNotification);
+                label->setText(String(board->getClockDivideRatio()), dontSendNotification);
                 return;
             }
 
-            actualDivideRatio = board->setClockDivider(requestedValue);
-            lastDivideRatioString = String(actualDivideRatio);
-
-            std::cout << "Setting clock divide ratio to " << actualDivideRatio << "\n";
-            label->setText(lastDivideRatioString, dontSendNotification);
+            board->setClockDivideRatio(requestedValue);
+            std::cout << "Setting clock divide ratio to: " << board->getClockDivideRatio() << endl;
+            label->setText(String(board->getClockDivideRatio()), dontSendNotification);
         }
     }
 }
 
+int ClockDivideInterface::getClockDivideRatio() const
+{
+    return board->getClockDivideRatio();
+}
+
 void ClockDivideInterface::setClockDivideRatio(int value)
 {
-    actualDivideRatio = board->setClockDivider(value);
-    divideRatioSelection->setText(String(actualDivideRatio), dontSendNotification);
+    board->setClockDivideRatio(value);
+    divideRatioSelection->setText(String(board->getClockDivideRatio()), dontSendNotification);
 }
 
 void ClockDivideInterface::paint(Graphics& g)

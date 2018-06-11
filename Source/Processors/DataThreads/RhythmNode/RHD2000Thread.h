@@ -147,7 +147,8 @@ public:
 
     void runImpedanceTest (ImpedanceData* data);
     void enableBoardLeds( bool enable);
-    int setClockDivider (int divide_ratio);
+    int getClockDivideRatio() const;
+    int setClockDivideRatio (int divideRatio);
     GenericEditor* createEditor (SourceNode* sn);
 
     static DataThread* createDataThread (SourceNode* sn);
@@ -232,6 +233,7 @@ private:
 
     // Sync ouput divide factor
     uint16 clockDivideFactor;
+    int actualClockDivideRatio;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RHD2000Thread);
 };
