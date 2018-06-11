@@ -34,16 +34,13 @@ TODO:
         * from RHD2000Thread::getChannelUnits
         * also, see RHD2000Thread::setDefaultChannelNames() for in.gain
         * also see getAdcBitVolts
-* RhythmNode editor could use more tooltips for some of the text edit fields
-* low and high BW of Rhythm FPGA node seem to mysteriously change over program relaunch, until signal chain is cleared and a new one is added...
-    * same goes for DSP offset removal value...
-    * 1, 7500, 0.6 are the defaults for these 3 values - these might be accumulating float roundoff errors
+* push bandwidth, dsp, noiseslicer, clockdivider round-trip fixes and tweaks to dev branch
 * test audio monitor
 * test CAR before spike detector
 * test spike detection and saving
+    * what channel numbers are saved to .spike.npy file? does chanmap affect them?
     * fix spike detection window labels
     * get polytrode electrodes working
-    * what channel numbers are saved to .spike.npy file? does chanmap affect them?
 * check assumption that there's only one spike detector in the signal chain?
 * how does clustering work? does it fill the cluster id field in .spikes.npy properly?
 * add git rev to .json/.msg.txt?
