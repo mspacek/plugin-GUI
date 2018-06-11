@@ -85,6 +85,7 @@ RHD2000Thread::RHD2000Thread(SourceNode* sn) : DataThread(sn),
     fastSettleTTLChannel(-1),
     ttlMode(false),
     dspEnabled(true),
+    actualNoiseSlicerLevel(0),
     desiredDspCutoffFreq(0.5f),
     desiredUpperBandwidth(7500.0f),
     desiredLowerBandwidth(1.0f),
@@ -1067,11 +1068,15 @@ void RHD2000Thread::setFastTTLSettle(bool state, int channel)
     dacOutputShouldChange = true;
 }
 
+int RHD2000Thread::getNoiseSlicerLevel() const
+{
+    return actualNoiseSlicerLevel;
+}
+
 int RHD2000Thread::setNoiseSlicerLevel(int level)
 {
-    desiredNoiseSlicerLevel = level;
     if (deviceFound)
-        evalBoard->setAudioNoiseSuppress(desiredNoiseSlicerLevel);
+        evalBoard->setAudioNoiseSuppress(level);
 
     // Level has been checked once before this and then is checked again in setAudioNoiseSuppress.
     // This may be overkill - maybe API should change so that the final function returns the value?
@@ -1079,7 +1084,6 @@ int RHD2000Thread::setNoiseSlicerLevel(int level)
 
     return actualNoiseSlicerLevel;
 }
-
 
 bool RHD2000Thread::foundInputSource()
 {

@@ -1366,11 +1366,9 @@ AudioInterface::AudioInterface(RHD2000Thread* board_,
 
     name = "Noise";
 
-    lastNoiseSlicerString = "0";
+    board->setNoiseSlicerLevel(board->getNoiseSlicerLevel()); // init board to default value
 
-    actualNoiseSlicerLevel = 0.0f;
-
-    noiseSlicerLevelSelection = new Label("Noise Slicer", lastNoiseSlicerString); // this is currently set in RHD2000Thread, the cleaner would be to set it here again
+    noiseSlicerLevelSelection = new Label("Noise Slicer", String(board->getNoiseSlicerLevel()));
     noiseSlicerLevelSelection->setEditable(true, false, false);
     noiseSlicerLevelSelection->addListener(this);
     noiseSlicerLevelSelection->setBounds(45, 6, 35, 20);
@@ -1383,61 +1381,44 @@ AudioInterface::~AudioInterface()
 
 }
 
-
 void AudioInterface::labelTextChanged(Label* label)
 {
     if (board->foundInputSource())
     {
         if (label == noiseSlicerLevelSelection)
         {
-
             Value val = label->getTextValue();
-            int requestedValue = int(val.getValue()); // Note that it might be nice to translate to actual uV levels (16*value)
+            int requestedValue = roundToInt(val.getValue());
 
             if (requestedValue < 0 || requestedValue > 127)
             {
-                CoreServices::sendStatusMessage("Value out of range.");
-
-                label->setText(lastNoiseSlicerString, dontSendNotification);
-
+                CoreServices::sendStatusMessage("Value must be between 1 and 127.");
+                label->setText(String(board->getNoiseSlicerLevel()), dontSendNotification);
                 return;
             }
 
-            actualNoiseSlicerLevel = board->setNoiseSlicerLevel(requestedValue);
-
-            std::cout << "Setting Noise Slicer Level to " << requestedValue << "\n";
-            label->setText(String((roundFloatToInt)(actualNoiseSlicerLevel)), dontSendNotification);
-
-        }
-    }
-    else
-    {
-        Value val = label->getTextValue();
-        int requestedValue = int(val.getValue()); // Note that it might be nice to translate to actual uV levels (16*value)
-        if (requestedValue < 0 || requestedValue > 127)
-        {
-            CoreServices::sendStatusMessage("Value out of range.");
-            label->setText(lastNoiseSlicerString, dontSendNotification);
-            return;
+            board->setNoiseSlicerLevel(requestedValue);
+            std::cout << "Setting Noise Slicer Level to: " << board->getNoiseSlicerLevel()
+                      << " (" << 16*(board->getNoiseSlicerLevel()) << " uV)" << endl;
+            label->setText(String((board->getNoiseSlicerLevel())), dontSendNotification);
         }
     }
 }
 
 void AudioInterface::setNoiseSlicerLevel(int value)
 {
-    actualNoiseSlicerLevel = board->setNoiseSlicerLevel(value);
-    noiseSlicerLevelSelection->setText(String(roundFloatToInt(actualNoiseSlicerLevel)), dontSendNotification);
+    board->setNoiseSlicerLevel(value);
+    noiseSlicerLevelSelection->setText(String(roundToInt(board->getNoiseSlicerLevel())),
+                                       dontSendNotification);
 }
 
 int AudioInterface::getNoiseSlicerLevel()
 {
-    return actualNoiseSlicerLevel;
+    return board->getNoiseSlicerLevel();
 }
-
 
 void AudioInterface::paint(Graphics& g)
 {
-
     g.setColour(Colours::darkgrey);
     g.setFont(Font("Small Text", 10, Font::plain));
     g.drawText(name, 0, 0, 200, 15, Justification::left, false);

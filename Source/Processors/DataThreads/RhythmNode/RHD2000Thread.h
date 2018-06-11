@@ -106,6 +106,7 @@ public:
 
     void setDSPOffset (bool state);
 
+    int getNoiseSlicerLevel() const;
     int setNoiseSlicerLevel (int level);
     void setFastTTLSettle (bool state, int channel);
     void setTTLoutputMode (bool state);

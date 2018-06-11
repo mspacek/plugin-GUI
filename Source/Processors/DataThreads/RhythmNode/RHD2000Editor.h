@@ -359,17 +359,10 @@ private:
 
     String name;
 
-    String lastNoiseSlicerString;
-    String lastGainString;
-
     RHD2000Thread* board;
     RHD2000Editor* editor;
 
     ScopedPointer<Label> noiseSlicerLevelSelection;
-    //ScopedPointer<Label> gainSelection;
-
-    int actualNoiseSlicerLevel;
-    //double actualGain;
 
 };
 
