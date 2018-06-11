@@ -199,7 +199,7 @@ private:
     double actualDspCutoffFreq, desiredDspCutoffFreq;
     double actualUpperBandwidth, desiredUpperBandwidth;
     double actualLowerBandwidth, desiredLowerBandwidth;
-    int actualNoiseSlicerLevel, desiredNoiseSlicerLevel;
+    int actualNoiseSlicerLevel;
     double boardSampleRate;
     int savedSampleRateIndex;
 

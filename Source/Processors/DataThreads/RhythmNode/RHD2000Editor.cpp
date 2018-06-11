@@ -650,11 +650,11 @@ RHD2000Editor::RHD2000Editor(GenericProcessor* parentNode,
     // add HW audio parameter selection
     audioInterface = new AudioInterface(board, this);
     addAndMakeVisible(audioInterface);
-    audioInterface->setBounds(174, 55, 70, 50);
+    audioInterface->setBounds(174, 55, 80, 50);
 
     clockInterface = new ClockDivideInterface(board, this);
     addAndMakeVisible(clockInterface);
-    clockInterface->setBounds(174, 80, 70, 50);
+    clockInterface->setBounds(174, 80, 80, 50);
 
     // add DSP Offset Button
     dspoffsetButton = new UtilityButton("DSP:", Font("Small Text", 13, Font::plain));
@@ -669,7 +669,7 @@ RHD2000Editor::RHD2000Editor(GenericProcessor* parentNode,
     // add DSP Frequency Selection field
     dspInterface = new DSPInterface(board, this);
     addAndMakeVisible(dspInterface);
-    dspInterface->setBounds(174+32, 108, 40, 50);
+    dspInterface->setBounds(174+32, 108, 80-32, 50);
 
     dacTTLButton = new UtilityButton("DAC TTL", Font("Small Text", 13, Font::plain));
     dacTTLButton->setRadius(3.0f);
@@ -1000,6 +1000,7 @@ BandwidthInterface::BandwidthInterface(RHD2000Thread* board_,
     board->setLowerBandwidth(board->getDesiredLowerBandwidth());
 
     upperBandwidthSelection = new Label("UpperBandwidth", round10(board->getUpperBandwidth()));
+    upperBandwidthSelection->setTooltip("Upper bandwidth limit (Hz)");
     upperBandwidthSelection->setEditable(true, false, false);
     upperBandwidthSelection->addListener(this);
     upperBandwidthSelection->setBounds(30, 25, 60, 20);
@@ -1007,6 +1008,7 @@ BandwidthInterface::BandwidthInterface(RHD2000Thread* board_,
     addAndMakeVisible(upperBandwidthSelection);
 
     lowerBandwidthSelection = new Label("LowerBandwidth", round10(board->getLowerBandwidth()));
+    lowerBandwidthSelection->setTooltip("Lower bandwidth limit (Hz)");
     lowerBandwidthSelection->setEditable(true, false, false);
     lowerBandwidthSelection->addListener(this);
     lowerBandwidthSelection->setBounds(30, 10, 60, 20);
@@ -1369,9 +1371,10 @@ AudioInterface::AudioInterface(RHD2000Thread* board_,
     board->setNoiseSlicerLevel(board->getNoiseSlicerLevel()); // init board to default value
 
     noiseSlicerLevelSelection = new Label("Noise Slicer", String(board->getNoiseSlicerLevel()));
+    noiseSlicerLevelSelection->setTooltip("Audio noise slicer level (0-127) (* 16 uV)");
     noiseSlicerLevelSelection->setEditable(true, false, false);
     noiseSlicerLevelSelection->addListener(this);
-    noiseSlicerLevelSelection->setBounds(45, 6, 35, 20);
+    noiseSlicerLevelSelection->setBounds(45, 6, 40, 20);
     noiseSlicerLevelSelection->setColour(Label::textColourId, Colours::darkgrey);
     addAndMakeVisible(noiseSlicerLevelSelection);
 }
@@ -1437,9 +1440,10 @@ ClockDivideInterface::ClockDivideInterface(RHD2000Thread* board_,
     board->setClockDivideRatio(board->getClockDivideRatio()); // init board to default value
 
     divideRatioSelection = new Label("Clock Divider", String(board->getClockDivideRatio()));
+    divideRatioSelection->setTooltip("Clock divider (1-65534)");
     divideRatioSelection->setEditable(true, false, false);
     divideRatioSelection->addListener(this);
-    divideRatioSelection->setBounds(45, 6, 35, 20);
+    divideRatioSelection->setBounds(45, 6, 40, 20);
     divideRatioSelection->setColour(Label::textColourId, Colours::darkgrey);
     addAndMakeVisible(divideRatioSelection);
 }
@@ -1503,9 +1507,10 @@ DSPInterface::DSPInterface(RHD2000Thread* board_,
     board->setDspCutoffFreq(board->getDesiredDspCutoffFreq()); // init board to default value
 
     dspOffsetSelection = new Label("DspOffsetSelection", round10(board->getDspCutoffFreq()));
+    dspOffsetSelection->setTooltip("DSP offset cutoff (Hz)");
     dspOffsetSelection->setEditable(true, false, false);
     dspOffsetSelection->addListener(this);
-    dspOffsetSelection->setBounds(0, 0, 35, 20);
+    dspOffsetSelection->setBounds(0, 0, 50, 20);
     dspOffsetSelection->setColour(Label::textColourId, Colours::darkgrey);
     addAndMakeVisible(dspOffsetSelection);
 }

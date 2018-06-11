@@ -32,7 +32,7 @@ using namespace std;
 // a RHD2000 chip, and generates command lists to configure the chip and perform other functions.
 // Changing the value of variables within an instance of this class does not directly affect a
 // RHD2000 chip connected to the FPGA; rather, a command list must be generated from this class
-// and then downloaded to the FPGA board using Rhd2000EvalBoard::uploadCommandList.
+// and then uploaded to the FPGA board using Rhd2000EvalBoard::uploadCommandList.
 
 // Constructor.  Set RHD2000 register variables to default values.
 Rhd2000Registers::Rhd2000Registers(double sampleRate)

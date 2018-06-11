@@ -1340,7 +1340,7 @@ void RHD2000Thread::setSampleRate(int sampleRateIndex, bool isTemporary)
 void RHD2000Thread::updateRegisters()
 {
 
-    if (!deviceFound) //Safety to avoid crashes loading a chain with Rythm node withouth a board
+    if (!deviceFound) //Safety to avoid crashes loading a chain with Rhythm node without a board
     {
         return;
     }
