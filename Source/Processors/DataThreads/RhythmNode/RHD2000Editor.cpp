@@ -995,6 +995,10 @@ BandwidthInterface::BandwidthInterface(RHD2000Thread* board_,
 {
     name = "Bandwidth";
 
+    // init board to default values:
+    board->setUpperBandwidth(board->getDesiredUpperBandwidth());
+    board->setLowerBandwidth(board->getDesiredLowerBandwidth());
+
     upperBandwidthSelection = new Label("UpperBandwidth", round10(board->getUpperBandwidth()));
     upperBandwidthSelection->setEditable(true, false, false);
     upperBandwidthSelection->addListener(this);
@@ -1506,6 +1510,8 @@ DSPInterface::DSPInterface(RHD2000Thread* board_,
     board(board_), editor(editor_)
 {
     name = "DSP";
+
+    board->setDspCutoffFreq(board->getDesiredDspCutoffFreq()); // init board to default value
 
     dspOffsetSelection = new Label("DspOffsetSelection", round10(board->getDspCutoffFreq()));
     dspOffsetSelection->setEditable(true, false, false);

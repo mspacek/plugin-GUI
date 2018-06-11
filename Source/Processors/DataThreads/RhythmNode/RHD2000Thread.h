@@ -102,6 +102,7 @@ public:
 
     double setDspCutoffFreq (double freq);
     double getDspCutoffFreq() const;
+    double getDesiredDspCutoffFreq() const;
 
     void setDSPOffset (bool state);
 

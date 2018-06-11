@@ -1020,6 +1020,16 @@ double RHD2000Thread::setLowerBandwidth(double lower)
     return actualLowerBandwidth;
 }
 
+double RHD2000Thread::getDspCutoffFreq() const
+{
+    return actualDspCutoffFreq;
+}
+
+double RHD2000Thread::getDesiredDspCutoffFreq() const
+{
+    return desiredDspCutoffFreq;
+}
+
 double RHD2000Thread::setDspCutoffFreq(double freq)
 {
     impedanceThread->stopThreadSafely();
@@ -1027,11 +1037,6 @@ double RHD2000Thread::setDspCutoffFreq(double freq)
 
     updateRegisters();
 
-    return actualDspCutoffFreq;
-}
-
-double RHD2000Thread::getDspCutoffFreq() const
-{
     return actualDspCutoffFreq;
 }
 
