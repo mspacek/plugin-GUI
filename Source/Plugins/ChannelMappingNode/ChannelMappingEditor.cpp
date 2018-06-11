@@ -228,10 +228,14 @@ void ChannelMappingEditor::refreshButtonLocations()
         button->setBounds(column*width, row*height, width, height);
         totalWidth =  jmax(totalWidth, ++column*width);
         
-        if (column % 16 == 0)
+        if (column == 1)
         {
-            totalHeight =  jmax(totalHeight, ++row*height);
-            column = 0;            
+            totalHeight = jmax(totalHeight, (row + 1)*height);
+        }
+        else if (column == 16) // start a new row after 16 columns
+        {
+            row++;
+            column = 0;
         }
     }
     electrodeButtonHolder->setSize(totalWidth,totalHeight);
