@@ -54,13 +54,13 @@ ChannelMappingEditor::ChannelMappingEditor(GenericProcessor* parentNode, bool us
     resetButton->setClickingTogglesState(false);
     resetButton->setEnabled(false);
 
-    
+
     addAndMakeVisible(electrodeButtonViewport = new Viewport());
     electrodeButtonViewport->setBounds(10,30,330,70);
     electrodeButtonViewport->setScrollBarsShown(true,false,true,true);
     electrodeButtonHolder = new Component();
     electrodeButtonViewport->setViewedComponent(electrodeButtonHolder,false);
-    
+
 
     loadButton = new LoadButton();
     loadButton->addListener(this);
@@ -121,13 +121,13 @@ void ChannelMappingEditor::updateSettings()
         createElectrodeButtons(getProcessor()->getNumInputs());
         previousChannelCount = getProcessor()->getNumInputs();
     }
-	channelCountArray.clearQuick();
-	int size = channelArray.size();
-	for (int i = 0; i < size; i++)
-	{
-		if (enabledChannelArray[channelArray[i]-1])
-			channelCountArray.add(channelArray[i]-1);
-	}
+    channelCountArray.clearQuick();
+    int size = channelArray.size();
+    for (int i = 0; i < size; i++)
+    {
+        if (enabledChannelArray[channelArray[i]-1])
+            channelCountArray.add(channelArray[i]-1);
+    }
 }
 
 void ChannelMappingEditor::createElectrodeButtons(int numNeeded, bool clearPrevious)
@@ -226,8 +226,7 @@ void ChannelMappingEditor::refreshButtonLocations()
     {
         ElectrodeButton* button = electrodeButtons[i];
         button->setBounds(column*width, row*height, width, height);
-        totalWidth =  jmax(totalWidth, ++column*width);
-        
+        totalWidth = jmax(totalWidth, ++column*width);
         if (column == 1)
         {
             totalHeight = jmax(totalHeight, (row + 1)*height);
@@ -238,7 +237,7 @@ void ChannelMappingEditor::refreshButtonLocations()
             column = 0;
         }
     }
-    electrodeButtonHolder->setSize(totalWidth,totalHeight);
+    electrodeButtonHolder->setSize(totalWidth, totalHeight);
 }
 
 void ChannelMappingEditor::collapsedStateChanged()
@@ -261,24 +260,25 @@ void ChannelMappingEditor::buttonEvent(Button* button)
     }
     else if (button == resetButton)
     {
-		if (acquisitionIsActive)
-		{
-			CoreServices::sendStatusMessage("Cannot change channel order while acquiring");
-			return;
-		}
+        if (acquisitionIsActive)
+        {
+            CoreServices::sendStatusMessage("Cannot change channel order while acquiring");
+            return;
+        }
         createElectrodeButtons(getProcessor()->getNumInputs());
         previousChannelCount = getProcessor()->getNumInputs();
         setConfigured(false);
-		CoreServices::updateSignalChain(this);
+        setDisplayName(getProcessor()->getName());
+        CoreServices::updateSignalChain(this);
     }
     else if (button == modifyButton)
     {
-		if (acquisitionIsActive)
-		{
-			CoreServices::sendStatusMessage("Cannot change channel order while acquiring");
-			button->setToggleState(false,dontSendNotification);
-			return;
-		}
+        if (acquisitionIsActive)
+        {
+            CoreServices::sendStatusMessage("Cannot change channel order while acquiring");
+            button->setToggleState(false,dontSendNotification);
+            return;
+        }
         if (reorderActive)
         {
             channelSelector->activateButtons();
@@ -293,15 +293,15 @@ void ChannelMappingEditor::buttonEvent(Button* button)
 
             if (referenceChannels[selectedReference] >= 0)
             {
-				if (referenceChannels[selectedReference] < channelSelector->getNumChannels())
-					a.add(referenceChannels[selectedReference]);
-				else
-				{
-					a.add(channelSelector->getNumChannels() - 1);
-					getProcessor()->setCurrentChannel(channelSelector->getNumChannels() - 1);
-					getProcessor()->setParameter(2, selectedReference);
-					referenceChannels.set(selectedReference, channelSelector->getNumChannels() - 1);
-				}
+                if (referenceChannels[selectedReference] < channelSelector->getNumChannels())
+                    a.add(referenceChannels[selectedReference]);
+                else
+                {
+                    a.add(channelSelector->getNumChannels() - 1);
+                    getProcessor()->setCurrentChannel(channelSelector->getNumChannels() - 1);
+                    getProcessor()->setParameter(2, selectedReference);
+                    referenceChannels.set(selectedReference, channelSelector->getNumChannels() - 1);
+                }
             }
             channelSelector->setActiveChannels(a);
 
@@ -524,9 +524,9 @@ void ChannelMappingEditor::buttonEvent(Button* button)
         if (!acquisitionIsActive)
         {
             FileChooser fc("Choose the file name...",
-                               CoreServices::getDefaultUserSaveDirectory(),
-                               "*",
-                               true);
+                           CoreServices::getDefaultUserSaveDirectory(),
+                           "*",
+                           true);
 
             if (fc.browseForFileToSave(true))
             {
@@ -535,10 +535,10 @@ void ChannelMappingEditor::buttonEvent(Button* button)
                 CoreServices::sendStatusMessage(writePrbFile(fileToSave));
             }
         } else {
-			CoreServices::sendStatusMessage("Stop acquisition before saving the channel map.");
+            CoreServices::sendStatusMessage("Stop acquisition before saving the channel map.");
         }
 
-        
+
 
     } else if (button == loadButton)
     {
@@ -547,9 +547,9 @@ void ChannelMappingEditor::buttonEvent(Button* button)
         if (!acquisitionIsActive)
         {
             FileChooser fc("Choose a file to load...",
-                               CoreServices::getDefaultUserSaveDirectory(),
-                               "*",
-                               true);
+                           CoreServices::getDefaultUserSaveDirectory(),
+                           "*",
+                           true);
 
             if (fc.browseForFileToOpen())
             {
@@ -557,10 +557,10 @@ void ChannelMappingEditor::buttonEvent(Button* button)
                     modifyButton->setToggleState(false,sendNotificationSync);
                 File fileToOpen = fc.getResult();
                 std::cout << "Loading channel map: " << fileToOpen.getFileName() << std::endl;
-				CoreServices::sendStatusMessage(loadPrbFile(fileToOpen));
+                CoreServices::sendStatusMessage(loadPrbFile(fileToOpen));
             }
         } else {
-			CoreServices::sendStatusMessage("Stop acquisition before saving the channel map.");
+            CoreServices::sendStatusMessage("Stop acquisition before saving the channel map.");
         }
     }
 }
@@ -622,7 +622,7 @@ void ChannelMappingEditor::saveCustomParameters(XmlElement* xml)
 void ChannelMappingEditor::loadCustomParameters(XmlElement* xml)
 {
     setConfigured(true);
-    forEachXmlChildElementWithTagName(*xml,	settingXml, "SETTING")
+    forEachXmlChildElementWithTagName(*xml, settingXml, "SETTING")
     {
         if (settingXml->getStringAttribute("Type").equalsIgnoreCase("visibleChannels"))
         {
@@ -741,10 +741,10 @@ void ChannelMappingEditor::mouseDrag(const MouseEvent& e)
             int mouseDownY = ev.getMouseDownY()-30;
             int mouseDownX = ev.getMouseDownX()-10;
             Point<int> viewPosition =electrodeButtonViewport->getViewPosition();
-            
+
             int distanceY = ev.getDistanceFromDragStartY();
             int distanceX = ev.getDistanceFromDragStartX();
-            
+
             int newPosY = viewPosition.getY()+ mouseDownY + distanceY;
             int newPosX = viewPosition.getX()+ mouseDownX + distanceX;
             if ( mouseDownY + distanceY > 70){
@@ -752,8 +752,8 @@ void ChannelMappingEditor::mouseDrag(const MouseEvent& e)
             }else if( mouseDownY + distanceY < 0 ){
                 electrodeButtonViewport->setViewPosition(viewPosition.getX(),newPosY);
             }
-            
-            
+
+
             int col = (newPosX / 19);
             if (col < 0) col = 0;
             else if (col > 16) col = 16;
@@ -842,7 +842,7 @@ void ChannelMappingEditor::mouseUp(const MouseEvent& e)
             setChannelPosition(i,electrodeButtons[i]->getChannelNum());
         }
         setConfigured(true);
-		CoreServices::updateSignalChain(this);
+        CoreServices::updateSignalChain(this);
     }
 }
 
@@ -873,7 +873,7 @@ void ChannelMappingEditor::mouseDoubleClick(const MouseEvent& e)
             getProcessor()->setCurrentChannel(button->getChannelNum()-1);
             getProcessor()->setParameter(3,1);
         }
-		CoreServices::updateSignalChain(this);
+        CoreServices::updateSignalChain(this);
     }
 }
 
@@ -908,26 +908,26 @@ void ChannelMappingEditor::setConfigured(bool state)
 
 void ChannelMappingEditor::startAcquisition()
 {
-	if (reorderActive)
-		modifyButton->setToggleState(false,sendNotificationSync);
+    if (reorderActive)
+        modifyButton->setToggleState(false,sendNotificationSync);
 }
 
 int ChannelMappingEditor::getChannelDisplayNumber(int chan) const
 {
-	if (channelCountArray.size() > chan)
-	{
-		return channelCountArray[chan];
-	}
-	else
-		return chan;
+    if (channelCountArray.size() > chan)
+    {
+        return channelCountArray[chan];
+    }
+    else
+        return chan;
 }
 
 String ChannelMappingEditor::writePrbFile(File filename)
 {
 
     FileOutputStream outputStream(filename);
-	outputStream.setPosition(0);
-	outputStream.truncate();
+    outputStream.setPosition(0);
+    outputStream.truncate();
     //outputStream.writeString("channel_groups = ");
 
     info = new DynamicObject();
@@ -939,7 +939,7 @@ String ChannelMappingEditor::writePrbFile(File filename)
         arr.add(var(channelArray[i]));
     }
     nestedObj->setProperty("mapping", var(arr));
-    
+
     Array<var> arr2;
     for (int i = 0; i < referenceArray.size(); i++)
     {
@@ -966,16 +966,16 @@ String ChannelMappingEditor::writePrbFile(File filename)
 
     info->setProperty("refs", nestedObj2);
 
-	DynamicObject* nestedObj3 = new DynamicObject();
+    DynamicObject* nestedObj3 = new DynamicObject();
 
-	Array<var> arr5;
-	for (int i=0; i < channelSelector->getNumChannels(); i++)
-	{
-		arr5.add(var(channelSelector->getRecordStatus(i)));
-	}
-	nestedObj3->setProperty("channels",var(arr5));
+    Array<var> arr5;
+    for (int i=0; i < channelSelector->getNumChannels(); i++)
+    {
+        arr5.add(var(channelSelector->getRecordStatus(i)));
+    }
+    nestedObj3->setProperty("channels",var(arr5));
 
-	info->setProperty("recording",nestedObj3);
+    info->setProperty("recording",nestedObj3);
 
     info->writeAsJSON(outputStream, 2, false);
 
@@ -1009,12 +1009,12 @@ String ChannelMappingEditor::loadPrbFile(File filename)
 
     std::cout << "Found " << map->size() << " channels in channel map" << std::endl;
 
-	if (map->size() > previousChannelCount)
-		createElectrodeButtons(map->size(), false);
+    if (map->size() > previousChannelCount)
+        createElectrodeButtons(map->size(), false);
 
     for (int i = 0; i < map->size(); i++)
     {
-        int ch = map->getUnchecked(i); 
+        int ch = map->getUnchecked(i);
         channelArray.set(i, ch);
 
         int rf = ref->getUnchecked(i);
@@ -1025,14 +1025,14 @@ String ChannelMappingEditor::loadPrbFile(File filename)
 
         electrodeButtons[i]->setChannelNum(ch);
         electrodeButtons[i]->setEnabled(en);
-		
-		getProcessor()->setCurrentChannel(i);
-		getProcessor()->setParameter(0,ch-1);
-		getProcessor()->setCurrentChannel(ch-1);
-		getProcessor()->setParameter(1, rf);
-		getProcessor()->setParameter(3, en ? 1 : 0);
+
+        getProcessor()->setCurrentChannel(i);
+        getProcessor()->setParameter(0,ch-1);
+        getProcessor()->setCurrentChannel(ch-1);
+        getProcessor()->setParameter(1, rf);
+        getProcessor()->setParameter(3, en ? 1 : 0);
     }
-	checkUnusedChannels();
+    checkUnusedChannels();
 
     var refChans = json[Identifier("refs")];
     var channels = refChans[Identifier("channels")];
@@ -1060,19 +1060,19 @@ String ChannelMappingEditor::loadPrbFile(File filename)
         }
     }
 
-	setDisplayName(filename.getFileNameWithoutExtension());
-	setConfigured(true);
-	CoreServices::updateSignalChain(this);
+    setDisplayName(filename.getFileNameWithoutExtension());
+    setConfigured(true);
+    CoreServices::updateSignalChain(this);
 
-	var recChans = json[Identifier("recording")];
-	var recording = recChans[Identifier("channels")];
-	Array<var>* rec = recording.getArray();
+    var recChans = json[Identifier("recording")];
+    var recording = recChans[Identifier("channels")];
+    Array<var>* rec = recording.getArray();
 
-	for (int i = 0; i < rec->size(); i++)
-	{
-		bool recEnabled = rec->getUnchecked(i);
-		channelSelector->setRecordStatus(i,recEnabled);
-	}
+    for (int i = 0; i < rec->size(); i++)
+    {
+        bool recEnabled = rec->getUnchecked(i);
+        channelSelector->setRecordStatus(i,recEnabled);
+    }
 
     return "Loaded channel map: " + filename.getFileName();
 
