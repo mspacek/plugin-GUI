@@ -524,7 +524,11 @@ SpikeChannel::SpikeChannel(ElectrodeTypes type, GenericProcessor* source, const 
 		m_sourceInfo.add(info);
 		m_channelBitVolts.add(chan->getBitVolts());
 	}
-	setDefaultNameAndDescription();
+	//setDefaultNameAndDescription();
+	const DataChannel* datachan0 = sourceChannels[0];
+	setName(datachan0->getName());
+	setDescription("Single electrode spike data source");
+	setIdentifier("spikesource");
 }
 
 SpikeChannel::~SpikeChannel()

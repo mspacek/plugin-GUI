@@ -85,35 +85,47 @@ void SpikeDisplayCanvas::endAnimation()
 
 void SpikeDisplayCanvas::update()
 {
-
     //std::cout << "Updating SpikeDisplayCanvas" << std::endl;
-
-    int nPlots = processor->getNumElectrodes();
+    int nplots = processor->getNumElectrodes();
+    int ninputs = processor->getNumInputs();
+    //std::cout << "SpikeDisplayCanvas nplots " << nplots << std::endl;
+    //std::cout << "SpikeDisplayCanvas ninputs " << ninputs << std::endl;
     processor->removeSpikePlots();
-
-    if (nPlots != spikeDisplay->getNumPlots())
+    // this fails to update plot titles when chans are rearranged in chanmap:
+    // if (nplots != spikeDisplay->getNumPlots())
+    if (true)
     {
         spikeDisplay->removePlots();
-
-        for (int i = 0; i < nPlots; i++)
+        for (int ploti = 0; ploti < nplots; ploti++)
         {
-            SpikePlot* sp = spikeDisplay->addSpikePlot(processor->getNumberOfChannelsForElectrode(i), i,
-                                                       processor->getNameForElectrode(i));
-            processor->addSpikePlotForElectrode(sp, i);
+            int nchans = processor->getNumberOfChannelsForElectrode(ploti);
+            if (nchans != 1)
+            {
+                std::cout << "NOTE: Code has been tailored to high chan count probes, and assumes "
+                          << "only one chan per spike plot. Please use only single electrodes. "
+                          << "Exiting..."
+                          << std::endl;
+                JUCEApplication::quit();
+            }
+            String dataChanName = processor->getDataChannel(ploti)->getName();
+            // label each spike plot according to datachan name - this obeys preceding chanmaps
+            // and is simpler and more meaningful than processor->getNameForElectrode(i)):
+            SpikePlot* sp = spikeDisplay->addSpikePlot(nchans, ploti, dataChanName);
+            processor->addSpikePlotForElectrode(sp, ploti);
         }
     }
     else
+    // mspacek: is this more efficient? if so, not sure how to easily check for change
+    // in chanmap that doesn't involve change in num chans
     {
-        for (int i = 0; i < nPlots; i++)
+        for (int ploti = 0; ploti < nplots; ploti++)
         {
-            processor->addSpikePlotForElectrode(spikeDisplay->getSpikePlot(i), i);
+            processor->addSpikePlotForElectrode(spikeDisplay->getSpikePlot(ploti), ploti);
         }
     }
-
     spikeDisplay->resized();
     spikeDisplay->repaint();
 }
-
 
 void SpikeDisplayCanvas::refreshState()
 {

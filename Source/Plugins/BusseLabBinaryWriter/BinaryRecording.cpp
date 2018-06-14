@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 TODO:
 
-* handle ADC chans - need to add auxchans field to .dat.json
+* handle aux and ADC oe chans - need to add auxchans field to .dat.json
     * what does the clock divider ratio do? should change the ADC chan sampling rate, but doesn't seem to? Maybe force it to always be 1 for now?
     * getBitVolts() for ADC chans is different, and seems ~1000x off?
     * yes:  case DataChannel::AUX_CHANNEL: return "mV";
@@ -35,17 +35,18 @@ TODO:
         * also, see RHD2000Thread::setDefaultChannelNames() for in.gain
         * also see getAdcBitVolts
 * push bandwidth, dsp, noiseslicer, clockdivider round-trip fixes and tweaks to dev branch
+* push spike chan display labels and values written to disk to dev branch
 * test audio monitor
 * test CAR before spike detector
 * test spike detection and saving
-    * what channel numbers are saved to .spike.npy file? does chanmap affect them?
-    * fix spike detection window labels
-    * get polytrode electrodes working
-* check assumption that there's only one spike detector in the signal chain?
+    * add some kind of automatic threshold level setting?
+    * add spike ticks to LFV viewer chans?
+* check assumption that there's only one spike detector in the signal chain
 * how does clustering work? does it fill the cluster id field in .spikes.npy properly?
 * add git rev to .json/.msg.txt?
 * get "Error in Rhd2000EvalBoard::readDataBlock: Incorrect header." randomly, won't exit
-
+* why can't splitters be deleted?
+* sometimes rearranging chans in the chanmap segfaults
 
 */
 
@@ -414,20 +415,26 @@ void BinaryRecording::writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx,
 
 void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)
 {
-    //std::cout << "electrodeIndex " << electrodeIndex << std::endl;
-    const SpikeChannel* channel = getSpikeChannel(electrodeIndex);
+    /*
+      electrodeIndex is really just the plot index, which isn't relevant
+      (each electrode has exactly 1 plot, because only single electrodes are allowed now)
+      What we care about is the actual data channel that plot is plotting, so that's
+      what we'll write to file.
+    */
+    const SpikeChannel* spikeChan = spike->getChannelInfo();
+    String chanName = spikeChan->getName();
     EventRecording* rec = m_spikeFile;
-
     int64 ts = spike->getTimestamp();
-    /// why can't i do something like spike->getChannel?
-    //int64 spikeChannel = (int64)(uint16)(m_spikeChannelIndexes[electrodeIndex]);
-    /// TODO: electrodeIndex probably needs to be dereferenced...
-    int64 spikeChannel = electrodeIndex;
+    // strip "CH" from start of chanName, get remaining string as numeric ID, convert to int64:
+    int64 chanID = chanName.trimCharactersAtStart("CH").getLargeIntValue();
     int64 sortedID = (int64)(uint16)spike->getSortedID();
     rec->dataFile->writeData(&ts, sizeof(int64)); // timestamp
-    rec->dataFile->writeData(&spikeChannel, sizeof(int64)); // spike channel
+    rec->dataFile->writeData(&chanID, sizeof(int64)); // spike channel
     rec->dataFile->writeData(&sortedID, sizeof(int64)); // cluster ID
     increaseEventCounts(rec);
+    //std::cout << "ts " << ts << std::endl;
+    //std::cout << "chanID " << chanID << std::endl;
+    //std::cout << "sortedID " << sortedID << std::endl;
 }
 
 void BinaryRecording::increaseEventCounts(EventRecording* rec)
