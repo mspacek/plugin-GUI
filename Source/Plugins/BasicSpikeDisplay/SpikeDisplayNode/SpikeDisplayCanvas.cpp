@@ -135,22 +135,22 @@ void SpikeDisplayCanvas::refreshState()
 
 void SpikeDisplayCanvas::resized()
 {
-    viewport->setBounds(0,0,getWidth(),getHeight()-90);
+    viewport->setBounds(0, 0, getWidth(), getHeight()-30); // leave space at bottom for buttons
 
     spikeDisplay->setBounds(0,0,getWidth()-scrollBarThickness, spikeDisplay->getTotalHeight());
 
-    clearButton->setBounds(10, getHeight()-40, 100,20);
+    clearButton->setBounds(10, getHeight()-25, 130, 20);
 
-    lockThresholdsButton->setBounds(130, getHeight()-40, 130,20);
+    lockThresholdsButton->setBounds(10+130+10, getHeight()-25, 130, 20);
 
-    invertSpikesButton->setBounds(270, getHeight()-40, 130,20);
+    invertSpikesButton->setBounds(10+130+10+130+10, getHeight()-25, 130, 20);
 
 }
 
 void SpikeDisplayCanvas::paint(Graphics& g)
 {
 
-    g.fillAll(Colours::darkgrey);
+    g.fillAll(Colours::black);
 
 }
 
@@ -390,7 +390,7 @@ void SpikeDisplay::resized()
             int h2 = spikePlots[i]->getHeight();
         }
 
-        totalHeight = (int) maxHeight + 50;
+        totalHeight = (int) maxHeight;
 
         // std::cout << "New height = " << totalHeight << std::endl;
 
