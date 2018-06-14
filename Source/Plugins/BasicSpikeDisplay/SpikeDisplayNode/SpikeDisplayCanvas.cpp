@@ -339,13 +339,7 @@ void SpikeDisplay::resized()
         int numColumns = 1;
         int column, row;
 
-		// mspacek: how does this change for polytrodes?
-        int stereotrodeStart = 0;
-        int tetrodeStart = 0;
-
         int singlePlotIndex = -1;
-        int stereotrodePlotIndex = -1;
-        int tetrodePlotIndex = -1;
         int index = -1;
 
         float width = 0;
@@ -363,22 +357,6 @@ void SpikeDisplay::resized()
                 numColumns = (int) jmax(w / spikePlots[i]->minWidth, 1.0f);
                 width = jmin((float) w / (float) numColumns, (float) getWidth());
                 height = width * spikePlots[i]->aspectRatio;
-
-            }
-            else if (spikePlots[i]->nChannels == 2)
-            {
-                index = ++stereotrodePlotIndex;
-                numColumns = (int) jmax(w / spikePlots[i]->minWidth, 1.0f);
-                width = jmin((float) w / (float) numColumns, (float) getWidth());
-                height = width * spikePlots[i]->aspectRatio;
-
-            }
-            else if (spikePlots[i]->nChannels == 4)
-            {
-                index = ++tetrodePlotIndex;
-                numColumns = (int) jmax(w / spikePlots[i]->minWidth, 1.0f);
-                width = jmin((float) w / (float) numColumns, (float) getWidth());
-                height = width * spikePlots[i]->aspectRatio;
             }
 
             column = index % numColumns;
@@ -389,39 +367,15 @@ void SpikeDisplay::resized()
 
             maxHeight = jmax(maxHeight, row*height + height);
 
-            if (spikePlots[i]->nChannels == 1)
-            {
-                stereotrodeStart = (int)(height*(float(row)+1));
-            }
-            else if (spikePlots[i]->nChannels == 2)
-            {
-                tetrodeStart = (int)(height*(float(row)+1));
-            }
-
         }
 
 
         for (int i = 0; i < spikePlots.size(); i++)
         {
-
             int x = spikePlots[i]->getX();
             int y = spikePlots[i]->getY();
             int w2 = spikePlots[i]->getWidth();
             int h2 = spikePlots[i]->getHeight();
-
-            if (spikePlots[i]->nChannels == 2)
-            {
-                spikePlots[i]->setBounds(x, y+stereotrodeStart, w2, h2);
-                maxHeight = jmax(maxHeight, (float) y+stereotrodeStart+h2);
-
-            }
-            else if (spikePlots[i]->nChannels == 4)
-            {
-                spikePlots[i]->setBounds(x, y+stereotrodeStart+tetrodeStart, w2, h2);
-                maxHeight = jmax(maxHeight, (float) y+stereotrodeStart+tetrodeStart+h2);
-            }
-
-
         }
 
         totalHeight = (int) maxHeight + 50;
@@ -518,27 +472,6 @@ SpikePlot::SpikePlot(SpikeDisplayCanvas* sdc, int elecNum, int p, String name_) 
             minWidth = 200;
             aspectRatio = 1.0f;
             break;
-        case STEREO_PLOT:
-            //  std::cout<<"SpikePlot as STEREO_PLOT"<<std::endl;
-            nWaveAx = 2;
-            nProjAx = 1;
-            nChannels = 2;
-            minWidth = 300;
-            aspectRatio = 0.5f;
-            break;
-        case TETRODE_PLOT:
-            // std::cout<<"SpikePlot as TETRODE_PLOT"<<std::endl;
-            nWaveAx = 4;
-            nProjAx = 6;
-            nChannels = 4;
-            minWidth = 400;
-            aspectRatio = 0.5f;
-            break;
-            //        case HIST_PLOT:
-            //            nWaveAx = 1;
-            //            nProjAx = 0;
-            //            nHistAx = 1;
-            //            break;
         default: // unsupported number of axes provided
             std::cout << "SpikePlot as UNKNOWN, defaulting to SINGLE_PLOT" << std::endl;
             nWaveAx = 1;
@@ -666,19 +599,6 @@ void SpikePlot::resized()
             axesWidth = width;
             axesHeight = height;
             break;
-
-        case STEREO_PLOT:
-            nProjCols = 1;
-            nWaveCols = 2;
-            axesWidth = width/2;
-            axesHeight = height;
-            break;
-        case TETRODE_PLOT:
-            nProjCols = 3;
-            nWaveCols = 2;
-            axesWidth = width/4;
-            axesHeight = height/2;
-            break;
     }
 
     for (int i = 0; i < nWaveAx; i++)
@@ -755,14 +675,6 @@ void SpikePlot::getBestDimensions(int* w, int* h)
 {
     switch (plotType)
     {
-        case TETRODE_PLOT:
-            *w = 4;
-            *h = 2;
-            break;
-        case STEREO_PLOT:
-            *w = 2;
-            *h = 1;
-            break;
         case SINGLE_PLOT:
             *w = 1;
             *h = 1;

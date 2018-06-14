@@ -378,10 +378,6 @@ public:
 	enum ElectrodeTypes
 	{
 		SINGLE,
-		STEREOTRODE,
-		TETRODE,
-		POLY32,
-		POLY64,
 		INVALID = 100
 	};
 

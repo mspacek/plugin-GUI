@@ -576,10 +576,6 @@ unsigned int SpikeChannel::getNumChannels(SpikeChannel::ElectrodeTypes type)
 	switch (type)
 	{
 	case SINGLE: return 1;
-	case STEREOTRODE: return 2;
-	case TETRODE: return 4;
-	case POLY32: return 32;
-	case POLY64: return 64;
 	default: return 0;
 	}
 }
@@ -589,10 +585,6 @@ SpikeChannel::ElectrodeTypes SpikeChannel::typeFromNumChannels(unsigned int nCha
 	switch (nChannels)
 	{
 	case 1: return SINGLE;
-	case 2: return STEREOTRODE;
-	case 4: return TETRODE;
-	case 32: return POLY32;
-	case 64: return POLY64;
 	default: return INVALID;
 	}
 }
@@ -624,22 +616,6 @@ void SpikeChannel::setDefaultNameAndDescription()
 	case SINGLE: 
 		name = "SE ";
 		description = "Single electrode";
-		break;
-	case STEREOTRODE: 
-		name = "ST "; 
-		description = "Stereotrode";
-		break;
-	case TETRODE: 
-		name = "TT ";
-		description = "Tetrode";
-		break;
-	case POLY32:
-		name = "PT32 ";
-		description = "Polytrode32";
-		break;
-	case POLY64:
-		name = "PT64 ";
-		description = "Polytrode64";
 		break;
 	default: name = "INVALID "; break;
 	}
