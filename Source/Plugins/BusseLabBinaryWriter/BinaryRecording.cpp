@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 TODO:
 
+* spikes.npy seems to corrupt after long (2h?) recording with lots of detected spikes, overwrites itself
 * handle aux and ADC oe chans - need to add auxchans field to .dat.json
     * what does the clock divider ratio do? should change the ADC chan sampling rate, but doesn't seem to? Maybe force it to always be 1 for now?
     * getBitVolts() for ADC chans is different, and seems ~1000x off?
