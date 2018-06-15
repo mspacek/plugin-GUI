@@ -2276,7 +2276,7 @@ void LfpDisplay::setNumChannels(int numChannels)
     setColors();
     
 
-    std::cout << "TOTAL HEIGHT = " << totalHeight << std::endl;
+    //std::cout << "TOTAL HEIGHT = " << totalHeight << std::endl;
 
 }
 

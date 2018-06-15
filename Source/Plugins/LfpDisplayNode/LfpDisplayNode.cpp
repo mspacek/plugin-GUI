@@ -80,11 +80,11 @@ void LfpDisplayNode::updateSettings()
 
     numEventChannels = eventSourceNodes.size();
 
-    std::cout << "Found " << numEventChannels << " event channels." << std::endl;
+    //std::cout << "Found " << numEventChannels << " event channels." << std::endl;
 
     for (int i = 0; i < eventSourceNodes.size(); ++i)
     {
-        std::cout << "Adding channel " << getNumInputs() + i << " for event source node " << eventSourceNodes[i] << std::endl;
+        //std::cout << "Adding channel " << getNumInputs() + i << " for event source node " << eventSourceNodes[i] << std::endl;
 
         channelForEventSource[eventSourceNodes[i]] = getNumInputs() + i;
         ttlState[eventSourceNodes[i]] = 0;

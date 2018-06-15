@@ -116,7 +116,7 @@ void SpikeDetector::updateSettings()
 
 bool SpikeDetector::addElectrode (int nChans, int electrodeID)
 {
-    std::cout << "Adding electrode with " << nChans << " channels." << std::endl;
+    //std::cout << "Adding electrode with " << nChans << " channels." << std::endl;
 
     int firstChan;
 
@@ -218,7 +218,7 @@ void SpikeDetector::resetElectrode (SimpleElectrode* e)
 
 bool SpikeDetector::removeElectrode (int index)
 {
-    // std::cout << "Spike detector removing electrode" << std::endl;
+    //std::cout << "Spike detector removing electrode" << std::endl;
 
     if (index > electrodes.size() || index < 0)
         return false;
@@ -236,8 +236,8 @@ void SpikeDetector::setElectrodeName (int index, String newName)
 
 void SpikeDetector::setChannel (int electrodeIndex, int channelNum, int newChannel)
 {
-    std::cout << "Setting electrode " << electrodeIndex << " channel " << channelNum
-                << " to " << newChannel << std::endl;
+    //std::cout << "Setting electrode " << electrodeIndex << " channel " << channelNum
+    //            << " to " << newChannel << std::endl;
 
     *(electrodes[electrodeIndex]->channels + channelNum) = newChannel;
 }
@@ -287,7 +287,7 @@ void SpikeDetector::setChannelActive (int electrodeIndex, int subChannel, bool a
     currentElectrode = electrodeIndex;
     currentChannelIndex = subChannel;
 
-    std::cout << "Setting channel active to " << active << std::endl;
+    //std::cout << "Setting channel active to " << active << std::endl;
 
     if (active)
         setParameter (98, 1);
@@ -307,7 +307,7 @@ void SpikeDetector::setChannelThreshold (int electrodeNum, int channelNum, float
     currentElectrode = electrodeNum;
     currentChannelIndex = channelNum;
 
-    std::cout << "Setting electrode " << electrodeNum << " channel threshold " << channelNum << " to " << thresh << std::endl;
+    //std::cout << "Setting electrode " << electrodeNum << " channel threshold " << channelNum << " to " << thresh << std::endl;
 
     setParameter (99, thresh);
 }
@@ -374,7 +374,6 @@ void SpikeDetector::addWaveformToSpikeObject (SpikeEvent::SpikeBuffer& s,
 
     if (isChannelActive (electrodeNumber, currentChannel))
     {
-		
         for (int sample = 0; sample < spikeLength; ++sample)
         {
             s.set(currentChannel,sample, getNextSample (*(electrodes[electrodeNumber]->channels+currentChannel)));
@@ -388,7 +387,7 @@ void SpikeDetector::addWaveformToSpikeObject (SpikeEvent::SpikeBuffer& s,
         for (int sample = 0; sample < spikeLength; ++sample)
         {
             // insert a blank spike if the
-			s.set(currentChannel, sample, 0);
+            s.set(currentChannel, sample, 0);
             ++sampleIndex;
             //std::cout << currentIndex << std::endl;
         }
@@ -426,7 +425,7 @@ void SpikeDetector::process (AudioSampleBuffer& buffer)
             // cycle through channels
             for (int chan = 0; chan < electrode->numChannels; ++chan)
             {
-                // std::cout << "  channel " << chan << std::endl;
+                //std::cout << "  channel " << chan << std::endl;
                 if (*(electrode->isActive + chan))
                 {
                     int currentChannel = *(electrode->channels + chan);
@@ -595,7 +594,7 @@ void SpikeDetector::loadCustomParametersFromXml()
             {
                 ++electrodeIndex;
 
-                std::cout << "ELECTRODE>>>" << std::endl;
+                //std::cout << "ELECTRODE>>>" << std::endl;
 
                 const int channelsPerElectrode = xmlNode->getIntAttribute ("numChannels");
                 const int electrodeID          = xmlNode->getIntAttribute ("electrodeID");
@@ -613,7 +612,7 @@ void SpikeDetector::loadCustomParametersFromXml()
                     {
                         ++channelIndex;
 
-                        std::cout << "Subchannel " << channelIndex << std::endl;
+                        //std::cout << "Subchannel " << channelIndex << std::endl;
 
                         setChannel          (electrodeIndex, channelIndex, channelNode->getIntAttribute ("ch"));
                         setChannelThreshold (electrodeIndex, channelIndex, channelNode->getDoubleAttribute ("thresh"));

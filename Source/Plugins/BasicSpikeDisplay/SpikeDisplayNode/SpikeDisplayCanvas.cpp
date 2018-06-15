@@ -236,42 +236,29 @@ void SpikeDisplayCanvas::loadVisualizerParameters(XmlElement* xml)
             lockThresholdsButton->setToggleState(xmlNode->getBoolAttribute("LockThresholds"), sendNotification);
 
             int plotIndex = -1;
-
             forEachXmlChildElement(*xmlNode, plotNode)
             {
                 if (plotNode->hasTagName("PLOT"))
                 {
-
                     plotIndex++;
-
-                    std::cout << "PLOT NUMBER " << plotIndex << std::endl;
-
+                    //std::cout << "PLOT NUMBER " << plotIndex << std::endl;
                     int channelIndex = -1;
-
                     forEachXmlChildElement(*plotNode, channelNode)
                     {
-
                         if (channelNode->hasTagName("AXIS"))
                         {
                             channelIndex++;
-
-                            std::cout << "CHANNEL NUMBER " << channelIndex << std::endl;
-
+                            //std::cout << "CHANNEL NUMBER " << channelIndex << std::endl;
                             spikeDisplay->setThresholdForWaveAxis(plotIndex,
                                                                   channelIndex,
                                                                   channelNode->getDoubleAttribute("thresh"));
-
                             spikeDisplay->setRangeForWaveAxis(plotIndex,
                                                               channelIndex,
                                                               channelNode->getDoubleAttribute("range"));
-
                         }
                     }
-
-
                 }
             }
-
         }
     }
 }
@@ -313,7 +300,7 @@ void SpikeDisplay::removePlots()
 SpikePlot* SpikeDisplay::addSpikePlot(int numChannels, int electrodeNum, String name_)
 {
 
-    std::cout << "Adding new spike plot." << std::endl;
+    //std::cout << "Adding new spike plot." << std::endl;
 
     SpikePlot* spikePlot = new SpikePlot(canvas, electrodeNum, 1000 + numChannels, name_);
     spikePlots.add(spikePlot);
@@ -700,7 +687,7 @@ void SpikePlot::getBestDimensions(int* w, int* h)
 
 void SpikePlot::clear()
 {
-    std::cout << "SpikePlot::clear()" << std::endl;
+    //std::cout << "SpikePlot::clear()" << std::endl;
 
     for (int i = 0; i < nWaveAx; i++)
         wAxes[i]->clear();
@@ -715,7 +702,7 @@ float SpikePlot::getDisplayThresholdForChannel(int i)
 
 void SpikePlot::setDisplayThresholdForChannel(int i, float thresh)
 {
-    std::cout << "Setting threshold to " << thresh << std::endl;
+    //std::cout << "Setting threshold to " << thresh << std::endl;
     wAxes[i]->setDisplayThreshold(thresh);
 }
 
@@ -726,7 +713,7 @@ float SpikePlot::getRangeForChannel(int i)
 
 void SpikePlot::setRangeForChannel(int i, float range)
 {
-    std::cout << "Setting range to " << range << std::endl;
+    //std::cout << "Setting range to " << range << std::endl;
     wAxes[i]->setRange(range);
     rangeButtons[i]->setLabel(String(int(range)));
 }
@@ -818,7 +805,7 @@ WaveAxes::WaveAxes(int channel) : GenericAxes(channel),
 void WaveAxes::setRange(float r)
 {
 
-    std::cout << "Setting range to " << r << std::endl;
+    //std::cout << "Setting range to " << r << std::endl;
 
     range = r;
 

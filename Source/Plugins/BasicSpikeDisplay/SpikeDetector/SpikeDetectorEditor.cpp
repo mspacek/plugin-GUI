@@ -511,7 +511,7 @@ void SpikeDetectorEditor::comboBoxChanged(ComboBox* comboBox)
     {
         int ID = comboBox->getSelectedId();
 
-        std::cout << "ID: " << ID << std::endl;
+        //std::cout << "ID: " << ID << std::endl;
 
         if (ID == 0)
         {

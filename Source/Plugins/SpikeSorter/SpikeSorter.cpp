@@ -545,17 +545,13 @@ void SpikeSorter::setElectrodeName(int index, String newName)
 void SpikeSorter::setChannel(int electrodeIndex, int channelNum, int newChannel)
 {
     mut.enter();
-    String log = "Setting electrode " + String(electrodeIndex) + " channel " + String(channelNum)+
-                 " to " + String(newChannel);
-    std::cout << log<< std::endl;
+    //String log = "Setting electrode " + String(electrodeIndex) + " channel " + String(channelNum)+
+    //             " to " + String(newChannel);
+    //std::cout << log<< std::endl;
 
-
-
-    String eventlog = "ChanelElectrodeChannel " + String(electrodes[electrodeIndex]->electrodeID) + " " + String(channelNum) + " " + String(newChannel);
+    //String eventlog = "ChanelElectrodeChannel " + String(electrodes[electrodeIndex]->electrodeID) + " " + String(channelNum) + " " + String(newChannel);
     //addNetworkEventToQueue(StringTS(eventlog));
-
-   // updateSinks(electrodes[electrodeIndex]->electrodeID, channelNum,newChannel);
-
+    //updateSinks(electrodes[electrodeIndex]->electrodeID, channelNum,newChannel);
     *(electrodes[electrodeIndex]->channels+channelNum) = newChannel;
     mut.exit();
 }
