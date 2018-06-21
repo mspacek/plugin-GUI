@@ -26,6 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 TODO:
 
 * spikes.npy seems to corrupt after long (2h?) recording with lots of detected spikes, overwrites itself
+    * fixed by increasing recordBufferSize to 1024 and always flushing to disk?
+    * needs long duration testing
+    * push to dev
 * handle aux and ADC oe chans - need to add auxchans field to .dat.json
     * what does the clock divider ratio do? should change the ADC chan sampling rate, but doesn't seem to? Maybe force it to always be 1 for now?
     * getBitVolts() for ADC chans is different, and seems ~1000x off?
@@ -38,16 +41,20 @@ TODO:
 * push bandwidth, dsp, noiseslicer, clockdivider round-trip fixes and tweaks to dev branch
 * push spike chan display labels and values written to disk to dev branch
 * test audio monitor
+    * make clicking on LFP viewer chan or Spike Viewer chan change audio to that chan
 * test CAR before spike detector
 * test spike detection and saving
     * add some kind of automatic threshold level setting?
-    * add spike ticks to LFV viewer chans?
+    * add spike ticks to LFP viewer chans?
+    * make spike detector editor use actual chan IDs instead of chanis (e.g. single electrode 1)
+* make ENTER in message window save the message, so don't need to hit SAVE button
 * check assumption that there's only one spike detector in the signal chain
 * how does clustering work? does it fill the cluster id field in .spikes.npy properly?
 * add git rev to .json/.msg.txt?
 * get "Error in Rhd2000EvalBoard::readDataBlock: Incorrect header." randomly, won't exit
 * why can't splitters be deleted?
 * sometimes rearranging chans in the chanmap segfaults
+* store last used file open path in settings.xml
 
 */
 
@@ -244,6 +251,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
         std::cerr << "Error creating JSON file:" << res.getErrorMessage() << std::endl;
     ScopedPointer<FileOutputStream> jsonFile = jsonf.createOutputStream();
     std::cout << "WRITING FILE: " << jsonFileName << std::endl;
+    // this writeText() is from JUCE 5.3.2, see commit 06be1c2:
     jsonFile->writeText(jsonstr, false, false, nullptr);
     jsonFile->flush();
 
@@ -267,6 +275,7 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
                               << std::endl;
                 else
                     m_msgFile = msgf.createOutputStream(); // store file handle
+                    // this writeText() is from JUCE 5.3.2, see commit 06be1c2:
                     m_msgFile->writeText(getMessageHeader(datetime), false, false, nullptr);
                     m_msgFile->flush();
                 break;
@@ -374,6 +383,7 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
         const String tsstr = String(ts);
         //String msg = String((char*)ev->getRawDataPointer(), info->getDataSize());
         const String msg = String((char*)ev->getRawDataPointer());
+        // this writeText() is from JUCE 5.3.2, see commit 06be1c2:
         m_msgFile->writeText(tsstr + "\t" + msg + '\n', false, false, nullptr);
         m_msgFile->flush();
     }
@@ -410,6 +420,7 @@ void BinaryRecording::writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx,
 {
     if (!m_msgFile)
         return;
+    // this writeText() is from JUCE 5.3.2, see commit 06be1c2:
     m_msgFile->writeText("## " + text + "\n", false, false, nullptr);
     m_msgFile->flush();
 }
