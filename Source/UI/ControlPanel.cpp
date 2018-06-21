@@ -172,7 +172,7 @@ void DiskSpaceMeter::paint(Graphics& g)
     g.drawRect(0,0,getWidth(),getHeight(),1);
 
     g.setFont(font);
-    g.drawSingleLineText("DF",75,12);
+    g.drawSingleLineText("DISK",75,12);
 
 }
 
