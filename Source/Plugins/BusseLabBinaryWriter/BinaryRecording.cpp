@@ -206,8 +206,19 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
     }
     String probe_name = chanmapnames[0];
     std::cout << "Storing channel map name '" << probe_name << "' as probe_name" << std::endl;
-    std::cout << "Assuming '" << probe_name
-              << "' chans are 1-based and map 1:1 to headstage chans" << std::endl;
+    // derive adapter name from probe name via a mapping:
+    std::map<String, String> probe2adapter;
+    probe2adapter["A1x32"] = "Adpt_A32_OM32_RHD2132";
+    probe2adapter["A1x64"] = "Adpt_A64_OM32x2_sm_RHD2164";
+    String adapter_name;
+    try
+        {adapter_name = probe2adapter.at(probe_name);}
+    catch (...) // probe_name not found
+        {adapter_name = "";}
+    std::cout << "Assuming adapter_name: '" << adapter_name << "'" << std::endl;
+
+    // collect chans array:
+    std::cout << "Assuming '" << probe_name << "' chans are 1-based" << std::endl;
     int chanbase = 1;
     var chans;
     for (int i = 0; i < nRecChans; i++)
@@ -225,6 +236,8 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
     json->setProperty("dtype", "int16");
     json->setProperty("uV_per_AD", uV_per_AD);
     json->setProperty("probe_name", probe_name);
+    if (adapter_name != "") // add adapter_name field only if adapter is defined for this probe
+        json->setProperty("adapter_name", adapter_name);
     // add chans field only if some chans have been disabled:
     if (nRecChans != nHeadstageChans)
         json->setProperty("chans", chans);
