@@ -25,6 +25,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 TODO:
 
+* displayed chan names and IDs saved to .spikes.npy file are currently ADchans, which for both adapters (32 and 64 chan NN MOLEX to omnetics to RHD21xx headstage) do not map 1:1 to probe chans. Would be nice to make user only deal with probe chans in spike viewer, lfp viewer and spikes.npy file
+    * need new .blab.prb file type that specifies both how to spatially reorder ADchans ("mapping" field), and also how to rename them (maybe a "name" or "label" field) so that probe chans instead of ADchans are displayed in the interface and saved to the .spike.npy file
+    * or simply stick to same probe file type, give up on displaying probe chans in interface, and save AD chans in spikes.npy file, which can then be converted offline to probe chans if desired
+    * could also dereference ADchans to get probe chans in the few places needed: LFP viewer, spike viewer (have space to show both), and spike.npy file
+        * this would require an internal version of the AD to probe chan mapping for each adapter, so basically the inverse of what's provided by spyke's Adapter.probe2AD maps
+* what are the "referenceChannels" for in the .prb file and in OE?
 * spikes.npy seems to corrupt after long (2h?) recording with lots of detected spikes, overwrites itself
     * fixed by increasing recordBufferSize to 1024 and always flushing to disk?
     * needs long duration testing
@@ -196,7 +202,8 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
     String tz = now.getUTCOffsetString(true);
     datetime = datetime.upToLastOccurrenceOf(tz, false, false); // strip time zone
 
-    // parse the chanmap to extract probe_name:
+    // parse the chanmap to extract probe_name and adapter_name, separated by __:
+    String sep = "__";
     var chanmapnames = CoreServices::getChannelMapNames();
     if (chanmapnames.size() != 1)
     {
@@ -204,18 +211,13 @@ void BinaryRecording::openFiles(File rootFolder, String baseName, int recordingN
                   << JSON::toString(chanmapnames, true) << std::endl;
         JUCEApplication::quit();
     }
-    String probe_name = chanmapnames[0];
-    std::cout << "Storing channel map name '" << probe_name << "' as probe_name" << std::endl;
-    // derive adapter name from probe name via a mapping:
-    std::map<String, String> probe2adapter;
-    probe2adapter["A1x32"] = "Adpt_A32_OM32_RHD2132";
-    probe2adapter["A1x64"] = "Adpt_A64_OM32x2_sm_RHD2164";
-    String adapter_name;
-    try
-        {adapter_name = probe2adapter.at(probe_name);}
-    catch (...) // probe_name not found
-        {adapter_name = "";}
-    std::cout << "Assuming adapter_name: '" << adapter_name << "'" << std::endl;
+    String chanmapname = chanmapnames[0];
+    std::cout << "Extracting probe and adapter names from channel map name '" << chanmapname
+              << "'" << std::endl;
+    String probe_name = chanmapname.upToFirstOccurrenceOf(sep, false, false);
+    String adapter_name = chanmapname.fromFirstOccurrenceOf(sep, false, false);
+    std::cout << "Extracted probe_name: " << probe_name << std::endl;
+    std::cout << "Extracted adapter_name: " << adapter_name << std::endl;
 
     // collect chans array:
     std::cout << "Assuming '" << probe_name << "' chans are 1-based" << std::endl;
@@ -342,7 +344,7 @@ void BinaryRecording::closeFiles()
 
 void BinaryRecording::resetChannels()
 {
-    // dereference all stored objects, including open file handles?
+    // clear all stored objects, including open file handles?
     m_DataFiles.clear();
     m_channelIndexes.clear();
     m_fileIndexes.clear();

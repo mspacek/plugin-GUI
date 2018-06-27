@@ -1,2 +1,5 @@
-A1x32 - NeuroNexus A1x32 single shank probe
-A1x64 - NeuroNexus A1x64 single shank probe
+A1x32__Adpt_A32_OM32_RHD2132
+    - NeuroNexus A1x32 single shank probe + Adpt_A32_OM32_RHD2132 adapter
+
+A1x64__Adpt_A64_OM32x2_sm_RHD2164
+    - NeuroNexus A1x64 single shank probe + Adpt_A64_OM32x2_sm_RHD2164 adapter
