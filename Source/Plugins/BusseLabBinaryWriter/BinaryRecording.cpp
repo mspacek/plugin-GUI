@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-
 #include "BinaryRecording.h"
 
 #define MAX_BUFFER_SIZE 40960
@@ -49,7 +48,7 @@ String BinaryRecording::getProcessorString(const InfoObjectCommon* channelInfo)
     String fName = (channelInfo->getCurrentNodeName().replaceCharacter(' ', '_') + "-" +
                     String(channelInfo->getCurrentNodeID()));
     if (channelInfo->getCurrentNodeID() == channelInfo->getSourceNodeID())
-    // "it" is the channel source - mspacek doesn't know what this means...
+    // found the channel source
     {
         fName += "." + String(channelInfo->getSubProcessorIdx());
     }
