@@ -21,45 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-/*
-
-TODO:
-
-* displayed chan names and IDs saved to .spikes.npy file are currently ADchans, which for both adapters (32 and 64 chan NN MOLEX to omnetics to RHD21xx headstage) do not map 1:1 to probe chans. Would be nice to make user only deal with probe chans in spike viewer, lfp viewer and spikes.npy file
-    * need new .blab.prb file type that specifies both how to spatially reorder ADchans ("mapping" field), and also how to rename them (maybe a "name" or "label" field) so that probe chans instead of ADchans are displayed in the interface and saved to the .spike.npy file
-    * or simply stick to same probe file type, give up on displaying probe chans in interface, and save AD chans in spikes.npy file, which can then be converted offline to probe chans if desired
-    * could also dereference ADchans to get probe chans in the few places needed: LFP viewer, spike viewer (have space to show both), and spike.npy file
-        * this would require an internal version of the AD to probe chan mapping for each adapter, so basically the inverse of what's provided by spyke's Adapter.probe2AD maps
-* what are the "referenceChannels" for in the .prb file and in OE?
-* handle aux and ADC oe chans - need to add auxchans field to .dat.json
-    * what does the clock divider ratio do? should change the ADC chan sampling rate, but doesn't seem to? Maybe force it to always be 1 for now?
-    * getBitVolts() for ADC chans is different, and seems ~1000x off?
-    * yes:  case DataChannel::AUX_CHANNEL: return "mV";
-            case DataChannel::ADC_CHANNEL: return "V";
-            default: return "uV";
-        * from RHD2000Thread::getChannelUnits
-        * also, see RHD2000Thread::setDefaultChannelNames() for in.gain
-        * also see getAdcBitVolts
-* push bandwidth, dsp, noiseslicer, clockdivider round-trip fixes and tweaks to dev branch
-* push spike chan display labels and values written to disk to dev branch
-* test audio monitor
-    * make clicking on LFP viewer chan or Spike Viewer chan change audio to that chan
-* test CAR before spike detector
-* test spike detection and saving
-    * add some kind of automatic threshold level setting?
-    * add spike ticks to LFP viewer chans?
-    * make spike detector editor use actual chan IDs instead of chanis (e.g. single electrode 1)
-* make ENTER in message window save the message, so don't need to hit SAVE button
-* check assumption that there's only one spike detector in the signal chain
-* how does clustering work? does it fill the cluster id field in .spikes.npy properly?
-* add git rev to .json/.msg.txt?
-* get "Error in Rhd2000EvalBoard::readDataBlock: Incorrect header." randomly, won't exit
-* why can't splitters be deleted?
-* sometimes rearranging chans in the chanmap segfaults
-* store last used file open path in settings.xml
-
-*/
-
 
 #include "BinaryRecording.h"
 
