@@ -31,10 +31,6 @@ TODO:
     * could also dereference ADchans to get probe chans in the few places needed: LFP viewer, spike viewer (have space to show both), and spike.npy file
         * this would require an internal version of the AD to probe chan mapping for each adapter, so basically the inverse of what's provided by spyke's Adapter.probe2AD maps
 * what are the "referenceChannels" for in the .prb file and in OE?
-* spikes.npy seems to corrupt after long (2h?) recording with lots of detected spikes, overwrites itself
-    * fixed by increasing recordBufferSize to 1024 and always flushing to disk?
-    * needs long duration testing
-    * push to dev
 * handle aux and ADC oe chans - need to add auxchans field to .dat.json
     * what does the clock divider ratio do? should change the ADC chan sampling rate, but doesn't seem to? Maybe force it to always be 1 for now?
     * getBitVolts() for ADC chans is different, and seems ~1000x off?
