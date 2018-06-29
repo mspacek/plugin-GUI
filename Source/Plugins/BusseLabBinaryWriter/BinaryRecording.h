@@ -83,7 +83,7 @@ namespace BinaryRecordingEngine
 
         //Compile-time constants
         const int samplesPerBlock{ 4096 };
-        const String BusseLabBinaryWriterPluginVersion = "0.3";
+        const String BusseLabBinaryWriterPluginVersion = "0.4";
 
     };
 
