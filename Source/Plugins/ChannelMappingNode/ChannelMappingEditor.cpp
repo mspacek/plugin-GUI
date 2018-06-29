@@ -534,8 +534,8 @@ void ChannelMappingEditor::buttonEvent(Button* button)
             if (fc.browseForFileToSave(true))
             {
                 File fileToSave = fc.getResult();
-                std::cout << fileToSave.getFileName() << std::endl;
-                CoreServices::sendStatusMessage(writePrbFile(fileToSave));
+                std::cout << "Saving channel map: " << fileToSave.getFileName() << std::endl;
+                CoreServices::sendStatusMessage(writeChanMapFile(fileToSave));
             }
         } else {
             CoreServices::sendStatusMessage("Stop acquisition before saving the channel map.");
@@ -560,7 +560,7 @@ void ChannelMappingEditor::buttonEvent(Button* button)
                     modifyButton->setToggleState(false,sendNotificationSync);
                 File fileToOpen = fc.getResult();
                 std::cout << "Loading channel map: " << fileToOpen.getFileName() << std::endl;
-                CoreServices::sendStatusMessage(loadPrbFile(fileToOpen));
+                CoreServices::sendStatusMessage(loadChanMapFile(fileToOpen));
             }
         } else {
             CoreServices::sendStatusMessage("Stop acquisition before saving the channel map.");
@@ -949,7 +949,7 @@ int ChannelMappingEditor::getChannelDisplayNumber(int chan) const
         return chan;
 }
 
-String ChannelMappingEditor::writePrbFile(File filename)
+String ChannelMappingEditor::writeChanMapFile(File filename)
 {
 
     FileOutputStream outputStream(filename);
@@ -988,7 +988,7 @@ String ChannelMappingEditor::writePrbFile(File filename)
     }
     nestedObj->setProperty("enabled", var(arr3));
 
-    info->setProperty("0", nestedObj);
+    info->setProperty("chanmap", nestedObj);
 
     DynamicObject* nestedObj2 = new DynamicObject();
     Array<var> arr4;
@@ -1017,7 +1017,7 @@ String ChannelMappingEditor::writePrbFile(File filename)
 
 }
 
-String ChannelMappingEditor::loadPrbFile(File filename)
+String ChannelMappingEditor::loadChanMapFile(File filename)
 {
     FileInputStream inputStream(filename);
 
@@ -1025,11 +1025,11 @@ String ChannelMappingEditor::loadPrbFile(File filename)
 
     var returnVal = -255;
 
-    var channelGroup = json.getProperty(Identifier("0"), returnVal);
+    var channelGroup = json.getProperty(Identifier("chanmap"), returnVal);
 
     if (channelGroup.equalsWithSameType(returnVal))
     {
-        return "Not a valid .prb file.";
+        return "Not a valid .chanmap file (i.e. a .prb file with a 'labels' field)";
     }
 
     var mapping = channelGroup[Identifier("mapping")];

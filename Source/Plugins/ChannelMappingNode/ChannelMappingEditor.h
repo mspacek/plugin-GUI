@@ -69,8 +69,8 @@ public:
 
     int getChannelDisplayNumber(int chan) const override;
 
-    String writePrbFile(File filename);
-    String loadPrbFile(File filename);
+    String writeChanMapFile(File filename);
+    String loadChanMapFile(File filename);
 
 private:
 

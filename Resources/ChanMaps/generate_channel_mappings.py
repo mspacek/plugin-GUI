@@ -1,6 +1,7 @@
 """Generates ADchan mappings that describes how to rearrange AD chans such that they are
-displayed in vertical spatial order of their corresponding probe channels, taking both
-the probe layout and the adapter mapping into account"""
+displayed in vertical spatial order of their corresponding probe channels, taking both the
+probe layout and the adapter mapping into account. Also generates corresponding probe channel
+numbers for renaming AD chans to probe chans"""
 
 from spyke import probes
 import numpy as np

@@ -1,11 +1,5 @@
 TODO:
 
-- displayed chan names and IDs saved to .spikes.npy file are currently ADchans, which for both adapters (32 and 64 chan NN MOLEX to omnetics to RHD21xx headstage) do not map 1:1 to probe chans. Would be nice to make user only deal with probe chans in spike viewer, lfp viewer and spikes.npy file
-    - need new .blab.prb file type that specifies both how to spatially reorder ADchans ("mapping" field), and also how to rename them (maybe a "name" or "label" field) so that probe chans instead of ADchans are displayed in the interface and saved to the .spike.npy file
-    - or simply stick to same probe file type, give up on displaying probe chans in interface, and save AD chans in spikes.npy file, which can then be converted offline to probe chans if desired
-    - could also dereference ADchans to get probe chans in the few places needed: LFP viewer, spike viewer (have space to show both), and spike.npy file
-        - this would require an internal version of the AD to probe chan mapping for each adapter, so basically the inverse of what's provided by spyke's Adapter.probe2AD maps
-- what are the "referenceChannels" for in the .prb file and in OE?
 - handle aux and ADC oe chans - need to add auxchans field to .dat.json
     - what does the clock divider ratio do? should change the ADC chan sampling rate, but doesn't seem to? Maybe force it to always be 1 for now?
     - getBitVolts() for ADC chans is different, and seems ~1000x off?
