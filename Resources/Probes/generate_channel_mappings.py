@@ -21,4 +21,7 @@ for probename, adaptername in zip(probenames, adapternames):
     mapping = [ adapter.probe2AD[probechan] for probechan in spatiallysortedprobechans ]
 
     print(probename + '__' + adaptername)
+    print('mapping:')
     print(mapping)
+    print('labels:')
+    print(list(spatiallysortedprobechans))

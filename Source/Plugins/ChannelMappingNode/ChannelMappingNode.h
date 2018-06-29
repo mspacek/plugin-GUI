@@ -53,9 +53,10 @@ public:
 
 
 private:
+    Array<int> channelArray;
+    Array<int> labelArray;
     Array<int> referenceArray;
     Array<int> referenceChannels;
-    Array<int> channelArray;
     Array<bool> enabledChannelArray;
 
     bool editorIsConfigured;

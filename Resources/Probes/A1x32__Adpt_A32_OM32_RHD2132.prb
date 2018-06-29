@@ -2,9 +2,11 @@
     "0": {
       "mapping": [1, 17, 16, 32, 3, 19, 14, 30, 9, 25, 10, 20, 8, 24, 2, 29, 7, 26, 15, 21, 11, 23, 12, 28, 6, 18, 13, 22, 5, 27, 4, 31
       ],
+      "labels": [17, 16, 18, 15, 19, 14, 20, 13, 21, 12, 22, 11, 23, 10, 24, 9, 25, 8, 26, 7, 27, 6, 28, 5, 29, 4, 30, 3, 31, 2, 32, 1
+      ],
       "reference": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
       ],
-      "enabled": [ true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true
+      "enabled": [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true
       ]
     },
     "refs": {
@@ -12,7 +14,7 @@
       ]
     },
     "recording": {
-      "channels": [ false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
+      "channels": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
       ]
     }
   }

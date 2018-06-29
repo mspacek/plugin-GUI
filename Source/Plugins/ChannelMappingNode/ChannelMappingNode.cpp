@@ -31,12 +31,14 @@ ChannelMappingNode::ChannelMappingNode()
 {
     setProcessorType (PROCESSOR_TYPE_FILTER);
 
-    referenceArray.resize (1024); // make room for 1024 channels
-    channelArray.resize   (1024);
+    channelArray.resize   (1024); // make room for 1024 channels
+    labelArray.resize     (1024);
+    referenceArray.resize (1024);
 
     for (int i = 0; i < referenceArray.size(); ++i)
     {
         channelArray.set        (i, i);
+        labelArray.set          (i, i);
         referenceArray.set      (i, -1);
         enabledChannelArray.set (i, true);
     }
@@ -84,6 +86,7 @@ void ChannelMappingNode::updateSettings()
             {
                 DataChannel* oldChan = oldChannels[channelArray[i]];
                 oldChannels.set(channelArray[i], nullptr, false);
+                oldChan->setName("PR" + String(labelArray[i])); // PR means probe channel
                 dataChannelArray.add (oldChan);
                 recordStates.add (oldChan->getRecordState());
                 settings.numOutputs++;
@@ -101,25 +104,33 @@ void ChannelMappingNode::updateSettings()
 
 void ChannelMappingNode::setParameter (int parameterIndex, float newValue)
 {
-    if (parameterIndex == 1)
+    if (parameterIndex == 0) // mapping
+    {
+        channelArray.set (currentChannel, (int) newValue);
+    }
+    else if (parameterIndex == 1) // set reference
     {
         referenceArray.set (currentChannel, (int) newValue);
     }
-    else if (parameterIndex == 2)
+    else if (parameterIndex == 2) // clear reference?
     {
         referenceChannels.set ((int)newValue, currentChannel);
     }
-    else if (parameterIndex == 3)
+    else if (parameterIndex == 3) // enabled
     {
         enabledChannelArray.set (currentChannel, (newValue != 0) ? true : false);
     }
-    else if (parameterIndex == 4)
+    else if (parameterIndex == 4) // reset?
     {
         editorIsConfigured = (newValue != 0) ? true : false;
     }
+    else if (parameterIndex == 5) // label
+    {
+        labelArray.set (currentChannel, (int) newValue);
+    }
     else
     {
-        channelArray.set (currentChannel, (int) newValue);
+        std::cerr << "ERROR: Unknown parameterIndex: " << String(parameterIndex) << std::endl;
     }
 }
 

@@ -37,6 +37,11 @@ int ElectrodeButton::getChannelNum()
 	return chan;
 }
 
+int ElectrodeButton::getChannelLabel()
+{
+	return label;
+}
+
 void ElectrodeButton::paintButton(Graphics& g, bool isMouseOver, bool isButtonDown)
 {
     if (getToggleState() == true)
@@ -85,6 +90,12 @@ void ElectrodeButton::setChannelNum(int i, bool changeButtonText)
         setButtonText(String(chan));
     }
 }
+
+void ElectrodeButton::setChannelLabel(int i)
+{
+    label = i;
+}
+
 
 ElectrodeEditorButton::ElectrodeEditorButton(const String& name_, Font font_) : Button("Electrode Editor"),
 name(name_), font(font_)

@@ -398,6 +398,7 @@ void BinaryRecording::writeTimestampSyncText(uint16 sourceID, uint16 sourceIdx,
 
 void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)
 {
+    int64 ts = spike->getTimestamp();
     /*
       electrodeIndex is really just the plot index, which isn't relevant
       (each electrode has exactly 1 plot, because only single electrodes are allowed now)
@@ -405,12 +406,22 @@ void BinaryRecording::writeSpike(int electrodeIndex, const SpikeEvent* spike)
       what we'll write to file.
     */
     const SpikeChannel* spikeChan = spike->getChannelInfo();
-    String chanName = spikeChan->getName();
-    EventRecording* rec = m_spikeFile;
-    int64 ts = spike->getTimestamp();
-    // strip "CH" from start of chanName, get remaining string as numeric ID, convert to int64:
-    int64 chanID = chanName.trimCharactersAtStart("CH").getLargeIntValue();
+    String chanName = spikeChan->getName(); // should represent probe channel, not ADC channel
+    // "CH": ADC chan, for channel maps without "labels" field
+    // "PR": probe chan, for channel maps with "labels" field
+    // strip "PR" from start of chanName, use remaining string as numeric ID, convert to int64:
+    if (!chanName.startsWith("PR"))
+    {
+        std::cerr << "ERROR: data must be piped through a channel map with a 'labels'"
+                     "field specifying probe channel labels, resulting in all chanNames "
+                     "starting with 'PR'" << std::endl;
+        std::cerr << "Got chanName: "  << chanName << std::endl;
+        JUCEApplication::quit();
+    }
+    String chanIDstr = chanName.trimCharactersAtStart("PR");
+    int64 chanID = chanIDstr.getLargeIntValue();
     int64 sortedID = (int64)(uint16)spike->getSortedID();
+    EventRecording* rec = m_spikeFile;
     rec->dataFile->writeData(&ts, sizeof(int64)); // timestamp
     rec->dataFile->writeData(&chanID, sizeof(int64)); // spike channel
     rec->dataFile->writeData(&sortedID, sizeof(int64)); // cluster ID

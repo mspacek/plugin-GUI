@@ -74,8 +74,9 @@ public:
 
 private:
 
-    void setChannelReference(ElectrodeButton* button);
     void setChannelPosition(int position, int channel);
+    void setChannelLabel(int position, int label);
+    void setChannelReference(ElectrodeButton* button);
     void checkUnusedChannels();
     void setConfigured(bool state);
 
@@ -92,6 +93,7 @@ private:
     ScopedPointer<Component> electrodeButtonHolder;
 
     Array<int> channelArray;
+    Array<int> labelArray;
     Array<int> referenceArray;
     Array<int> referenceChannels;
     Array<bool> enabledChannelArray;
@@ -107,6 +109,7 @@ private:
     bool isDragging;
     int initialDraggedButton;
     int draggingChannel;
+    int draggingLabel;
     int lastHoverButton;
     bool isConfigured;
 

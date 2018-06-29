@@ -43,14 +43,17 @@ public:
 	~ElectrodeButton();
 
 	int getChannelNum();
+	int getChannelLabel();
     void setChannelNum(int i);
     void setChannelNum(int i, bool changeButtonText);
+    void setChannelLabel(int i);
 
 
 private:
     void paintButton(Graphics& g, bool isMouseOver, bool isButtonDown);
 
     int chan;
+    int label;
 };
 
 /**

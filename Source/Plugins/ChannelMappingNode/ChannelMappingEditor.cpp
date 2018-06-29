@@ -138,8 +138,9 @@ void ChannelMappingEditor::createElectrodeButtons(int numNeeded, bool clearPrevi
     {
         electrodeButtons.clear();
 
-        referenceArray.clear();
         channelArray.clear();
+        labelArray.clear();
+        referenceArray.clear();
         referenceChannels.clear();
         enabledChannelArray.clear();
         startButton=0;
@@ -188,11 +189,13 @@ void ChannelMappingEditor::createElectrodeButtons(int numNeeded, bool clearPrevi
         referenceArray.add(-1);
 
         getProcessor()->setCurrentChannel(i);
-        getProcessor()->setParameter(0,i); // set channel mapping to standard channel
-        getProcessor()->setParameter(1,-1); // set reference to none
-        getProcessor()->setParameter(3,1); //enable channel
+        getProcessor()->setParameter(0, i); // set channel mapping to standard channel
+        getProcessor()->setParameter(5, i); // set channel label to standard channel
+        getProcessor()->setParameter(1, -1); // set reference to none
+        getProcessor()->setParameter(3, 1); // enable channel
 
         channelArray.add(i+1);
+        labelArray.add(i+1);
         enabledChannelArray.add(true);
 
     }
@@ -203,7 +206,7 @@ void ChannelMappingEditor::createElectrodeButtons(int numNeeded, bool clearPrevi
         for (int i = 0; i < NUM_REFERENCES; i++)
         {
 
-            getProcessor()->setParameter(2,i); //Clear reference
+            getProcessor()->setParameter(2, i); // clear reference
             referenceChannels.add(-1);
             referenceButtons[i]->setEnabled(true);
         }
@@ -573,12 +576,12 @@ void ChannelMappingEditor::setChannelReference(ElectrodeButton* button)
     if (button->getToggleState())
     {
         referenceArray.set(chan,selectedReference);
-        getProcessor()->setParameter(1,selectedReference);
+        getProcessor()->setParameter(1, selectedReference);
     }
     else
     {
-        referenceArray.set(chan,-1);
-        getProcessor()->setParameter(1,-1);
+        referenceArray.set(chan, -1);
+        getProcessor()->setParameter(1, -1);
     }
 
 }
@@ -607,6 +610,7 @@ void ChannelMappingEditor::saveCustomParameters(XmlElement* xml)
         XmlElement* channelXml = xml->createNewChildElement("CHANNEL");
         channelXml->setAttribute("Number", i);
         channelXml->setAttribute("Mapping", channelArray[i]);
+        channelXml->setAttribute("Labels", labelArray[i]);
         channelXml->setAttribute("Reference", referenceArray[channelArray[i]-1]);
         channelXml->setAttribute("Enabled",enabledChannelArray[channelArray[i]-1]);
     }
@@ -641,14 +645,18 @@ void ChannelMappingEditor::loadCustomParameters(XmlElement* xml)
         {
 
             int mapping = channelXml->getIntAttribute("Mapping");
+            int label = channelXml->getIntAttribute("Labels");
             int reference = channelXml->getIntAttribute("Reference");
             bool enabled = channelXml->getBoolAttribute("Enabled");
 
             channelArray.set(i, mapping);
+            labelArray.set(i, label);
             referenceArray.set(mapping-1, reference);
             enabledChannelArray.set(mapping-1,enabled);
 
             electrodeButtons[i]->setChannelNum(mapping);
+            electrodeButtons[i]->setChannelLabel(label);
+            electrodeButtons[i]->setTooltip("PR"+String(label)); // PR means probe channel
             electrodeButtons[i]->setEnabled(enabled);
             electrodeButtons[i]->repaint();
 
@@ -657,11 +665,13 @@ void ChannelMappingEditor::loadCustomParameters(XmlElement* xml)
 
             getProcessor()->setParameter(0, mapping-1); // set mapping
 
+            getProcessor()->setParameter(5, label); // set label
+
             getProcessor()->setCurrentChannel(mapping-1);
 
             getProcessor()->setParameter(1, reference); // set reference
 
-            getProcessor()->setParameter(3,enabled ? 1 : 0); //set enabled
+            getProcessor()->setParameter(3, enabled ? 1 : 0); // set enabled
         }
 
     }
@@ -678,7 +688,7 @@ void ChannelMappingEditor::loadCustomParameters(XmlElement* xml)
 
             getProcessor()->setCurrentChannel(channel);
 
-            getProcessor()->setParameter(2,i);
+            getProcessor()->setParameter(2, i); // clear reference?
         }
     }
 
@@ -734,6 +744,7 @@ void ChannelMappingEditor::mouseDrag(const MouseEvent& e)
             initialDraggedButton = electrodeButtons.indexOf(button);
             lastHoverButton = initialDraggedButton;
             draggingChannel = button->getChannelNum();
+            draggingLabel = button->getChannelLabel();
         }
         else if (isDragging)
         {
@@ -778,6 +789,9 @@ void ChannelMappingEditor::mouseDrag(const MouseEvent& e)
                     for (int i = lastHoverButton; i > hoverButton; i--)
                     {
                         electrodeButtons[i]->setChannelNum(electrodeButtons[i-1]->getChannelNum());
+                        int label = electrodeButtons[i-1]->getChannelLabel();
+                        electrodeButtons[i]->setChannelLabel(label);
+                        electrodeButtons[i]->setTooltip("PR"+String(label));
                         if (enabledChannelArray[electrodeButtons[i]->getChannelNum()-1]) //Could be more compact, but definitely less legible
                         {
                             electrodeButtons[i]->setToggleState(true, dontSendNotification);
@@ -793,6 +807,9 @@ void ChannelMappingEditor::mouseDrag(const MouseEvent& e)
                     for (int i = lastHoverButton; i < hoverButton; i++)
                     {
                         electrodeButtons[i]->setChannelNum(electrodeButtons[i+1]->getChannelNum());
+                        int label = electrodeButtons[i+1]->getChannelLabel();
+                        electrodeButtons[i]->setChannelLabel(label);
+                        electrodeButtons[i]->setTooltip("PR"+String(label));
                         if (enabledChannelArray[electrodeButtons[i]->getChannelNum()-1])
                         {
                             electrodeButtons[i]->setToggleState(true, dontSendNotification);
@@ -804,6 +821,8 @@ void ChannelMappingEditor::mouseDrag(const MouseEvent& e)
                     }
                 }
                 electrodeButtons[hoverButton]->setChannelNum(draggingChannel);
+                electrodeButtons[hoverButton]->setChannelLabel(draggingLabel);
+                electrodeButtons[hoverButton]->setTooltip("PR"+String(draggingLabel));
                 electrodeButtons[hoverButton]->setToggleState(enabledChannelArray[draggingChannel-1], dontSendNotification);
 
                 lastHoverButton = hoverButton;
@@ -839,7 +858,8 @@ void ChannelMappingEditor::mouseUp(const MouseEvent& e)
 
         for (int i=from; i <= to; i++)
         {
-            setChannelPosition(i,electrodeButtons[i]->getChannelNum());
+            setChannelPosition(i, electrodeButtons[i]->getChannelNum());
+            setChannelLabel(i, electrodeButtons[i]->getChannelLabel());
         }
         setConfigured(true);
         CoreServices::updateSignalChain(this);
@@ -849,8 +869,15 @@ void ChannelMappingEditor::mouseUp(const MouseEvent& e)
 void ChannelMappingEditor::setChannelPosition(int position, int channel)
 {
     getProcessor()->setCurrentChannel(position);
-    getProcessor()->setParameter(0,channel-1);
-    channelArray.set(position,channel);
+    getProcessor()->setParameter(0, channel-1);
+    channelArray.set(position, channel);
+}
+
+void ChannelMappingEditor::setChannelLabel(int position, int label)
+{
+    getProcessor()->setCurrentChannel(position);
+    getProcessor()->setParameter(5, label);
+    labelArray.set(position, label);
 }
 
 void ChannelMappingEditor::mouseDoubleClick(const MouseEvent& e)
@@ -864,14 +891,14 @@ void ChannelMappingEditor::mouseDoubleClick(const MouseEvent& e)
             button->setToggleState(false, dontSendNotification);
             enabledChannelArray.set(button->getChannelNum()-1,false);
             getProcessor()->setCurrentChannel(button->getChannelNum()-1);
-            getProcessor()->setParameter(3,0);
+            getProcessor()->setParameter(3, 0);
         }
         else
         {
             button->setToggleState(true, dontSendNotification);
             enabledChannelArray.set(button->getChannelNum()-1,true);
             getProcessor()->setCurrentChannel(button->getChannelNum()-1);
-            getProcessor()->setParameter(3,1);
+            getProcessor()->setParameter(3, 1);
         }
         CoreServices::updateSignalChain(this);
     }
@@ -903,7 +930,7 @@ void ChannelMappingEditor::setConfigured(bool state)
     isConfigured = state;
     resetButton->setEnabled(state);
     resetButton->setToggleState(!state, dontSendNotification);
-    getProcessor()->setParameter(4,state?1:0);
+    getProcessor()->setParameter(4, state?1:0);
 }
 
 void ChannelMappingEditor::startAcquisition()
@@ -939,6 +966,13 @@ String ChannelMappingEditor::writePrbFile(File filename)
         arr.add(var(channelArray[i]));
     }
     nestedObj->setProperty("mapping", var(arr));
+
+    Array<var> labels;
+    for (int i = 0; i < labelArray.size(); i++)
+    {
+        labels.add(var(labelArray[i]));
+    }
+    nestedObj->setProperty("labels", var(labels));
 
     Array<var> arr2;
     for (int i = 0; i < referenceArray.size(); i++)
@@ -1001,6 +1035,9 @@ String ChannelMappingEditor::loadPrbFile(File filename)
     var mapping = channelGroup[Identifier("mapping")];
     Array<var>* map = mapping.getArray();
 
+    var labels = channelGroup[Identifier("labels")];
+    Array<var>* lbl = labels.getArray();
+
     var reference = channelGroup[Identifier("reference")];
     Array<var>* ref = reference.getArray();
 
@@ -1017,6 +1054,9 @@ String ChannelMappingEditor::loadPrbFile(File filename)
         int ch = map->getUnchecked(i);
         channelArray.set(i, ch);
 
+        int lb = lbl->getUnchecked(i);
+        labelArray.set(i, lb);
+
         int rf = ref->getUnchecked(i);
         referenceArray.set(ch-1, rf);
 
@@ -1024,10 +1064,13 @@ String ChannelMappingEditor::loadPrbFile(File filename)
         enabledChannelArray.set(ch-1, en);
 
         electrodeButtons[i]->setChannelNum(ch);
+        electrodeButtons[i]->setChannelLabel(lb);
+        electrodeButtons[i]->setTooltip("PR"+String(lb));
         electrodeButtons[i]->setEnabled(en);
 
         getProcessor()->setCurrentChannel(i);
-        getProcessor()->setParameter(0,ch-1);
+        getProcessor()->setParameter(0, ch-1);
+        getProcessor()->setParameter(5, lb);
         getProcessor()->setCurrentChannel(ch-1);
         getProcessor()->setParameter(1, rf);
         getProcessor()->setParameter(3, en ? 1 : 0);
@@ -1043,7 +1086,7 @@ String ChannelMappingEditor::loadPrbFile(File filename)
         int ch = chans->getUnchecked(i);
         referenceChannels.set(i,ch);
         getProcessor()->setCurrentChannel(ch);
-        getProcessor()->setParameter(2,i);
+        getProcessor()->setParameter(2, i);
     }
 
     referenceButtons[0]->setToggleState(true, sendNotificationSync);
