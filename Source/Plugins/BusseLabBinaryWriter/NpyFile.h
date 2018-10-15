@@ -53,11 +53,11 @@ namespace BinaryRecordingEngine
         ~NpyFile();
         void writeData(const void* data, size_t size);
         void increaseRecordCount(int count = 1);
+        void updateHeader();
     private:
         bool openFile(String path);
         String getShapeString();
         void writeHeader(const Array<NpyType>& typeList);
-        void updateHeader();
         ScopedPointer<FileOutputStream> m_file;
         int64 m_headerLen; // total header length
         bool m_okOpen{ false };

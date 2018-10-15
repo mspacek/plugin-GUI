@@ -366,6 +366,16 @@ void BinaryRecording::writeEvent(int eventIndex, const MidiMessage& event)
         rec->dataFile->writeData(&ts, sizeof(int64)); // timestamp
         rec->dataFile->writeData(&word, sizeof(int64)); // digital input word
         increaseEventCounts(rec);
+        // if old and new words differ at the experiment bit, flush to disk so that online
+        // analysis can be performed on the dinFile:
+        int64 expBitChanged = (word ^ m_lastTTLWord) & m_experimentBit;
+        //std::cout << "expBitChanged: " << expBitChanged << std::endl;
+        if (expBitChanged)
+        {
+            std::cout << "Experiment bit change detected, flushing .din to disk" << std::endl;
+            rec->dataFile->updateHeader();
+        }
+        m_lastTTLWord = word; // update
     }
     else
     {

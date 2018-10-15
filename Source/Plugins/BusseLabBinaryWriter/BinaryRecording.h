@@ -66,6 +66,8 @@ namespace BinaryRecordingEngine
         String getRecordingNumberString(int recordingNumber);
 
         bool m_saveTTLWords{ true };
+        int64 m_lastTTLWord{ 0 };
+        int64 m_experimentBit{ 1 << 0 }; // first bit (1 bit shifted left 0 positions)
 
         HeapBlock<float> m_scaledBuffer;
         HeapBlock<int16> m_intBuffer;
@@ -83,7 +85,7 @@ namespace BinaryRecordingEngine
 
         //Compile-time constants
         const int samplesPerBlock{ 4096 };
-        const String BusseLabBinaryWriterPluginVersion = "0.4";
+        const String BusseLabBinaryWriterPluginVersion = "0.5";
 
     };
 
