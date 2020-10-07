@@ -6,8 +6,8 @@ numbers for renaming AD chans to probe chans"""
 from spyke import probes
 import numpy as np
 
-probenames =   ['A1x32',                 'A1x64'                     ]
-adapternames = ['Adpt_A32_OM32_RHD2132', 'Adpt_A64_OM32x2_sm_RHD2164']
+probenames =   ['A1x32',             'A1x32',                 'A1x64'                     ]
+adapternames = ['Adpt_CM32_RHD2132', 'Adpt_A32_OM32_RHD2132', 'Adpt_A64_OM32x2_sm_RHD2164']
 
 for probename, adaptername in zip(probenames, adapternames):
 

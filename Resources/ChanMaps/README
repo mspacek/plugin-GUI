@@ -3,6 +3,9 @@ renaming of AD chans to probe chans.
 
 Channel map descriptions:
 
+A1x32__Adpt_CM32_RHD2132
+    - NeuroNexus A1x32 single shank probe + Adpt_CM32_RHD2132 "adapter"
+
 A1x32__Adpt_A32_OM32_RHD2132
     - NeuroNexus A1x32 single shank probe + Adpt_A32_OM32_RHD2132 adapter
 
